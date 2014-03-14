@@ -8,8 +8,8 @@ module Pvcglue
   end
 
   class Bootstrap
-    def run
-
+    def self.bootstrap(stage)
+      puts "This is where it should bootstrap #{stage}.  :)"
     end
   end
 end

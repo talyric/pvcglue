@@ -1,5 +1,14 @@
 #!/usr/bin/env ruby
 require 'pvcglue/cli'
-puts ARGV.shift.inspect
+
 puts ARGV.inspect
+
+if ARGV.count >= 2 && %w[alpha beta gamma delta preview production staging].include?(ARGV[0])
+  #TODO: refactor to use a list of dynamic environments
+  ARGV[0], ARGV[1] = ARGV[1], ARGV[0]
+  ARGV.insert(1,'--stage')
+end
+#puts ARGV.shift.inspect
+puts ARGV.inspect
+#puts "got here"
 Pvcglue::CLI.start
