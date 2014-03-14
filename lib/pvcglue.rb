@@ -1,5 +1,15 @@
 require "pvcglue/version"
 
 module Pvcglue
-  # Your code goes here...
+  class Version
+    def self.version
+      VERSION
+    end
+  end
+
+  class Bootstrap
+    def run
+
+    end
+  end
 end

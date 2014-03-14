@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Pvcglue::VERSION
   spec.authors       = ["Andrew Lyric"]
   spec.email         = ["talyric@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{PVC_Glue description}
+  spec.summary       = %q{PVC_Glue summary}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -20,4 +20,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+
+  spec.add_dependency "thor"
 end

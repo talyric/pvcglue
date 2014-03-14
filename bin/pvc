@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+require 'pvcglue/cli'
+puts ARGV.shift.inspect
+puts ARGV.inspect
+Pvcglue::CLI.start
