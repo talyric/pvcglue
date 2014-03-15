@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 require 'pvcglue/cli'
 
+puts Dir.pwd
+
 puts ARGV.inspect
+
 
 if ARGV.count >= 2 && %w[alpha beta gamma delta preview production staging].include?(ARGV[0])
   #TODO: refactor to use a list of dynamic environments

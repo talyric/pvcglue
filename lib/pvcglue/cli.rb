@@ -10,6 +10,12 @@ module Pvcglue
       puts Pvcglue::Version.version
     end
 
+    desc "master", "show the location of the cloud master"
+
+    def master
+      puts Pvcglue.configuration.cloud_master
+    end
+
     desc "bootstrap", "bootstrap..."
     method_option :stage, :required => true, :aliases => "-s"
     def bootstrap

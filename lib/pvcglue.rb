@@ -1,4 +1,6 @@
+require "pvcglue/configuration"
 require "pvcglue/version"
+load File.join(Dir.pwd, 'pvcglue.conf')
 
 module Pvcglue
   class Version
