@@ -10,10 +10,12 @@ module Pvcglue
       puts Pvcglue::Version.version
     end
 
-    desc "master", "show the location of the cloud master"
+    desc "info", "show the pvcglue version and cloud settings"
 
-    def master
-      puts Pvcglue.configuration.cloud_master
+    def info
+      puts "Pvcglue version #{Pvcglue::Version.version}"
+      puts "  Manager settings:"
+      Pvcglue.configuration.options.each { |k, v| puts "    #{k}=#{v}" }
     end
 
     desc "bootstrap", "bootstrap..."
