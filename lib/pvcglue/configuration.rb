@@ -1,5 +1,5 @@
 require 'json'
-# Based on http://robots.thoughtbot.com/mygem-configure-block
+# Inspired by http://robots.thoughtbot.com/mygem-configure-block
 # and https://github.com/thoughtbot/clearance/blob/master/lib/clearance/configuration.rb
 
 module Pvcglue
@@ -7,6 +7,16 @@ module Pvcglue
     attr_accessor :cloud_manager
     attr_accessor :cloud_name
     attr_accessor :application_name
+
+    def self.file_name
+      # defined as class method to allow for override later
+      '.pvcglue.json'
+    end
+
+    def self.env_prefix
+      # defined as class method to allow for override later
+      'PVCGLUE_'
+    end
 
     def initialize
       #ENV["PVCGLUE_#{'application_name'.upcase}"] = 'override'
@@ -22,7 +32,7 @@ module Pvcglue
       # Pvcglue.configure do |config|
       #   config.cloud_manager = '192.168.0.1'
       # end
-      value = ENV["PVCGLUE_#{option.upcase}"] || get_conf(option) || default
+      value = ENV["#{self.class.env_prefix}#{option.upcase}"] || get_conf(option) || default
       #puts "Setting #{option}=#{value}"
       instance_variable_set("@#{option}", value)
     end
@@ -41,8 +51,8 @@ module Pvcglue
     def get_conf(option)
       unless @conf
         @conf = {}
-        merge_into_conf(File.join(Dir.home, 'pvcglue.json'))
-        merge_into_conf(File.join(Dir.pwd, 'pvcglue.json'))
+        merge_into_conf(File.join(Dir.home, self.class.file_name))
+        merge_into_conf(File.join(Dir.pwd, self.class.file_name))
       end
       @conf[option.to_s]
     end
@@ -56,7 +66,10 @@ module Pvcglue
     def options
       Hash[instance_variables.map { |name| [name.to_s[1..-1].to_sym, instance_variable_get(name)] }].reject { |k| k == :conf }
     end
+
   end
+
+  # --------------------------------------------------------------------------------------------------------------------
 
   def self.configuration
     @configuration ||= Configuration.new
