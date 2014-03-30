@@ -9,13 +9,11 @@ module Pvcglue
     attr_accessor :application_name
 
     def self.file_name
-      # defined as class method to allow for override later
-      '.pvcglue.json'
+      ENV['PVCGLUE_FILE_NAME'] || '.pvcglue.json'
     end
 
     def self.env_prefix
-      # defined as class method to allow for override later
-      'PVCGLUE_'
+      ENV['PVCGLUE_ENV_PREFIX'] || 'PVCGLUE'
     end
 
     def initialize
@@ -32,7 +30,7 @@ module Pvcglue
       # Pvcglue.configure do |config|
       #   config.cloud_manager = '192.168.0.1'
       # end
-      value = ENV["#{self.class.env_prefix}#{option.upcase}"] || get_conf(option) || default
+      value = ENV["#{self.class.env_prefix}_#{option.upcase}"] || get_conf(option) || default
       #puts "Setting #{option}=#{value}"
       instance_variable_set("@#{option}", value)
     end

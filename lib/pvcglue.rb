@@ -1,8 +1,16 @@
-require "pvcglue/configuration"
 require "pvcglue/version"
-#load File.join(Dir.pwd, 'pvcglue.conf')
+require "pvcglue/configuration"
+require "pvcglue/manager"
+require "pvcglue/packages"
+
+puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 
 module Pvcglue
+
+  def self.gem_dir
+    Gem::Specification.find_by_name('pvcglue').gem_dir
+  end
+
   class Version
     def self.version
       VERSION
@@ -10,8 +18,9 @@ module Pvcglue
   end
 
   class Bootstrap
-    def self.bootstrap(stage)
+    def self.run(stage)
       puts "This is where it should bootstrap #{stage}.  :)"
     end
   end
+
 end

@@ -1,17 +1,13 @@
 #!/usr/bin/env ruby
 require 'pvcglue/cli'
 
-#puts Dir.pwd
-
-#puts ARGV.inspect
-
-
+# Allow use of Capistrano style environment syntax and convert to 'standard' syntax
+# Example:  `pvc production bootstrap` ==> `pvc bootstrap --stage=production`
+# TODO: refactor to use a list of user specified environments
 if ARGV.count >= 2 && %w[alpha beta gamma delta preview production staging all].include?(ARGV[0])
-  #TODO: refactor to use a list of dynamic environments
-  ARGV[0], ARGV[1] = ARGV[1], ARGV[0]
-  ARGV.insert(1,'--stage')
+  ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
 end
-#puts ARGV.shift.inspect
-#puts ARGV.inspect
-#puts "got here"
+
+puts ARGV.inspect
+
 Pvcglue::CLI.start
