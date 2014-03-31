@@ -54,6 +54,20 @@ module Pvcglue
       puts Pvcglue::Bootstrap.run(options[:stage])
     end
 
+    desc "console", "open rails console"
+    method_option :stage, :required => true, :aliases => "-s"
+    def console(server='web')
+      Pvcglue.cloud.set_stage(options[:stage])
+      node = Pvcglue.cloud.find_node(server)
+      puts node.inspect
+    end
+
+    desc "c", "shortcut for console"
+    method_option :stage, :required => true, :aliases => "-s"
+    def c(server='web')
+      console(server)
+    end
+
     #desc "manager", "manager bootstrap|pull|push"
 
     desc "manager SUBCOMMAND ...ARGS", "manage manager"

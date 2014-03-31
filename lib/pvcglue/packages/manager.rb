@@ -62,9 +62,9 @@ end
 package 'manager-get-all' do
   apply do
     data = run("cat #{::Pvcglue.cloud.manager_file_name}")
-    puts "*"*80
-    puts data
-    puts "*"*80
+    #puts "*"*80
+    #puts data
+    #puts "*"*80
     if data.empty?
       raise "Remote manager file not found:  #{::Pvcglue.cloud.manager_file_name}"
     else
