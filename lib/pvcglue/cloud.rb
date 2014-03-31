@@ -1,5 +1,7 @@
 module Pvcglue
   class Cloud
+    attr_accessor :data
+
     def local_file_name
       File.join(application_dir, file_name_base)
     end

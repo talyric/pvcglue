@@ -23,6 +23,12 @@ module Pvcglue
       Pvcglue::PvcManager.new.pull
     end
 
+    desc "show", "show"
+
+    def show
+      Pvcglue::PvcManager.new.show
+    end
+
   end
 
   class CLI < Thor
