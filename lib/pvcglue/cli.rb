@@ -14,13 +14,13 @@ module Pvcglue
     desc "push", "push"
 
     def push
-      puts "push config here..."
+      Pvcglue::PvcManager.new.push
     end
 
     desc "pull", "pull"
 
     def pull
-      puts "pull config here..."
+      Pvcglue::PvcManager.new.pull
     end
 
   end

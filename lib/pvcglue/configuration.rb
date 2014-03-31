@@ -2,6 +2,11 @@ require 'json'
 # Inspired by http://robots.thoughtbot.com/mygem-configure-block
 # and https://github.com/thoughtbot/clearance/blob/master/lib/clearance/configuration.rb
 
+# Example for '~/.pvcglue.json':
+#   {
+#     "cloud_manager": "nnn.nnn.nnn.nnn"
+#   }
+
 module Pvcglue
   class Configuration
     attr_accessor :cloud_manager
