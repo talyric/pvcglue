@@ -35,7 +35,7 @@ module Pvcglue
 
     def initialize(args = [], local_options = {}, config = {})
       super
-      Pvcglue.cloud.set_stage(options[:stage])
+      Pvcglue.cloud.set_stage(options[:stage]) if options[:stage]
       # puts "/\\"*80
       # puts options.inspect
       # puts "*"*80
