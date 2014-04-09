@@ -70,6 +70,10 @@ module Pvcglue
       Hash[instance_variables.map { |name| [name.to_s[1..-1].to_sym, instance_variable_get(name)] }].reject { |k| k == :conf }
     end
 
+    def cloud_cache_file_name
+      File.join(Dir.pwd, 'tmp', "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.json")
+    end
+
   end
 
   # --------------------------------------------------------------------------------------------------------------------

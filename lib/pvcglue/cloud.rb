@@ -20,6 +20,7 @@ module Pvcglue
     end
 
     def stage_name
+      raise "stage not set :( " if @stage_name.nil? || @stage_name.empty?
       @stage_name
     end
 
@@ -56,18 +57,35 @@ module Pvcglue
       return nil if node_name.nil? || node_name.empty?
       return stage_nodes[node_name] if stage_nodes[node_name]
       puts "-"*80
-      stage_nodes.each do |key, _|
+      stage_nodes.each do |key, value|
         puts key
-        return stage_nodes[key] if key.start_with?(node_name)
+        return {key => value} if key.start_with?(node_name)
       end
       nil
     end
 
     def stage_nodes
-      # I'm sure there's a better way.
-      all = {}
-      stage_roles.values.each { |node_group| node_group.each { |key, value| all[key] = value } }
-      all
+      # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
+      stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
+    end
+
+    # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
+    # ENV['PVC_DEPLOY_TO_APP'] = "#{ENV['PVC_DEPLOY_TO_BASE']}/#{ENV['PVC_APP_NAME']}/#{ENV['PVC_STAGE']}"
+
+    def deploy_to_base_dir
+      stage[:deploy_to] || '/sites' # TODO:  verify if server setup supports `:deploy_to` override
+    end
+
+    def deploy_to_app_dir
+      File.join(deploy_to_base_dir, app_name, stage_name)
+    end
+
+    def deploy_to_app_current_dir
+      File.join(deploy_to_app_dir,'current')
+    end
+
+    def app_name
+      Pvcglue.configuration.application_name
     end
   end
 

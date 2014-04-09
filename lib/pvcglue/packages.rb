@@ -2,6 +2,8 @@ module Pvcglue
   class Packages
     def self.apply(package, nodes, user = 'deploy')
       ::Orca.verbose(true)
+
+      # Load orca extensions
       orca_file = File.join(File.dirname(__FILE__), 'all_the_things.rb')
       ENV['ORCA_FILE'] = orca_file
       suite = ::Orca::Suite.new

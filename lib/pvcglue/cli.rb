@@ -33,6 +33,14 @@ module Pvcglue
 
   class CLI < Thor
 
+    def initialize(args = [], local_options = {}, config = {})
+      super
+      Pvcglue.cloud.set_stage(options[:stage])
+      # puts "/\\"*80
+      # puts options.inspect
+      # puts "*"*80
+    end
+
     desc "version", "show the version of PVC..."
 
     def version
@@ -57,9 +65,15 @@ module Pvcglue
     desc "console", "open rails console"
     method_option :stage, :required => true, :aliases => "-s"
     def console(server='web')
-      Pvcglue.cloud.set_stage(options[:stage])
       node = Pvcglue.cloud.find_node(server)
+      node_name = node.keys.first
+      node_data = node.values.first
+      puts "*"*80
       puts node.inspect
+      puts "Connection to #{node_name} (#{node_data[:public_ip]}) as user 'deploy'..."
+      working_dir = Pvcglue.cloud.deploy_to_app_current_dir
+      system(%(ssh -t deploy@#{node_data[:public_ip]} "cd #{working_dir} && echo 'Starting #{options[:stage].upcase} Rails console in #{working_dir}' && RAILS_ENV=#{options[:stage].downcase} script/rails c"))
+
     end
 
     desc "c", "shortcut for console"
