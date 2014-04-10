@@ -1,3 +1,5 @@
+require 'toml'
+
 package 'bootstrap-manager' do
   depends_on 'htop'
   #depends_on 'ufw'
@@ -68,7 +70,7 @@ package 'manager-get-all' do
     if data.empty?
       raise "Remote manager file not found:  #{::Pvcglue.cloud.manager_file_name}"
     else
-      ::Pvcglue.cloud.data = JSON.parse(data)
+      ::Pvcglue.cloud.data = TOML.parse(data)
     end
   end
 end

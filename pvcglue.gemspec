@@ -22,6 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
 
   spec.add_dependency "thor"
-  spec.add_dependency "json"
+  spec.add_dependency "toml-rb"
   spec.add_dependency "orca"
 end
