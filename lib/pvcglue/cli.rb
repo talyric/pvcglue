@@ -3,39 +3,12 @@ require 'orca'
 require 'pvcglue'
 
 module Pvcglue
-  class Manager < Thor # must be 'Manager' (as opposed to 'Manager_CLI') or Thor's `subcommand` gets confused using Thor <= 0.19.1
-
-    desc "bootstrap", "bootstrap"
-
-    def bootstrap
-      Pvcglue::PvcManager.new.bootstrap
-    end
-
-    desc "push", "push"
-
-    def push
-      Pvcglue::PvcManager.new.push
-    end
-
-    desc "pull", "pull"
-
-    def pull
-      Pvcglue::PvcManager.new.pull
-    end
-
-    desc "show", "show"
-
-    def show
-      Pvcglue::PvcManager.new.show
-    end
-
-  end
 
   class CLI < Thor
 
     def initialize(args = [], local_options = {}, config = {})
       super
-      Pvcglue.cloud.set_stage(options[:stage]) if options[:stage]
+      Pvcglue.cloud.set_stage(options[:stage])
       # puts "/\\"*80
       # puts options.inspect
       # puts "*"*80
@@ -59,7 +32,7 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def bootstrap
-      puts Pvcglue::Bootstrap.run(options[:stage])
+      Pvcglue::Bootstrap.run
     end
 
     desc "console", "open rails console"

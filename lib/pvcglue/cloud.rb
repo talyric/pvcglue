@@ -11,11 +11,10 @@ module Pvcglue
     end
 
     def data=(data)
-      @data = data.with_indifferent_access
+      @data = data.with_indifferent_access # We may not want this dependency.
     end
 
     def set_stage(stage)
-      raise "stage name can't be blank" if stage.nil? || stage.empty?
       @stage_name = stage
     end
 
@@ -55,16 +54,16 @@ module Pvcglue
     def find_node(node_name)
       puts "*"*80
       return nil if node_name.nil? || node_name.empty?
-      return stage_nodes[node_name] if stage_nodes[node_name]
+      return nodes_in_stage[node_name] if nodes_in_stage[node_name]
       puts "-"*80
-      stage_nodes.each do |key, value|
+      nodes_in_stage.each do |key, value|
         puts key
         return {key => value} if key.start_with?(node_name)
       end
       nil
     end
 
-    def stage_nodes
+    def nodes_in_stage
       # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
       stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
     end

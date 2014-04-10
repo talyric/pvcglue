@@ -8,6 +8,6 @@ if ARGV.count >= 2 && %w[alpha beta gamma delta preview production staging all].
   ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
 end
 
-puts ARGV.inspect
+# puts ARGV.inspect
 
 Pvcglue::CLI.start

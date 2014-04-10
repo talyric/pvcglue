@@ -3,8 +3,9 @@ require "pvcglue/configuration"
 require "pvcglue/manager"
 require "pvcglue/cloud"
 require "pvcglue/packages"
+require "pvcglue/bootstrap"
 
-puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
+# puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 
 module Pvcglue
 
@@ -15,12 +16,6 @@ module Pvcglue
   class Version
     def self.version
       VERSION
-    end
-  end
-
-  class Bootstrap
-    def self.run(stage)
-      puts "This is where it should bootstrap #{stage}.  :)"
     end
   end
 
