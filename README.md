@@ -2,6 +2,8 @@
 
 TODO: Write a gem description
 
+https://github.com/radar/guides/blob/master/gem-development.md
+
 ## Installation
 
 Add this line to your application's Gemfile:
