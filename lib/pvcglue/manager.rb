@@ -40,14 +40,14 @@ module Pvcglue
     end
 
     def self.write_cloud_data_cache
-      File.write(Pvcglue.configuration.cloud_cache_file_name, Pvcglue.cloud.data.to_json)
+      File.write(Pvcglue.configuration.cloud_cache_file_name, TOML.dump(Pvcglue.cloud.data))
     end
 
     def self.read_cached_cloud_data
       # TODO:  Expire cache after given interval
       if File.exists?(Pvcglue.configuration.cloud_cache_file_name)
         data = File.read(Pvcglue.configuration.cloud_cache_file_name)
-        Pvcglue.cloud.data = JSON.parse(data)
+        Pvcglue.cloud.data = TOML.parse(data)
         return true
       end
       false

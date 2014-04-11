@@ -47,7 +47,7 @@ module Pvcglue
     end
 
     def file_name_base
-      @file_name_base ||= "#{Pvcglue.configuration.cloud_name}_#{Pvcglue.configuration.application_name}.pvcglue.json"
+      @file_name_base ||= "#{Pvcglue.configuration.cloud_name}_#{Pvcglue.configuration.application_name}.pvcglue.toml"
     end
 
     # find node by full node_name or by matching prefix of node_name

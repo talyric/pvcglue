@@ -1,11 +1,9 @@
-require 'json'
+require 'toml'
 # Inspired by http://robots.thoughtbot.com/mygem-configure-block
 # and https://github.com/thoughtbot/clearance/blob/master/lib/clearance/configuration.rb
 
-# Example for '~/.pvcglue.json':
-#   {
-#     "cloud_manager": "nnn.nnn.nnn.nnn"
-#   }
+# Example for '~/.pvcglue.toml':
+#     cloud_manager = "nnn.nnn.nnn.nnn"
 
 module Pvcglue
   class Configuration
@@ -14,7 +12,7 @@ module Pvcglue
     attr_accessor :application_name
 
     def self.file_name
-      ENV['PVCGLUE_FILE_NAME'] || '.pvcglue.json'
+      ENV['PVCGLUE_FILE_NAME'] || '.pvcglue.toml'
     end
 
     def self.env_prefix
@@ -29,7 +27,7 @@ module Pvcglue
     end
 
     def init(option, default=nil)
-      # ENV first, then pvcglue.json (checking current working directory first, then in user home '~'), then default
+      # ENV first, then pvcglue.toml (checking current working directory first, then in user home '~'), then default
       # NOTE:  In the context of Rails, a standard initializer can also be used, and will override all settings here, but that should not really apply for 'pvcglue'
       # /config/initializers/pvcglue.rb:
       # Pvcglue.configure do |config|
@@ -45,7 +43,7 @@ module Pvcglue
       #puts file_name
       #puts File.exists?(file_name).inspect
       if File.exists?(file_name)
-        data = JSON.parse(File.read(file_name))
+        data = TOML.load_file(file_name)
         #puts data.inspect
         @conf.merge!(data)
       end
@@ -71,7 +69,12 @@ module Pvcglue
     end
 
     def cloud_cache_file_name
-      File.join(Dir.pwd, 'tmp', "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.json")
+      # Just in case the Rails project hasn't yet been run, make sure the tmp
+      # dir exists.
+      tmpdir = File.join(Dir.pwd, 'tmp')
+      Dir.mkdir(tmpdir) unless Dir.exist?(tmpdir)
+
+      File.join(tmpdir, "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.toml")
     end
 
   end
