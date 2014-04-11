@@ -6,7 +6,7 @@ module Pvcglue
     attr_accessor :data
 
     def data
-      ::Pvcglue::PvcManager.new.initialize_cloud_data unless @data
+      ::Pvcglue::Manager.initialize_cloud_data unless @data
       @data
     end
 
