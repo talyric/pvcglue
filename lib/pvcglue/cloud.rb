@@ -31,6 +31,7 @@ module Pvcglue
     end
 
     def stage_roles
+      raise(Thor::Error, "Stage not defined:  #{stage_name}.") if stage.nil?
       stage[:roles]
     end
 
@@ -65,7 +66,13 @@ module Pvcglue
 
     def nodes_in_stage
       # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
-      stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
+      # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
+      nodes = stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
+      puts nodes.inspect
+      out = {}
+      out["memcached"] = nodes["memcached"]
+      puts out.inspect
+      out
     end
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
@@ -85,6 +92,21 @@ module Pvcglue
 
     def app_name
       Pvcglue.configuration.application_name
+    end
+
+    def authorized_keys
+      data[:application][:authorized_keys]
+    end
+
+    def ssh_ports
+      ports = []
+      from_all = data[:application][:ssh_allowed_from_all_port].to_i
+      ports << from_all if from_all > 0
+      ports
+    end
+
+    def timezone
+      data[:application][:time_zone] || 'America/Los_Angeles'
     end
   end
 

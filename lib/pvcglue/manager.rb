@@ -6,20 +6,20 @@ module Pvcglue
     desc "bootstrap", "bootstrap"
 
     def bootstrap
-      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, manager_node, 'root')
+      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, self.class.manager_node, 'root')
     end
 
     desc "push", "push"
 
     def push
-      Pvcglue::Packages.apply('manager-push'.to_sym, manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('manager-push'.to_sym, self.class.manager_node, 'pvcglue')
       self.class.clear_cloud_data_cache
     end
 
     desc "pull", "pull"
 
     def pull
-      Pvcglue::Packages.apply('manager-pull'.to_sym, manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('manager-pull'.to_sym, self.class.manager_node, 'pvcglue')
       self.class.clear_cloud_data_cache
     end
 

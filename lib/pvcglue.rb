@@ -13,6 +13,10 @@ module Pvcglue
     Gem::Specification.find_by_name('pvcglue').gem_dir
   end
 
+  def self.template_file_name(template)
+    File.join(Pvcglue::gem_dir, 'lib', 'pvcglue', 'templates', template)
+  end
+
   class Version
     def self.version
       VERSION
