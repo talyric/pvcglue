@@ -4,6 +4,7 @@ require "active_support/core_ext" # for `with_indifferent_access`
 module Pvcglue
   class Cloud
     attr_accessor :data
+    attr_accessor :current_node
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -108,6 +109,16 @@ module Pvcglue
     def timezone
       data[:application][:time_zone] || 'America/Los_Angeles'
     end
+
+    def firewall_allow_from_anywhere
+      ports = []
+      ports.concat(data)
+    end
+
+    def firewall_allow_to_anywhere
+
+    end
+
   end
 
   def self.cloud

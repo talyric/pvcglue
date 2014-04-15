@@ -9,7 +9,7 @@ module Pvcglue
       suite = ::Orca::Suite.new
       suite.load_file(orca_file)
 
-      Dir[File.join(Pvcglue::gem_dir, 'lib', 'pvcglue', 'packages', '*.rb')].each { |file| puts "#{file}******"; suite.load_file(file) }
+      Dir[File.join(Pvcglue::gem_dir, 'lib', 'pvcglue', 'packages', '*.rb')].each { |file| puts "Loaded package:  #{file}"; suite.load_file(file) }
 
       all_ips = []
 
@@ -28,7 +28,12 @@ module Pvcglue
 
       nodes.each do |server, data|
         orca_node = ::Orca::Node.new(server, data[:public_ip], :user => user, server: server, server_data: data, allowed_ip_addresses: all_ips)
-        suite.run(orca_node.name, package.to_s, :apply)
+        ::Pvcglue.cloud.current_node = {server => data}
+        begin
+          suite.run(orca_node.name, package.to_s, :apply)
+        ensure
+          ::Pvcglue.cloud.current_node = nil
+        end
       end
 
     end

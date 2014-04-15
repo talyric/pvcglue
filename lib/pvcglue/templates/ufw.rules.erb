@@ -1,0 +1,44 @@
+*filter
+:ufw-user-input - [0:0]
+:ufw-user-output - [0:0]
+:ufw-user-forward - [0:0]
+:ufw-before-logging-input - [0:0]
+:ufw-before-logging-output - [0:0]
+:ufw-before-logging-forward - [0:0]
+:ufw-user-logging-input - [0:0]
+:ufw-user-logging-output - [0:0]
+:ufw-user-logging-forward - [0:0]
+:ufw-after-logging-input - [0:0]
+:ufw-after-logging-output - [0:0]
+:ufw-after-logging-forward - [0:0]
+:ufw-logging-deny - [0:0]
+:ufw-logging-allow - [0:0]
+:ufw-user-limit - [0:0]
+:ufw-user-limit-accept - [0:0]
+### RULES ###
+
+<% Pvcglue.cloud.firewall_allow_from_anywhere.each do |port| %>
+  <%= "### tuple ### allow any #{port} 0.0.0.0/0 any 0.0.0.0/0 in\n" %>
+  <%= "-A ufw-user-input -p tcp --dport #{port} -j ACCEPT\n" %>
+  <%= "-A ufw-user-input -p udp --dport #{port} -j ACCEPT\n" %>
+  <%= "\n" %>
+<% end %>
+
+<% Pvcglue.cloud.firewall_allow_to_anywhere.each do |ip| %>
+  <%= "### tuple ### allow any any 0.0.0.0/0 any #{ip} in\n" %>
+  <%= "-A ufw-user-input -s #{ip} -j ACCEPT\n" %>
+  <%= "\n" %>
+<% end %>
+### END RULES ###
+
+### LOGGING ###
+-I ufw-user-logging-input -j RETURN
+-I ufw-user-logging-output -j RETURN
+-I ufw-user-logging-forward -j RETURN
+### END LOGGING ###
+
+### RATE LIMITING ###
+-A ufw-user-limit -j REJECT
+-A ufw-user-limit-accept -j ACCEPT
+### END RATE LIMITING ###
+COMMIT
