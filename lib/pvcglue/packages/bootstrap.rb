@@ -1,13 +1,15 @@
 #=======================================================================================================================
 package 'bootstrap' do
 #=======================================================================================================================
+  depends_on 'time-zone'
+  depends_on 'hostname'
   depends_on 'htop'
   depends_on 'ufw'
   depends_on 'deploy-user'
   depends_on 'authorized_keys'
   depends_on 'sshd-config'
-  # depends_on 'firewall-config'
-  depends_on 'time-zone'
+  depends_on 'firewall-config'
+  depends_on 'firewall-enabled'
 end
 
 package 'deploy-user' do

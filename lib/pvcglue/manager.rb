@@ -30,6 +30,12 @@ module Pvcglue
       pp Pvcglue.cloud.data
     end
 
+    desc "configure", "configure"
+
+    def configure
+      Pvcglue.configuration.configure_manager
+    end
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def self.initialize_cloud_data
@@ -54,9 +60,7 @@ module Pvcglue
     end
 
     def self.clear_cloud_data_cache
-      if File.exists?(Pvcglue.configuration.cloud_cache_file_name)
-        File.delete(Pvcglue.configuration.cloud_cache_file_name)
-      end
+      Pvcglue.configuration.clear_cloud_cache
     end
 
     def self.manager_node

@@ -17,17 +17,15 @@
 :ufw-user-limit-accept - [0:0]
 ### RULES ###
 
-<% Pvcglue.cloud.firewall_allow_from_anywhere.each do |port| %>
-  <%= "### tuple ### allow any #{port} 0.0.0.0/0 any 0.0.0.0/0 in\n" %>
-  <%= "-A ufw-user-input -p tcp --dport #{port} -j ACCEPT\n" %>
-  <%= "-A ufw-user-input -p udp --dport #{port} -j ACCEPT\n" %>
-  <%= "\n" %>
-<% end %>
+<% Pvcglue.cloud.firewall_allow_incoming_on_port.each do |port| %>
+<%= "### tuple ### allow tcp #{port} 0.0.0.0/0 any 0.0.0.0/0 in\n" %>
+<%= "-A ufw-user-input -p tcp --dport #{port} -j ACCEPT\n" %>
 
-<% Pvcglue.cloud.firewall_allow_to_anywhere.each do |ip| %>
-  <%= "### tuple ### allow any any 0.0.0.0/0 any #{ip} in\n" %>
-  <%= "-A ufw-user-input -s #{ip} -j ACCEPT\n" %>
-  <%= "\n" %>
+<% end %>
+<% Pvcglue.cloud.firewall_allow_incoming_from_ip.each do |ip| %>
+<%= "### tuple ### allow any any 0.0.0.0/0 any #{ip} in\n" %>
+<%= "-A ufw-user-input -s #{ip} -j ACCEPT\n" %>
+
 <% end %>
 ### END RULES ###
 

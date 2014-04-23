@@ -15,6 +15,11 @@ module Pvcglue
       @data = data.with_indifferent_access # We may not want this dependency.
     end
 
+    def current_node
+      raise "Current node not set." if @current_node.nil?
+      @current_node
+    end
+
     def set_stage(stage)
       @stage_name = stage
     end
@@ -55,25 +60,26 @@ module Pvcglue
     # find node by full node_name or by matching prefix of node_name
     def find_node(node_name)
       puts "*"*80
-      return nil if node_name.nil? || node_name.empty?
+      raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
       return nodes_in_stage[node_name] if nodes_in_stage[node_name]
       puts "-"*80
       nodes_in_stage.each do |key, value|
         puts key
         return {key => value} if key.start_with?(node_name)
       end
-      nil
+      raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
     end
 
     def nodes_in_stage
       # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
       # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
       nodes = stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
-      puts nodes.inspect
-      out = {}
-      out["memcached"] = nodes["memcached"]
-      puts out.inspect
-      out
+      # puts nodes.inspect
+      # puts "nodes_in_stage: only first returned"+"!*"*80
+      # out = {}
+      # out["memcached"] = nodes["memcached"]
+      # puts out.inspect
+      # out
     end
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
@@ -88,7 +94,7 @@ module Pvcglue
     end
 
     def deploy_to_app_current_dir
-      File.join(deploy_to_app_dir,'current')
+      File.join(deploy_to_app_dir, 'current')
     end
 
     def app_name
@@ -110,15 +116,29 @@ module Pvcglue
       data[:application][:time_zone] || 'America/Los_Angeles'
     end
 
-    def firewall_allow_from_anywhere
+    def firewall_allow_incoming_on_port
+      # These ports allow incoming connections from any ip address
       ports = []
-      ports.concat(data)
+      from_all = data[:application][:ssh_allowed_from_all_port].to_i
+      ports << from_all if from_all > 0
+      ports << [80, 443] if current_node[:allow_public_access]
+      ports
     end
 
-    def firewall_allow_to_anywhere
-
+    def firewall_allow_incoming_from_ip
+      # Incoming connections to any port are allowed from these ip addresses
+      addresses = data[:application][:allowed_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
+      addresses.concat(stage_internal_addresses)
+      puts addresses.inspect
+      addresses
     end
 
+    def stage_internal_addresses
+      nodes_in_stage.values.each_with_object([]) do |value, addresses|
+        addresses << value[:public_ip]
+        addresses << value[:private_ip] if value[:private_ip]
+      end
+    end
   end
 
   def self.cloud

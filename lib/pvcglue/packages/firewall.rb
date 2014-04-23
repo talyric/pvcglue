@@ -17,6 +17,15 @@
 package 'firewall-config' do
 
   file({
+           :template => Pvcglue.template_file_name('ufw.rules6.erb'),
+           :destination => '/lib/ufw/user6.rules',
+           :create_dirs => false,
+           :permissions => 0640,
+           :user => 'root',
+           :group => 'root'
+       }) {  }
+
+  file({
            :template => Pvcglue.template_file_name('ufw.rules.erb'),
            :destination => '/lib/ufw/user.rules',
            :create_dirs => false,
@@ -27,12 +36,25 @@ package 'firewall-config' do
 
 end
 
+package 'firewall-enabled' do
+  validate do
+    result = sudo('ufw status verbose')
+    result =~ /Status: active/ && result =~ /Default: deny \(incoming\), allow \(outgoing\)/
+  end
 
-# #=======================================================================================================================
-# package 'update-firewall' do
-# #=======================================================================================================================
-#   depends_on 'firewall-config'
-# end
+  apply do
+    sudo('ufw --force enable')
+  end
+end
+
+
+#=======================================================================================================================
+package 'update-firewall' do
+#=======================================================================================================================
+  # quick update of firewall settings only.  Full bootstrap must be performed first.
+  depends_on 'firewall-config'
+  depends_on 'firewall-enabled'
+end
 
 
 #=======================================================================================================================
