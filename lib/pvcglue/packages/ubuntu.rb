@@ -1,5 +1,13 @@
 apt_package 'htop'
 apt_package 'ufw'
+apt_package 'build-essential'
+apt_package 'git', 'git-core'
+apt_package 'libpq-dev'
+apt_package 'libxml2', 'libxml2-dev'
+apt_package 'libxslt', 'libxslt1-dev'
+apt_package 'imagemagick'
+apt_package 'curl'
+
 
 #=======================================================================================================================
 package 'apt-get-upgrade' do

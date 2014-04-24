@@ -4,6 +4,7 @@ require "pvcglue/manager"
 require "pvcglue/cloud"
 require "pvcglue/packages"
 require "pvcglue/bootstrap"
+require "pvcglue/nodes"
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 

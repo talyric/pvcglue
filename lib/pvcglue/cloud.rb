@@ -5,6 +5,7 @@ module Pvcglue
   class Cloud
     attr_accessor :data
     attr_accessor :current_node
+    attr_accessor :current_hostname
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -18,6 +19,11 @@ module Pvcglue
     def current_node
       raise "Current node not set." if @current_node.nil?
       @current_node
+    end
+
+    def current_hostname
+      raise "Current current_hostname not set." if @current_hostname.nil?
+      @current_hostname
     end
 
     def set_stage(stage)
@@ -70,10 +76,14 @@ module Pvcglue
       raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
     end
 
-    def nodes_in_stage
+    def nodes_in_stage(role_filter = 'all')
       # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
       # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
-      nodes = stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
+      nodes = stage_roles.each_with_object({}) do |(role, node), nodes|
+        if role_filter == 'all' || role == role_filter
+          nodes.merge!(node)
+        end
+      end
       # puts nodes.inspect
       # puts "nodes_in_stage: only first returned"+"!*"*80
       # out = {}
@@ -139,6 +149,8 @@ module Pvcglue
         addresses << value[:private_ip] if value[:private_ip]
       end
     end
+
+
   end
 
   def self.cloud

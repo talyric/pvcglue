@@ -35,6 +35,13 @@ module Pvcglue
       Pvcglue::Bootstrap.run
     end
 
+    desc "build", "build..."
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def build(roles = 'all')
+      Pvcglue::Nodes.build(roles)
+    end
+
     desc "console", "open rails console"
     method_option :stage, :required => true, :aliases => "-s"
     def console(server='web')
