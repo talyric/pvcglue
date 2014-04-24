@@ -19,10 +19,33 @@ package 'reboot' do
 end
 
 #=======================================================================================================================
-package 'hostname' do
+package 'get-hostname' do
 #=======================================================================================================================
   apply do
-    # TODO:  ensure the `hostname` == `hostname -f`
+    Pvcglue.cloud.current_hostname = run('hostname')
   end
+
+end
+
+#=======================================================================================================================
+package 'hostname' do
+#=======================================================================================================================
+  depends_on 'get-hostname'
+
+  file({
+           :template => Pvcglue.template_file_name('hosts.erb'),
+           :destination => '/etc/hosts',
+           :create_dirs => false,
+           :permissions => 0644,
+           :user => 'root',
+           :group => 'root'
+       }) do
+    sudo('service hostname restart')
+    hostname_f = run 'hostname -f'
+    if Pvcglue.cloud.current_hostname != hostname_f
+      raise "Hostname mismatch:  #{Pvcglue.cloud.current_hostname} != #{hostname_f}"
+    end
+  end
+
 end
 
