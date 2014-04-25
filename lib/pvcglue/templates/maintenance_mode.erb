@@ -1,0 +1,46 @@
+
+  # partially based on https://onehub.com/blog/2009/03/06/rails-maintenance-pages-done-right/
+  recursive_error_pages on;
+
+  set $maintenance off;
+  set $maintenance_bypass off;
+  # https://blog.ed.gs/2013/01/25/nginx-multiple-if-statements/
+  set $bypass_test no;
+
+  if (-f $document_root/maintenance/maintenance.on) {
+    set $maintenance on;
+    set $bypass_test yes;
+  }
+
+  if ($remote_addr ~ <%= Pvcglue.cloud.dev_ip_addresses.join('|').gsub('.', '\.') %>) {
+    set $maintenance off;
+    set $bypass_test "${bypass_test}yes";
+  }
+
+  if ($bypass_test = yesyes) {
+    set $maintenance_bypass on; # only add header when maintenance is on and the remote address is a dev ip address
+  }
+
+  if ($uri ~ ^/maintenance/.*) {
+    set $maintenance off;
+  }
+
+  if ($maintenance = on) {
+    return 503; # 503 - Service unavailable
+  }
+
+  location /maintenance {
+  }
+
+  #error_page 404 /404.html;
+  #error_page 500 502 504 /500.html;
+  error_page 503 @503;
+
+  location @503 {
+
+    error_page 405 = /maintenance/maintenance.html;
+
+    # Serve static assets if found.
+    rewrite ^(.*)$ /maintenance/maintenance.html break;
+  }
+

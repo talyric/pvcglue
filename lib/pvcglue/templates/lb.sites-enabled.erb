@@ -1,0 +1,72 @@
+upstream <%= Pvcglue.cloud.app_and_stage_name %>_application  {
+  <% Pvcglue.cloud.nodes_in_stage('web').each do |_, node_config| %>
+  server <%= node_config[:private_ip] %> max_fails=1 fail_timeout=10s;
+  <% end %>
+}
+
+server {
+  listen 80;
+  server_name <%= Pvcglue.cloud.domains.join(' ') %>;
+
+  access_log  /var/log/nginx/<%= Pvcglue.cloud.app_and_stage_name %>.access.log;
+  error_log  /var/log/nginx/<%= Pvcglue.cloud.app_and_stage_name %>.error.log;
+
+  root <%= Pvcglue.cloud.deploy_to_app_dir %>;
+
+  <%= Pvcglue.render_template('denial_of_service.erb') %>
+  <%= Pvcglue.render_template('maintenance_mode.erb') %>
+
+  <% case Pvcglue.cloud.ssl_mode
+    when :none %>
+      location / {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Maintenance-Bypass $maintenance_bypass;
+
+        proxy_pass  http://<%= Pvcglue.cloud.app_and_stage_name %>_application;
+      }
+    <% when :load_balancer_force_ssl %>
+      location / {
+        # According to http://serverfault.com/a/401632/156820 this is the correct way to redirect all http to https
+        return 301 https://$host$request_uri;
+      }
+    <% else
+         raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode}'" %>
+  <% end %>
+}
+
+server {
+  listen 443;
+  server_name <%= Pvcglue.cloud.domains.join(' ') %>;
+
+  access_log  /var/log/nginx/<%= Pvcglue.cloud.app_and_stage_name %>.ssl.access.log;
+  error_log  /var/log/nginx/<%= Pvcglue.cloud.app_and_stage_name %>.ssl.error.log;
+
+  root <%= Pvcglue.cloud.deploy_to_app_dir %>;
+
+  <%= Pvcglue.render_template('denial_of_service.erb') %>
+  <%= Pvcglue.render_template('maintenance_mode.erb') %>
+
+  <% case Pvcglue.cloud.ssl_mode
+     when :none %>
+       # ssl_mode: none
+  <% when :load_balancer_force_ssl %>
+    ssl on;
+    ssl_certificate /etc/nginx/ssl/<%= Pvcglue.cloud.app_and_stage_name %>.crt;
+    ssl_certificate_key /etc/nginx/ssl/<%= Pvcglue.cloud.app_and_stage_name %>.key;
+  <% else
+     raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode}'" %>
+  <% end %>
+
+  location / {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Maintenance-Bypass $maintenance_bypass;
+    proxy_set_header X-Forwarded-Proto https;
+
+    proxy_pass  http://<%= Pvcglue.cloud.app_and_stage_name %>_application;
+  }
+}

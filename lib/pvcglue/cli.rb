@@ -44,6 +44,7 @@ module Pvcglue
 
     desc "console", "open rails console"
     method_option :stage, :required => true, :aliases => "-s"
+
     def console(server='web')
       node = Pvcglue.cloud.find_node(server)
       node_name = node.keys.first
@@ -58,6 +59,7 @@ module Pvcglue
 
     desc "c", "shortcut for console"
     method_option :stage, :required => true, :aliases => "-s"
+
     def c(server='web')
       console(server)
     end
@@ -68,6 +70,27 @@ module Pvcglue
     #banner 'manager'
     subcommand "manager", Manager
 
+
+    desc "maintenance", "enable or disable maintenance mode"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def maintenance(mode)
+      raise(Thor::Error, "invalid maintenance mode :(  (Hint:  try on or off.)") unless mode.in?(%w(on off))
+      Pvcglue.cloud.maintenance_mode = mode
+      Pvcglue::Packages.apply(:maintenance_mode, Pvcglue.cloud.nodes_in_stage('lb'))
+    end
+
+    desc "maint", "enable or disable maintenance mode"
+    method_option :stage, :required => true, :aliases => "-s"
+    def maint(mode)
+      maintenance(mode)
+    end
+
+    desc "m", "enable or disable maintenance mode"
+    method_option :stage, :required => true, :aliases => "-s"
+    def m(mode)
+      maintenance(mode)
+    end
   end
 
 end

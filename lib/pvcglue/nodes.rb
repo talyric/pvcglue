@@ -35,7 +35,7 @@ module Pvcglue
       # puts ("-"*80)+"group: caching"
       # run_orca(:caching, stage_data[:nodes][:caching])
 
-      update_capistrano_config
+      # update_capistrano_config
 
     end
 

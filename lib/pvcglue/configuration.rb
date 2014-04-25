@@ -83,7 +83,7 @@ module Pvcglue
       end
 
       def project_file_name
-        File.join(Dir.pwd, self.class.file_name)
+        File.join(application_dir, self.class.file_name)
       end
 
       def user_file_name
@@ -92,7 +92,7 @@ module Pvcglue
 
       def find_app_name
         # try rack file...anyone know a better way, without loading Rails?
-        rack_up = File.join(Dir.pwd, 'config.ru')
+        rack_up = File.join(application_dir, 'config.ru')
         $1.downcase if File.exists?(rack_up) && File.read(rack_up) =~ /^run (.*)::/
       end
 
@@ -103,7 +103,7 @@ module Pvcglue
       def cloud_cache_file_name
         # Just in case the Rails project hasn't yet been run, make sure the tmp
         # dir exists.
-        tmpdir = File.join(Dir.pwd, 'tmp')
+        tmpdir = File.join(application_dir, 'tmp')
         Dir.mkdir(tmpdir) unless Dir.exist?(tmpdir)
 
         File.join(tmpdir, "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.toml")
@@ -112,6 +112,16 @@ module Pvcglue
       def clear_cloud_cache
         File.delete(cloud_cache_file_name) if File.exists?(cloud_cache_file_name)
       end
+
+      def application_dir
+        Dir.pwd
+      end
+
+      def app_maintenance_files_dir
+        File.join(application_dir, 'public', 'maintenance')
+      end
+
+
     end
 
   end

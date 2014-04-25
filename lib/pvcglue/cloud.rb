@@ -6,6 +6,7 @@ module Pvcglue
     attr_accessor :data
     attr_accessor :current_node
     attr_accessor :current_hostname
+    attr_accessor :maintenance_mode
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -31,7 +32,7 @@ module Pvcglue
     end
 
     def stage_name
-      raise "stage not set :( " if @stage_name.nil? || @stage_name.empty?
+      # raise "stage not set :( " if @stage_name.nil? || @stage_name.empty?
       @stage_name
     end
 
@@ -56,7 +57,7 @@ module Pvcglue
     end
 
     def application_dir
-      Dir.pwd
+      Pvcglue.configuration.application_dir
     end
 
     def file_name_base
@@ -93,18 +94,25 @@ module Pvcglue
     end
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
-    # ENV['PVC_DEPLOY_TO_APP'] = "#{ENV['PVC_DEPLOY_TO_BASE']}/#{ENV['PVC_APP_NAME']}/#{ENV['PVC_STAGE']}"
-
     def deploy_to_base_dir
       stage[:deploy_to] || '/sites' # TODO:  verify if server setup supports `:deploy_to` override
     end
 
+    # ENV['PVC_DEPLOY_TO_APP'] = "#{ENV['PVC_DEPLOY_TO_BASE']}/#{ENV['PVC_APP_NAME']}/#{ENV['PVC_STAGE']}"
     def deploy_to_app_dir
       File.join(deploy_to_base_dir, app_name, stage_name)
     end
 
     def deploy_to_app_current_dir
       File.join(deploy_to_app_dir, 'current')
+    end
+
+    def maintenance_files_dir
+      File.join(deploy_to_app_dir, 'maintenance')
+    end
+
+    def maintenance_mode_file_name
+      File.join(maintenance_files_dir, 'maintenance.on')
     end
 
     def app_name
@@ -137,10 +145,14 @@ module Pvcglue
 
     def firewall_allow_incoming_from_ip
       # Incoming connections to any port are allowed from these ip addresses
-      addresses = data[:application][:allowed_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
+      addresses = dev_ip_addresses
       addresses.concat(stage_internal_addresses)
       puts addresses.inspect
       addresses
+    end
+
+    def dev_ip_addresses
+      data[:application][:dev_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
     end
 
     def stage_internal_addresses
@@ -150,7 +162,18 @@ module Pvcglue
       end
     end
 
+    # app_stage_name = "#{ENV['PVC_APP_NAME']}_#{ENV['PVC_STAGE']}".downcase
+    def app_and_stage_name
+      "#{app_name}_#{stage_name}".downcase
+    end
 
+    def domains
+      stage[:domains]
+    end
+
+    def ssl_mode
+      stage[:ssl].to_sym || :none
+    end
   end
 
   def self.cloud

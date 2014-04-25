@@ -42,6 +42,7 @@ module Pvcglue
       ENV['ORCA_FILE'] = orca_file
       suite = ::Orca::Suite.new
       suite.load_file(orca_file)
+      packages_loaded = []
 
       Dir[File.join(Pvcglue::gem_dir, 'lib', 'pvcglue', 'packages', '*.rb')].each do |file|
         begin
@@ -50,9 +51,9 @@ module Pvcglue
           puts "Error loading #{file}:  #{e.message}"
           raise
         end
-        puts "Loading package:  #{file}"
+        packages_loaded << File.basename(file, ".rb")
       end
-      puts "Loading packages done."
+      puts "Packages loaded: #{packages_loaded.sort.join(' ')}."
       suite
     end
   end

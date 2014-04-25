@@ -3,7 +3,7 @@ apt_package 'passenger'
 
 package 'phusion-sources-list' do
   file({
-           :source => 'files/passenger.list',
+           :template => Pvcglue.template_file_name('passenger.list.erb'),
            :destination => '/etc/apt/sources.list.d/passenger.list',
            :permissions => 644,
            :user => 'root',
