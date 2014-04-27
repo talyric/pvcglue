@@ -1,12 +1,7 @@
-#=======================================================================================================================
 package 'lb' do
-#=======================================================================================================================
   depends_on 'nginx'
   depends_on 'lb-config'
   depends_on 'lb-maintenance-files'
-  # apply do
-  #   trigger 'nginx:restart' # files are copied first using 'depends_on' then we restart.
-  # end
 
   validate do
     trigger('nginx:running')
@@ -36,15 +31,17 @@ end
 
 package 'lb-maintenance-files' do
   apply do
-    run(%(mkdir -p #{Pvcglue.cloud.maintenance_files_dir}))
-    cmd = (%(rsync -rzv --exclude=maintenance.on --delete -e ssh #{Pvcglue.configuration.app_maintenance_files_dir}/ #{node.get(:user)}@#{node.host}:#{Pvcglue.cloud.maintenance_files_dir}/))
+    source_dir = Pvcglue.configuration.app_maintenance_files_dir
+    dest_dir = Pvcglue.cloud.maintenance_files_dir
+    # run on remote
+    run(%(mkdir -p #{dest_dir}))
+    # run rsync from local machine (and it will connect to remote)
+    cmd = (%(rsync -rzv --exclude=maintenance.on --delete -e ssh #{source_dir}/ #{node.get(:user)}@#{node.host}:#{dest_dir}/))
     raise $?.to_s unless system(cmd)
   end
 end
 
-#=======================================================================================================================
 package 'maintenance_mode' do
-#=======================================================================================================================
   apply do
     if Pvcglue.cloud.maintenance_mode == 'on'
       run "touch #{Pvcglue.cloud.maintenance_mode_file_name}"

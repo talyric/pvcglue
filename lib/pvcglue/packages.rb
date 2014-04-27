@@ -1,21 +1,6 @@
 module Pvcglue
   class Packages
     def self.apply(package, nodes, user = 'deploy')
-      # all_ips = []
-      #
-      # #allowed_ip_addresses = PVC_DATA[:application][:allowed_ip_addresses]
-      # allowed_ip_addresses = {}
-      #
-      # allowed_ip_addresses.each { |_, ip| all_ips << ip } if allowed_ip_addresses
-      #
-      # nodes.each do |_, data|
-      #   all_ips << data[:public_ip]
-      #   all_ips << data[:private_ip] if data[:private_ip]
-      # end
-      #
-      # #puts all_ips.inspect
-      # #raise
-
       puts nodes.inspect
 
       nodes.each do |node, data|

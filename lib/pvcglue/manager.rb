@@ -40,7 +40,7 @@ module Pvcglue
 
     def self.initialize_cloud_data
       unless read_cached_cloud_data
-        Pvcglue::Packages.apply('manager-get-all'.to_sym, manager_node, 'pvcglue')
+        Pvcglue::Packages.apply('manager-get-config'.to_sym, manager_node, 'pvcglue')
         write_cloud_data_cache
       end
     end

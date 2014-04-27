@@ -1,12 +1,12 @@
 require 'toml'
 
 package 'bootstrap-manager' do
+  #depends_on 'time-zone'
   depends_on 'htop'
-  #depends_on 'ufw'
+  # depends_on 'ufw'
   #depends_on 'deploy-user'
   #depends_on 'sshd-config'
   #depends_on 'firewall-config'
-  #depends_on 'time-zone'
   depends_on 'pvcglue-user'
 end
 
@@ -61,7 +61,7 @@ package 'manager-pull' do
   end
 end
 
-package 'manager-get-all' do
+package 'manager-get-config' do
   apply do
     data = run("cat #{::Pvcglue.cloud.manager_file_name}")
     #puts "*"*80
@@ -71,6 +71,20 @@ package 'manager-get-all' do
       raise "Remote manager file not found:  #{::Pvcglue.cloud.manager_file_name}"
     else
       ::Pvcglue.cloud.data = TOML.parse(data)
+    end
+  end
+end
+
+package 'manager-get-app-env' do
+  apply do
+    data = run("cat #{::Pvcglue.cloud.app_env_file_name}")
+    #puts "*"*80
+    #puts data
+    #puts "*"*80
+    if data.empty?
+      ::Pvcglue.cloud.app_env = ::Pvcglue.cloud.app_env_defaults
+    else
+      ::Pvcglue.cloud.app_env = TOML.parse(data)
     end
   end
 end
