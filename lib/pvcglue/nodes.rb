@@ -13,11 +13,8 @@ module Pvcglue
     end
     
     def run
-
-
       puts "This is where it should configure the nodes for #{@roles_filter}.  :)"
 
-      # NOTE:  db role must be set up before web
       %w(lb db web caching).each do |role|
         if apply_role?(role)
           Pvcglue::Packages.apply(role.to_sym, Pvcglue.cloud.nodes_in_stage(role))

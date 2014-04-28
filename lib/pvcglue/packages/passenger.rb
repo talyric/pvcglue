@@ -26,18 +26,3 @@ package 'phusion-repository' do
   depends_on 'phusion-sources-list'
 end
 
-package 'phusion-passenger' do
-  validate do
-    run('passenger -v') =~ /Phusion Passenger version 4/
-  end
-  depends_on 'phusion-repository'
-  depends_on 'passenger'
-
-  file({
-           :source => 'files/web.nginx.conf',
-           :destination => '/etc/nginx/nginx.conf',
-           :permissions => 0644,
-           :user => 'root',
-           :group => 'root'
-       }) { trigger 'nginx:restart' }
-end

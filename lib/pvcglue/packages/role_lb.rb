@@ -21,7 +21,7 @@ package 'lb-config' do
 
   file({
            :template => Pvcglue.template_file_name('lb.sites-enabled.erb'),
-           :destination => "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}",
+           :destination => "/etc/./nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}", # !!! Yes the extra '.' is important !!!  It makes this nginx.conf a 'different' nginx.conf than the web server.  Seems to be a "feature" of the orca gem.
            :create_dirs => false,
            :permissions => 0644,
            :user => 'root',

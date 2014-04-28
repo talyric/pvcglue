@@ -1,0 +1,8 @@
+server {
+  listen 80;
+  passenger_enabled  on;
+  passenger_ruby     <%= Pvcglue.cloud.passenger_ruby %>;
+  server_name        <%= Pvcglue.cloud.domains.join(' ') %>;
+  rails_env          <%= Pvcglue.cloud.stage_name %>;
+  root               <%= Pvcglue.cloud.deploy_to_app_current_public_dir %>;
+}

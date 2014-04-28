@@ -85,14 +85,36 @@ module Pvcglue
 
     desc "maint", "enable or disable maintenance mode"
     method_option :stage, :required => true, :aliases => "-s"
+
     def maint(mode)
       maintenance(mode)
     end
 
     desc "m", "enable or disable maintenance mode"
     method_option :stage, :required => true, :aliases => "-s"
+
     def m(mode)
       maintenance(mode)
+    end
+
+    desc "sh", "run interactive shell on node"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def sh(server='web') # `shell` is a Thor reserved word
+      node = Pvcglue.cloud.find_node(server)
+      node_name = node.keys.first
+      node_data = node.values.first
+      puts "*"*80
+      puts node.inspect
+      puts "Connection to #{node_name} (#{node_data[:public_ip]}) as user 'deploy'..."
+      system("ssh deploy@#{node_data[:public_ip]}")
+    end
+
+    desc "shell", "shell"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def s(server='web')
+      sh(server)
     end
   end
 

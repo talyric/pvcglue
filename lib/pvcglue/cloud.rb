@@ -8,6 +8,7 @@ module Pvcglue
     attr_accessor :current_hostname
     attr_accessor :maintenance_mode
     attr_accessor :stage_env
+    attr_accessor :passenger_ruby
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -106,12 +107,28 @@ module Pvcglue
       File.join(deploy_to_app_dir, 'current')
     end
 
+    def deploy_to_app_shared_dir
+      File.join(deploy_to_app_dir, 'shared')
+    end
+
+    def env_file_name
+      File.join(deploy_to_app_shared_dir, ".env.#{stage_name_validated}")
+    end
+
+    def deploy_to_app_current_public_dir
+      File.join(deploy_to_app_current_dir, 'public')
+    end
+
     def maintenance_files_dir
       File.join(deploy_to_app_dir, 'maintenance')
     end
 
     def maintenance_mode_file_name
       File.join(maintenance_files_dir, 'maintenance.on')
+    end
+
+    def restart_txt_file_name
+      File.join(deploy_to_app_current_dir, 'tmp', 'restart.txt')
     end
 
     def app_name
@@ -173,6 +190,7 @@ module Pvcglue
     def ssl_mode
       stage[:ssl].to_sym || :none
     end
+
   end
 
   def self.cloud

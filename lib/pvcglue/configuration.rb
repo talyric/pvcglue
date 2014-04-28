@@ -124,6 +124,13 @@ module Pvcglue
         File.join(application_dir, 'public', 'maintenance')
       end
 
+      def ruby_version_file_name
+        File.join(application_dir,'.ruby-version')
+      end
+
+      def ruby_version
+        File.read(ruby_version_file_name).strip
+      end
 
     end
 

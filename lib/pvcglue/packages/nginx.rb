@@ -1,4 +1,6 @@
-apt_package 'nginx', 'nginx-full' do
+# Reference http://www.modrails.com/documentation/Users%20guide%20Nginx.html
+# 'nginx-extras' is the "everything" install, https://wiki.debian.org/Nginx
+apt_package 'nginx', 'nginx-extras' do
   depends_on 'phusion-repository' # Must use nginx from phusion repo to automatically get passenger integration and the latest version
   action('start') { sudo 'service nginx start' }
   action('stop') { sudo 'service nginx stop' }

@@ -1,6 +1,7 @@
 require 'toml'
 
 package 'bootstrap-manager' do
+  # TODO: firewall and ssh port config
   #depends_on 'time-zone'
   depends_on 'htop'
   # depends_on 'ufw'

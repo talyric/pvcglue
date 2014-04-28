@@ -18,3 +18,31 @@ package 'env-set-stage' do
 
 end
 
+package 'deploy-to-base' do
+  validate do
+    run("ls -ahl #{Pvcglue.cloud.deploy_to_base_dir}") != ''
+  end
+
+  apply do
+    # Reference: http://capistranorb.com/documentation/getting-started/authentication-and-authorisation/
+    run "mkdir -p #{Pvcglue.cloud.deploy_to_base_dir}"
+    # sudo "chown deploy:deploy #{ENV['PVC_DEPLOY_TO_BASE']}"
+    run "umask 0002 && chmod g+s #{Pvcglue.cloud.deploy_to_base_dir}"
+  end
+end
+
+package 'app-env' do
+  depends_on 'deploy-to-base'
+  # don't forget to sort first
+
+  file({
+           :template => Pvcglue.template_file_name('web.env.erb'),
+           :destination => Pvcglue.cloud.env_file_name,
+           :create_dirs => true,
+           :permissions => 0640 # TODO:  Double check permissions
+       }) do
+    sudo('service nginx restart')
+    run("touch #{Pvcglue.cloud.restart_txt_file_name}")
+  end
+
+end
