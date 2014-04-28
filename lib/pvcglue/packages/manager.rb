@@ -12,28 +12,35 @@ end
 
 package 'pvcglue-user' do
   apply do
-    home = '/home/pvcglue'
-    pvc_manager = "#{home}/.pvc_manager"
-    authorized_keys = "#{home}/.ssh/authorized_keys"
+    # Local variables used to improve readability of bash commands :)
+    user_name = Pvcglue::Manager.user_name
+    home_dir = Pvcglue::Manager.home_dir
+    manager_dir = Pvcglue::Manager.manager_dir
+    ssh_dir = Pvcglue::Manager.ssh_dir
+    authorized_keys_file_name = Pvcglue::Manager.authorized_keys_file_name
 
-    sudo "useradd -d #{home} -m -U pvcglue"
-    sudo "usermod -s /bin/bash pvcglue"
-    sudo "mkdir -p #{pvc_manager} && chown pvcglue:pvcglue #{pvc_manager} && chmod 700 #{pvc_manager}"
-    sudo "mkdir -p #{home}/.ssh && chown pvcglue:pvcglue #{home}/.ssh && chmod 700 #{home}/.ssh"
-    copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys}"]
-    `#{copy_id}`
-    sudo "chown pvcglue:pvcglue #{authorized_keys} && chmod 600 #{authorized_keys}"
+    sudo "useradd -d #{home_dir} -m -U #{user_name}"
+    sudo "usermod -s /bin/bash #{user_name}"
+    sudo "mkdir -p #{manager_dir} && chown #{user_name}:#{user_name} #{manager_dir} && chmod 700 #{manager_dir}"
+    sudo "mkdir -p #{ssh_dir} && chown #{user_name}:#{user_name} #{ssh_dir} && chmod 700 #{ssh_dir}"
+    copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys_file_name}"]
+    system "#{copy_id}"
+    sudo "chown #{user_name}:#{user_name} #{authorized_keys_file_name} && chmod 600 #{authorized_keys_file_name}"
   end
 
   remove do
     raise "removing user not supported, yet.  It needs some 'Are you *really* sure?' stuff."
-    #sudo "userdel -f pvcglue"
-    #sudo "rm -rf /home/pvcglue"
+    # user_name = Pvcglue::Manager.user_name
+    # home_dir = Pvcglue::Manager.home_dir
+    #sudo "userdel -f #{user_name}"
+    #sudo "rm -rf #{home_dir}"
   end
 
   validate do
-    #sudo "userdel -f pvcglue"; sudo "rm -rf /home/pvcglue"; raise "User has been deleted"
-    sudo('getent passwd pvcglue') =~ /^pvcglue:/
+    user_name = Pvcglue::Manager.user_name
+    # home_dir = Pvcglue::Manager.home_dir
+    #sudo "userdel -f #{user_name}"; sudo "rm -rf #{home_dir}"; raise "User has been deleted"
+    sudo("getent passwd #{user_name}") =~ /^#{user_name}:/
   end
 end
 
@@ -41,8 +48,8 @@ package 'manager-push' do
   apply do
     if File.exists?(::Pvcglue.cloud.local_file_name)
       data = File.read(::Pvcglue.cloud.local_file_name)
-      run(%Q[echo '#{data}' | tee #{::Pvcglue.cloud.manager_file_name}])
-      run(%Q[chmod 600 #{::Pvcglue.cloud.manager_file_name}])
+      run(%Q[echo '#{data}' | tee #{::Pvcglue::Manager.manager_file_name}])
+      run(%Q[chmod 600 #{::Pvcglue::Manager.manager_file_name}])
     else
       puts "Local file not found:  #{::Pvcglue.cloud.local_file_name}"
     end
@@ -51,9 +58,9 @@ end
 
 package 'manager-pull' do
   apply do
-    data = run("cat #{::Pvcglue.cloud.manager_file_name}")
+    data = run("cat #{::Pvcglue::Manager.manager_file_name}")
     if data.empty?
-      puts "Remote manager file not found:  #{::Pvcglue.cloud.manager_file_name}"
+      puts "Remote manager file not found:  #{::Pvcglue::Manager.manager_file_name}"
     else
       File.write(::Pvcglue.cloud.local_file_name, data)
       puts "Saved as:  #{::Pvcglue.cloud.local_file_name}"
@@ -63,28 +70,15 @@ end
 
 package 'manager-get-config' do
   apply do
-    data = run("cat #{::Pvcglue.cloud.manager_file_name}")
+    data = run("cat #{::Pvcglue::Manager.manager_file_name}")
     #puts "*"*80
     #puts data
     #puts "*"*80
     if data.empty?
-      raise "Remote manager file not found:  #{::Pvcglue.cloud.manager_file_name}"
+      raise "Remote manager file not found:  #{::Pvcglue::Manager.manager_file_name}"
     else
       ::Pvcglue.cloud.data = TOML.parse(data)
     end
   end
 end
 
-package 'manager-get-app-env' do
-  apply do
-    data = run("cat #{::Pvcglue.cloud.app_env_file_name}")
-    #puts "*"*80
-    #puts data
-    #puts "*"*80
-    if data.empty?
-      ::Pvcglue.cloud.app_env = ::Pvcglue.cloud.app_env_defaults
-    else
-      ::Pvcglue.cloud.app_env = TOML.parse(data)
-    end
-  end
-end

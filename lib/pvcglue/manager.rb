@@ -67,6 +67,34 @@ module Pvcglue
       {manager: {public_ip: Pvcglue.configuration.cloud_manager}}
     end
 
+    def self.cloud_data_file_name_base
+      @file_name_base ||= "#{Pvcglue.configuration.cloud_name}_#{Pvcglue.configuration.application_name}.pvcglue.toml"
+    end
+
+    def self.manager_file_name
+      File.join(manager_dir, cloud_data_file_name_base)
+    end
+
+    def self.user_name
+      'pvcglue'
+    end
+
+    def self.home_dir
+      File.join('/home', user_name)
+    end
+
+    def self.authorized_keys_file_name
+      File.join(ssh_dir, 'authorized_keys')
+    end
+
+    def self.ssh_dir
+      File.join(home_dir, '.ssh')
+    end
+
+    def self.manager_dir
+      File.join(home_dir, '.pvc_manager')
+    end
+
   end
 
 end

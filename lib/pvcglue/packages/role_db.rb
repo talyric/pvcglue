@@ -1,15 +1,13 @@
-#=======================================================================================================================
 package 'db' do
-#=======================================================================================================================
+  depends_on 'env-initialized'
   depends_on 'postgresql'
-  depends_on 'postgresql-remote'
-  depends_on 'postgresql-app-db'
-  app_env({command: :manage})
+  depends_on 'postgresql-conf'
+  depends_on 'postgresql-app-stage-conf'
 end
 
-package 'postgresql-remote' do
+package 'postgresql-conf' do
   file({
-           :source => 'files/postgresql.conf',
+           :template => Pvcglue.template_file_name('postgresql.conf.erb'),
            :destination => '/etc/postgresql/9.1/main/postgresql.conf',
            :create_dirs => false,
            :permissions => 0644,
@@ -18,42 +16,31 @@ package 'postgresql-remote' do
        }) { trigger 'postgresql:restart' }
 
   file({
-           :source => 'files/pg_hba.conf',
+           :template => Pvcglue.template_file_name('pg_hba.conf.erb'),
            :destination => '/etc/postgresql/9.1/main/pg_hba.conf',
            :create_dirs => false,
            :permissions => 0644,
            :user => 'postgres',
            :group => 'postgres'
        }) { trigger 'postgresql:restart' }
-  apply do
-    #TODO:  This password should not be hard-coded here!  It may not be necessary to set it at all...we'll have to see later.
-    sudo(%q[sudo -u postgres psql -c "ALTER ROLE postgres WITH PASSWORD '3veQdGzeN2';"])
-  end
 end
 
-package 'postgresql-app-db' do
+package 'postgresql-app-stage-conf' do
+  # TODO: Add `verify` method so it will be faster, and won't display errors
   apply do
-    # Save application and stage specific db password to the db server
-    # This maybe should be done as 'root'...not sure.  Or maybe create a table in the db for this info.  ;)
-    raise 'missing options' if ENV['PVC_APP_NAME'].blank? || ENV['PVC_STAGE'].blank?
-    username = "#{ENV['PVC_APP_NAME']}_#{ENV['PVC_STAGE']}".downcase
+    username = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_USERNAME']
+    password = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_PASSWORD']
     db_name = username # just for clarity in later statements.  This also must match database.yml.
-    file_dir = "/root/.pvc"
-    filename = "#{file_dir}/#{username}.password"
-    sudo("mkdir -p #{file_dir}")
-    sudo("touch #{filename}")
-    password = sudo("cat #{filename}").strip
-    if password.blank?
-      password = "#{db_name}_#{SecureRandom.hex(4)}"
-      sudo(%Q[echo '#{password}' | sudo tee #{filename}])
-      sudo(%Q[chmod 600 #{filename}])
-    end
-    ENV['PVC_DB_PASSWORD'] = password
-    puts ("|"*80)+"password"
     run(%Q[sudo -u postgres psql -c "CREATE ROLE #{username} LOGIN CREATEDB PASSWORD '#{password}'"])
     run(%Q[sudo -u postgres psql -c "ALTER ROLE #{username} PASSWORD '#{password}' CREATEDB LOGIN"])
     run(%Q[sudo -u postgres psql -c "CREATE DATABASE #{db_name} WITH OWNER #{username}"])
   end
 end
 
+package 'postgresql-root-password' do
+  apply do
+    # TODO: Use this to implement setting of the root password
+    # sudo(%q[sudo -u postgres psql -c "ALTER ROLE postgres WITH PASSWORD 'zzz';"])
+  end
+end
 

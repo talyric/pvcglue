@@ -7,6 +7,7 @@ module Pvcglue
     attr_accessor :current_node
     attr_accessor :current_hostname
     attr_accessor :maintenance_mode
+    attr_accessor :stage_env
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -32,7 +33,13 @@ module Pvcglue
     end
 
     def stage_name
-      # raise "stage not set :( " if @stage_name.nil? || @stage_name.empty?
+      @stage_name
+    end
+
+    def stage_name_validated
+      # TODO:  Document better or fix root cause
+      # Work-around for orca file packages that are loaded when required, but stage_name is not going to be used
+      raise "stage_name is required in this context" unless @stage_name
       @stage_name
     end
 
@@ -49,19 +56,11 @@ module Pvcglue
     end
 
     def local_file_name
-      File.join(application_dir, file_name_base)
-    end
-
-    def manager_file_name
-      File.join('/home/pvcglue/.pvc_manager', file_name_base)
+      File.join(application_dir, Pvcglue::Manager.cloud_data_file_name_base)
     end
 
     def application_dir
       Pvcglue.configuration.application_dir
-    end
-
-    def file_name_base
-      @file_name_base ||= "#{Pvcglue.configuration.cloud_name}_#{Pvcglue.configuration.application_name}.pvcglue.toml"
     end
 
     # find node by full node_name or by matching prefix of node_name

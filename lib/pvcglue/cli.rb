@@ -64,11 +64,14 @@ module Pvcglue
       console(server)
     end
 
-    #desc "manager", "manager bootstrap|pull|push"
-
     desc "manager SUBCOMMAND ...ARGS", "manage manager"
     #banner 'manager'
     subcommand "manager", Manager
+
+    desc "env SUBCOMMAND ...ARGS", "manage stage"
+    method_option :stage, :required => true, :aliases => "-s"
+    #banner 'manager'
+    subcommand "env", Env
 
 
     desc "maintenance", "enable or disable maintenance mode"

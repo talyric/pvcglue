@@ -100,13 +100,16 @@ module Pvcglue
         Hash[instance_variables.map { |name| [name.to_s[1..-1].to_sym, instance_variable_get(name)] }].reject { |k| k == :conf }
       end
 
+      def tmp_dir
+        File.join(application_dir, 'tmp')
+      end
+
       def cloud_cache_file_name
         # Just in case the Rails project hasn't yet been run, make sure the tmp
         # dir exists.
-        tmpdir = File.join(application_dir, 'tmp')
-        Dir.mkdir(tmpdir) unless Dir.exist?(tmpdir)
+        Dir.mkdir(tmp_dir) unless Dir.exist?(tmp_dir)
 
-        File.join(tmpdir, "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.toml")
+        File.join(tmp_dir, "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.toml")
       end
 
       def clear_cloud_cache
