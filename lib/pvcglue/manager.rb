@@ -6,20 +6,20 @@ module Pvcglue
     desc "bootstrap", "bootstrap"
 
     def bootstrap
-      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, self.class.manager_node, 'root')
+      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, self.class.manager_node, 'root', 'manager')
     end
 
     desc "push", "push"
 
     def push
-      Pvcglue::Packages.apply('manager-push'.to_sym, self.class.manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('manager-push'.to_sym, self.class.manager_node, 'pvcglue', 'manager')
       self.class.clear_cloud_data_cache
     end
 
     desc "pull", "pull"
 
     def pull
-      Pvcglue::Packages.apply('manager-pull'.to_sym, self.class.manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('manager-pull'.to_sym, self.class.manager_node, 'pvcglue', 'manager')
       self.class.clear_cloud_data_cache
     end
 
@@ -40,7 +40,17 @@ module Pvcglue
 
     def self.initialize_cloud_data
       unless read_cached_cloud_data
-        Pvcglue::Packages.apply('manager-get-config'.to_sym, manager_node, 'pvcglue')
+        Pvcglue::Packages.apply('manager-get-config'.to_sym, manager_node, 'pvcglue', 'manager')
+        # Pvcglue::Packages.apply('manager-get-config'.to_sym, manager_node, 'pvcglue') # Can not use package as it causes infinite recursion, we'll just do it manually
+        data = `ssh pvcglue@#{manager_node[:manager][:public_ip]} "cat #{Pvcglue::Manager.manager_file_name}"`
+        # puts "*"*80
+        # puts data
+        # puts "*"*80
+        if data.empty?
+          raise(Thor::Error, "Remote manager file not found (or empty):  #{::Pvcglue::Manager.manager_file_name}")
+        else
+          ::Pvcglue.cloud.data = TOML.parse(data)
+        end
         write_cloud_data_cache
       end
     end

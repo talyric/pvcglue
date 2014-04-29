@@ -1,5 +1,7 @@
 package 'env-initialized' do
-  ::Pvcglue::Env.initialize_stage_env
+  apply do
+    ::Pvcglue::Env.initialize_stage_env
+  end
 end
 
 package 'env-get-stage' do
@@ -33,7 +35,7 @@ end
 
 package 'app-env' do
   depends_on 'deploy-to-base'
-  # don't forget to sort first
+  depends_on 'env-initialized'
 
   file({
            :template => Pvcglue.template_file_name('web.env.erb'),

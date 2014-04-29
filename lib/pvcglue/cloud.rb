@@ -40,7 +40,7 @@ module Pvcglue
     def stage_name_validated
       # TODO:  Document better or fix root cause
       # Work-around for orca file packages that are loaded when required, but stage_name is not going to be used
-      raise "stage_name is required in this context" unless @stage_name
+      # raise "stage_name is required in this context" unless @stage_name
       @stage_name
     end
 
@@ -189,6 +189,10 @@ module Pvcglue
 
     def ssl_mode
       stage[:ssl].to_sym || :none
+    end
+
+    def delayed_job_args
+      stage[:delayed_job_args]
     end
 
     def repo_url

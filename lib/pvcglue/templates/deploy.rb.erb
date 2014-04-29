@@ -5,7 +5,7 @@ set :repo_url, '<%= Pvcglue.cloud.repo_url %>'
 
 ask :branch, proc { `git rev-parse --abbrev-ref HEAD`.chomp }
 
-set :linked_dirs, %%w{log tmp/pids tmp/cache tmp/sockets}  #%
+set :linked_dirs, %w{log tmp/pids tmp/cache tmp/sockets}
 
 set :bundle_flags, '--deployment' # Remove the `--quiet` flag
 

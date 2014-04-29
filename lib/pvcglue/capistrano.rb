@@ -16,16 +16,16 @@ module Pvcglue
     end
 
     def self.common_deploy_file_name
-      File.join(Pvcglue.configuration.application_config_dir, 'deploy.rb')
+      File.join(application_config_dir, 'deploy.rb')
     end
 
     def self.stage_deploy_dir
-      File.join(Pvcglue.configuration.application_config_dir, 'deploy')
+      File.join(application_config_dir, 'deploy')
     end
 
     def self.stage_deploy_file_name
-      command("mkdir -p #{stage_deploy_dir}")
-      File.join(Pvcglue.configuration.stage_deploy_dir, "#{Pvcglue.cloud.stage_name_validated}.rb")
+      `mkdir -p #{stage_deploy_dir}`
+      File.join(stage_deploy_dir, "#{Pvcglue.cloud.stage_name_validated}.rb")
     end
   end
 end
