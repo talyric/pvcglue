@@ -6,6 +6,8 @@ require "pvcglue/packages"
 require "pvcglue/bootstrap"
 require "pvcglue/nodes"
 require "pvcglue/env"
+require "pvcglue/deploy"
+require "pvcglue/capistrano"
 require "tilt"
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
@@ -20,8 +22,12 @@ module Pvcglue
     File.join(Pvcglue::gem_dir, 'lib', 'pvcglue', 'templates', template)
   end
 
-  def self.render_template(template)
-    Tilt.new(Pvcglue.template_file_name(template)).render
+  def self.render_template(template, file_name = nil)
+    data = Tilt.new(Pvcglue.template_file_name(template)).render
+    if file_name
+      File.write(file_name, data)
+    end
+    data
   end
 
   class Version

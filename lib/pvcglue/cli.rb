@@ -68,7 +68,7 @@ module Pvcglue
     #banner 'manager'
     subcommand "manager", Manager
 
-    desc "env SUBCOMMAND ...ARGS", "manage stage"
+    desc "env SUBCOMMAND ...ARGS", "manage stage environment"
     method_option :stage, :required => true, :aliases => "-s"
     #banner 'manager'
     subcommand "env", Env
@@ -115,6 +115,13 @@ module Pvcglue
 
     def s(server='web')
       sh(server)
+    end
+
+    desc "capify", "update capistrano configuration"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def capify
+      Pvcglue::Capistrano.capify
     end
   end
 

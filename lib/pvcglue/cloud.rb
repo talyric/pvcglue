@@ -191,6 +191,10 @@ module Pvcglue
       stage[:ssl].to_sym || :none
     end
 
+    def repo_url
+      data[:application][:repo_url]
+    end
+
   end
 
   def self.cloud
