@@ -9,5 +9,5 @@ set :delayed_job_args, "<%= Pvcglue.cloud.delayed_job_args %>"
 <% end %>
 
 <% Pvcglue.cloud.nodes_in_stage('web').each do |node, node_config| %>
-server '<%= node_config[:public_ip] %>', roles: %w{web app}, user: 'deploy' # server: <%= node.to_s %>
+server '<%= node_config[:public_ip] %>', roles: %w{web app db}, user: 'deploy' # server: <%= node.to_s %>
 <% end %>

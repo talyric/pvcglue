@@ -9,9 +9,6 @@ set :linked_dirs, %w{log tmp/pids tmp/cache tmp/sockets}
 
 set :bundle_flags, '--deployment' # Remove the `--quiet` flag
 
-#set :delayed_job_server_role, :worker
-#set :delayed_job_args, "-n 2"
-
 namespace :deploy do
   def args
     fetch(:delayed_job_args, "")
