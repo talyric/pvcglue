@@ -123,6 +123,13 @@ module Pvcglue
     def capify
       Pvcglue::Capistrano.capify
     end
+
+    desc "deploy", "deploy the app"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def deploy
+      Pvcglue::Capistrano.deploy
+    end
   end
 
 end

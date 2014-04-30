@@ -24,4 +24,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thor"
   spec.add_dependency "toml-rb"
   spec.add_dependency "orca"
+  spec.add_dependency 'capistrano', '~> 3.1.0'
+  spec.add_dependency 'capistrano-bundler', "~> 1.1.1"
+  spec.add_dependency 'capistrano-rails', "~> 1.1.1"
+  spec.add_dependency 'capistrano-rvm', "~> 0.1.1"
+  spec.add_dependency "sshkit", "~> 1.3.0"
+
 end

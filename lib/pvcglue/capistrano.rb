@@ -27,5 +27,9 @@ module Pvcglue
       `mkdir -p #{stage_deploy_dir}`
       File.join(stage_deploy_dir, "#{Pvcglue.cloud.stage_name_validated}.rb")
     end
+
+    def self.deploy
+      system("cap #{Pvcglue.cloud.stage_name} deploy")
+    end
   end
 end
