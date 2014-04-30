@@ -5,11 +5,25 @@ package 'bootstrap' do
   depends_on 'hostname'
   depends_on 'htop'
   depends_on 'ufw'
-  depends_on 'deploy-user'
+  depends_on 'applications_dir'
   depends_on 'authorized_keys'
   depends_on 'sshd-config'
   depends_on 'firewall-config'
   depends_on 'firewall-enabled'
+end
+
+package 'applications_dir' do
+  depends_on 'deploy-user'
+  validate do
+    stat = run("stat --format=%U:%G:%a #{Pvcglue.configuration.web_app_base_dir}").strip
+    stat == 'deploy:deploy:2755'
+  end
+
+  apply do
+    dir = Pvcglue.configuration.web_app_base_dir
+    # used following as a guide for next line: http://capistranorb.com/documentation/getting-started/authentication-and-authorisation/
+    run "mkdir -p #{dir} && chown deploy:deploy #{dir} && umask 0002 && chmod g+s #{dir}"
+  end
 end
 
 package 'deploy-user' do
@@ -20,9 +34,6 @@ package 'deploy-user' do
     run "usermod -s /bin/bash deploy"
     # this next line will also append this every time this is run...which is less than ideal.  But it *should* only get run once per server due to the validate method
     run "echo 'deploy ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers" # this may be a security issue, and need refactoring, see the end of http://capistranorb.com/documentation/getting-started/authentication-and-authorisation/
-
-    # used following as a guide for next line: http://capistranorb.com/documentation/getting-started/authentication-and-authorisation/
-    run "mkdir -p /sites && chown deploy:deploy /sites && umask 0002 && chmod g+s /sites"
   end
 
   remove do

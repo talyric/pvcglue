@@ -132,6 +132,9 @@ module Pvcglue
         File.read(ruby_version_file_name).strip
       end
 
+      def web_app_base_dir
+        '/sites'
+      end
     end
 
   end

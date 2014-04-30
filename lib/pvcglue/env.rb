@@ -24,6 +24,15 @@ module Pvcglue
       pp Pvcglue.cloud.stage_env
     end
 
+    desc "reset", "reset env [destructive]"
+
+    def reset
+      if yes?("Are you sure?")
+        Pvcglue.cloud.stage_env = Pvcglue::Env.stage_env_defaults
+        Pvcglue::Env.save_stage_env
+      end
+    end
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def self.initialize_stage_env
@@ -44,9 +53,23 @@ module Pvcglue
 
     def self.stage_env_defaults
       {
+          'RAILS_SECRET_TOKEN' => SecureRandom.hex(64),
+          'DB_USER_POSTGRES_HOST' => db_host,
+          'DB_USER_POSTGRES_PORT' => "5432",
           'DB_USER_POSTGRES_USERNAME' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
-          'DB_USER_POSTGRES_PASSWORD' => new_password
+          'DB_USER_POSTGRES_PASSWORD' => new_password,
+          'MEMCACHE_SERVERS' => memcached_host
       }
+    end
+
+    def self.db_host
+      node = Pvcglue.cloud.find_node('db')
+      node['db']['private_ip']
+    end
+
+    def self.memcached_host
+      node = Pvcglue.cloud.find_node('memcached')
+      "#{node['memcached']['private_ip']}:11211"
     end
 
     def self.new_password
@@ -68,7 +91,7 @@ module Pvcglue
     end
 
     def self.stage_env_file_name
-      File.join(Pvcglue::Manager.manager_dir, stage_env_file_name_base )
+      File.join(Pvcglue::Manager.manager_dir, stage_env_file_name_base)
     end
 
     def self.stage_env_file_name_base

@@ -1,4 +1,6 @@
 require 'toml'
+apt_package 'htop'
+apt_package 'ufw'
 
 package 'bootstrap-manager' do
   # TODO: firewall and ssh port config

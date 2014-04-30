@@ -1,5 +1,5 @@
-apt_package 'htop'
-apt_package 'ufw'
+# apt_package 'htop' # moved to manager
+# apt_package 'ufw' # moved to manager
 apt_package 'build-essential'
 apt_package 'git', 'git-core'
 apt_package 'libpq-dev'

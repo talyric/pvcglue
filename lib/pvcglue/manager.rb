@@ -78,7 +78,7 @@ module Pvcglue
     end
 
     def self.cloud_data_file_name_base
-      @file_name_base ||= "#{Pvcglue.configuration.cloud_name}_#{Pvcglue.configuration.application_name}.pvcglue.toml"
+      @file_name_base ||= "#{Pvcglue.configuration.cloud_name}.pvcglue.toml"
     end
 
     def self.manager_file_name

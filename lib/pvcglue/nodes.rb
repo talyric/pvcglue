@@ -21,7 +21,7 @@ module Pvcglue
         end
       end
 
-      # update_capistrano_config
+      Pvcglue::Capistrano.capify
 
     end
 

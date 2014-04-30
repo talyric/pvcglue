@@ -45,10 +45,10 @@ module Pvcglue
     end
 
     def stage
-      #puts data[:application].inspect
-      #puts data[:application][:stages].inspect
-      #puts data[:application][:stages][stage_name].inspect
-      data[:application][:stages][stage_name]
+      #puts data[app_name].inspect
+      #puts data[app_name][:stages].inspect
+      #puts data[app_name][:stages][stage_name].inspect
+      data[app_name][:stages][stage_name]
     end
 
     def stage_roles
@@ -60,6 +60,10 @@ module Pvcglue
       File.join(application_dir, Pvcglue::Manager.cloud_data_file_name_base)
     end
 
+    def env_local_file_name
+      File.join(application_dir, Pvcglue::Env.stage_env_file_name_base)
+    end
+
     def application_dir
       Pvcglue.configuration.application_dir
     end
@@ -68,7 +72,7 @@ module Pvcglue
     def find_node(node_name)
       puts "*"*80
       raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
-      return nodes_in_stage[node_name] if nodes_in_stage[node_name]
+      return {node_name => nodes_in_stage[node_name]} if nodes_in_stage[node_name]
       puts "-"*80
       nodes_in_stage.each do |key, value|
         puts key
@@ -95,7 +99,8 @@ module Pvcglue
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
     def deploy_to_base_dir
-      stage[:deploy_to] || '/sites' # TODO:  verify if server setup supports `:deploy_to` override
+      # stage[:deploy_to] || '/sites' # TODO:  verify if server setup supports `:deploy_to` override
+      Pvcglue.configuration.web_app_base_dir # TODO:  server setup does not yet support `:deploy_to` override, and would have to be refactored at a higher level than stage.
     end
 
     # ENV['PVC_DEPLOY_TO_APP'] = "#{ENV['PVC_DEPLOY_TO_BASE']}/#{ENV['PVC_APP_NAME']}/#{ENV['PVC_STAGE']}"
@@ -136,24 +141,24 @@ module Pvcglue
     end
 
     def authorized_keys
-      data[:application][:authorized_keys]
+      data[app_name][:authorized_keys]
     end
 
     def ssh_ports
       ports = []
-      from_all = data[:application][:ssh_allowed_from_all_port].to_i
+      from_all = data[app_name][:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
       ports
     end
 
     def timezone
-      data[:application][:time_zone] || 'America/Los_Angeles'
+      data[app_name][:time_zone] || 'America/Los_Angeles'
     end
 
     def firewall_allow_incoming_on_port
       # These ports allow incoming connections from any ip address
       ports = []
-      from_all = data[:application][:ssh_allowed_from_all_port].to_i
+      from_all = data[app_name][:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
       ports << [80, 443] if current_node[:allow_public_access]
       ports
@@ -168,7 +173,7 @@ module Pvcglue
     end
 
     def dev_ip_addresses
-      data[:application][:dev_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
+      data[app_name][:dev_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
     end
 
     def stage_internal_addresses
@@ -196,7 +201,7 @@ module Pvcglue
     end
 
     def repo_url
-      data[:application][:repo_url]
+      data[app_name][:repo_url]
     end
 
   end
