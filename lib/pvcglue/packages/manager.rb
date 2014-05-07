@@ -11,6 +11,7 @@ package 'bootstrap-manager' do
   #depends_on 'sshd-config'
   #depends_on 'firewall-config'
   depends_on 'pvcglue-user'
+  depends_on 'manager-copy-id'
 end
 
 package 'pvcglue-user' do
@@ -20,15 +21,11 @@ package 'pvcglue-user' do
     home_dir = Pvcglue::Manager.home_dir
     manager_dir = Pvcglue::Manager.manager_dir
     ssh_dir = Pvcglue::Manager.ssh_dir
-    authorized_keys_file_name = Pvcglue::Manager.authorized_keys_file_name
 
     sudo "useradd -d #{home_dir} -m -U #{user_name}"
     sudo "usermod -s /bin/bash #{user_name}"
     sudo "mkdir -p #{manager_dir} && chown #{user_name}:#{user_name} #{manager_dir} && chmod 700 #{manager_dir}"
     sudo "mkdir -p #{ssh_dir} && chown #{user_name}:#{user_name} #{ssh_dir} && chmod 700 #{ssh_dir}"
-    copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys_file_name}"]
-    system "#{copy_id}"
-    sudo "chown #{user_name}:#{user_name} #{authorized_keys_file_name} && chmod 600 #{authorized_keys_file_name}"
   end
 
   remove do
@@ -44,6 +41,23 @@ package 'pvcglue-user' do
     # home_dir = Pvcglue::Manager.home_dir
     #sudo "userdel -f #{user_name}"; sudo "rm -rf #{home_dir}"; raise "User has been deleted"
     sudo("getent passwd #{user_name}") =~ /^#{user_name}:/
+  end
+end
+
+package 'manager-copy-id' do
+  validate do
+    authorized_keys_file_name = Pvcglue::Manager.authorized_keys_file_name
+    user_key = `cat ~/.ssh/id_rsa.pub`.strip
+    auth = run("cat #{authorized_keys_file_name}")
+    auth.include?(user_key)
+  end
+
+  apply do
+    authorized_keys_file_name = Pvcglue::Manager.authorized_keys_file_name
+    user_name = Pvcglue::Manager.user_name
+    copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys_file_name}"]
+    system "#{copy_id}"
+    sudo "chown #{user_name}:#{user_name} #{authorized_keys_file_name} && chmod 600 #{authorized_keys_file_name}"
   end
 end
 
