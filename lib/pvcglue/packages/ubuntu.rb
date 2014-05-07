@@ -8,6 +8,33 @@ apt_package 'libxslt', 'libxslt1-dev'
 apt_package 'imagemagick'
 apt_package 'curl'
 
+package 'swap' do
+  # https://www.digitalocean.com/community/articles/how-to-add-swap-on-ubuntu-12-04
+  depends_on 'swap-fstab'
+
+  validate do
+    sudo("swapon -s") =~ /\/swapfile/
+  end
+
+  apply do
+    sudo("fallocate -l 512M /swapfile")
+    sudo("sudo chown root:root /swapfile && sudo chmod 0600 /swapfile")
+    sudo("echo 10 | sudo tee /proc/sys/vm/swappiness")
+    sudo("echo vm.swappiness = 10 | sudo tee -a /etc/sysctl.conf")
+    sudo("mkswap /swapfile")
+    sudo("swapon /swapfile")
+  end
+end
+
+package 'swap-fstab' do
+  validate do
+    sudo("cat /etc/fstab") =~ /\/swapfile/
+  end
+
+  apply do
+    sudo(%Q[echo '/swapfile       none    swap    sw      0       0' | sudo tee -a /etc/fstab])
+  end
+end
 
 package 'apt-get-upgrade' do
   apply do
@@ -15,7 +42,18 @@ package 'apt-get-upgrade' do
     sudo "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y"
   end
 end
-
+=begin
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    nodev,noexec,nosuid 0       0
+# / was on /dev/vda1 during installation
+UUID=b96601ba-7d51-4c5f-bfe2-63815708aabd /               ext4    noatime,errors=remount-ro 0       1
+=end
 package 'reboot' do
   apply do
     sudo "reboot"

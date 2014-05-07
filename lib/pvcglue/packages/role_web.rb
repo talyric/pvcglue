@@ -1,5 +1,6 @@
 package 'web' do
   # rvm/ruby install based on http://ryanbigg.com/2010/12/ubuntu-ruby-rvm-rails-and-you/
+  depends_on 'swap' # needed for deployment/asset building on < 1GB machines
   depends_on 'build-essential'
   depends_on 'git'
   depends_on 'rvm'
