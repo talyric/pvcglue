@@ -1,6 +1,3 @@
-require 'pp'
-require 'shellwords'
-
 module Pvcglue
   class Ssl < Thor
 

@@ -10,6 +10,7 @@ package 'bootstrap' do
   depends_on 'sshd-config'
   depends_on 'firewall-config'
   depends_on 'firewall-enabled'
+  depends_on 'unattended-security-upgrades'
 end
 
 package 'applications_dir' do
@@ -75,4 +76,17 @@ package 'sshd-config' do
 
 end
 
+apt_package 'unattended-upgrades'
+
+package 'unattended-security-upgrades' do
+  depends_on 'unattended-upgrades'
+  file({
+           :template => Pvcglue.template_file_name('20auto-upgrades.erb'),
+           :destination => '/etc/apt/apt.conf.d/20auto-upgrades',
+           :create_dirs => false,
+           :permissions => 0644,
+           :user => 'root',
+           :group => 'root'
+       }) { sudo('service unattended-upgrades restart') }
+end
 
