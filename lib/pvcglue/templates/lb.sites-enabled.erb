@@ -36,8 +36,9 @@ server {
   <% end %>
 }
 
+<% unless Pvcglue.cloud.ssl_mode == :none %>
 server {
-  listen 443;
+  listen 443 ssl;
   server_name <%= Pvcglue.cloud.domains.join(' ') %>;
 
   access_log  /var/log/nginx/<%= Pvcglue.cloud.app_and_stage_name %>.ssl.access.log;
@@ -70,3 +71,4 @@ server {
     proxy_pass  http://<%= Pvcglue.cloud.app_and_stage_name %>_application;
   }
 }
+<% end %>

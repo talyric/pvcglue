@@ -160,7 +160,11 @@ module Pvcglue
       ports = []
       from_all = data[app_name][:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
-      ports << [80, 443] if current_node[:allow_public_access]
+      ports.concat [80, 443] if current_node.values.first[:allow_public_access]
+      puts "*"*80
+      puts current_node.inspect
+      puts current_node.values.inspect
+      puts ports.inspect
       ports
     end
 
@@ -168,7 +172,7 @@ module Pvcglue
       # Incoming connections to any port are allowed from these ip addresses
       addresses = dev_ip_addresses
       addresses.concat(stage_internal_addresses)
-      puts addresses.inspect
+      # puts addresses.inspect
       addresses
     end
 

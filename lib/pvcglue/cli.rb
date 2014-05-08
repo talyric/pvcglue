@@ -31,8 +31,8 @@ module Pvcglue
     desc "bootstrap", "bootstrap..."
     method_option :stage, :required => true, :aliases => "-s"
 
-    def bootstrap
-      Pvcglue::Bootstrap.run
+    def bootstrap(roles = 'all')
+      Pvcglue::Bootstrap.run(roles)
     end
 
     desc "build", "build..."
@@ -72,6 +72,10 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
     #banner 'manager'
     subcommand "env", Env
+
+    desc "ssl SUBCOMMAND ...ARGS", "manage ssl certificates"
+    method_option :stage, :required => true, :aliases => "-s"
+    subcommand "ssl", Ssl
 
 
     desc "maintenance", "enable or disable maintenance mode"
