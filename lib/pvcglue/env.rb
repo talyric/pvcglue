@@ -17,9 +17,9 @@ module Pvcglue
       self.class.clear_stage_env_cache
     end
 
-    desc "show", "show"
+    desc "list", "list"
 
-    def show
+    def list
       self.class.initialize_stage_env
       pp Pvcglue.cloud.stage_env
     end
@@ -32,6 +32,17 @@ module Pvcglue
         Pvcglue::Env.save_stage_env
       end
     end
+
+    desc "set", "set environment variable(s) for the stage XYZ=123 [ZZZ=321]"
+
+    def set(*args)
+      self.class.initialize_stage_env
+      options = Hash[args.each.map { |l| l.chomp.split('=') }]
+      Pvcglue.cloud.stage_env.merge!(options)
+      self.class.save_stage_env
+      Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
+    end
+
 
     # ------------------------------------------------------------------------------------------------------------------
 

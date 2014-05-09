@@ -132,8 +132,12 @@ module Pvcglue
       File.join(maintenance_files_dir, 'maintenance.on')
     end
 
+    def deploy_to_app_current_temp_dir
+      File.join(deploy_to_app_current_dir, 'tmp')
+    end
+
     def restart_txt_file_name
-      File.join(deploy_to_app_current_dir, 'tmp', 'restart.txt')
+      File.join(deploy_to_app_current_temp_dir, 'restart.txt')
     end
 
     def app_name

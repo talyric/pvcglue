@@ -114,7 +114,7 @@ module Pvcglue
       system("ssh deploy@#{node_data[:public_ip]}")
     end
 
-    desc "shell", "shell"
+    desc "s", "shell"
     method_option :stage, :required => true, :aliases => "-s"
 
     def s(server='web')

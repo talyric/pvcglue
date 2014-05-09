@@ -30,6 +30,23 @@ module Pvcglue
       pp Pvcglue.cloud.data
     end
 
+    desc "s", "run shell"
+
+    def s # `shell` is a Thor reserved word
+      sh
+    end
+
+    desc "shell", "run shell"
+
+    def sh # `shell` is a Thor reserved word
+      working_dir = self.class.manager_dir
+      cloud_manager = Pvcglue.configuration.cloud_manager
+      user_name = self.class.user_name
+      cloud_name = Pvcglue.configuration.cloud_name
+      puts "Connection to #{cloud_name} cloud on manager at (#{cloud_manager}) as user '#{user_name}'..."
+      system(%(ssh -t #{user_name}@#{cloud_manager} "cd #{working_dir} && bash -i"))
+    end
+
     desc "configure", "configure"
 
     def configure

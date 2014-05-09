@@ -36,6 +36,10 @@ end
 
 package 'app-env' do
   depends_on 'deploy-to-base'
+  depends_on 'app-env-file'
+end
+
+package 'app-env-file' do
   depends_on 'env-initialized'
 
   file({
@@ -44,7 +48,6 @@ package 'app-env' do
            :create_dirs => true,
            :permissions => 0640 # TODO:  Double check permissions
        }) do
-    sudo('service nginx restart')
     run("touch #{Pvcglue.cloud.restart_txt_file_name}")
   end
 
