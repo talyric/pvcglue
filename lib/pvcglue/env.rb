@@ -8,6 +8,7 @@ module Pvcglue
     def push
       Pvcglue::Packages.apply('env-push'.to_sym, Pvcglue::Manager.manager_node, 'pvcglue')
       self.class.clear_stage_env_cache
+      Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
     end
 
     desc "pull", "pull"
@@ -24,9 +25,9 @@ module Pvcglue
       pp Pvcglue.cloud.stage_env
     end
 
-    desc "reset", "reset env [destructive]"
+    desc "default", "reset env to default.  Destructive!!!"
 
-    def reset
+    def default
       if yes?("Are you sure?")
         Pvcglue.cloud.stage_env = Pvcglue::Env.stage_env_defaults
         Pvcglue::Env.save_stage_env
@@ -41,6 +42,21 @@ module Pvcglue
       Pvcglue.cloud.stage_env.merge!(options)
       self.class.save_stage_env
       Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
+    end
+
+    desc "unset", "remove environment variable(s) for the stage XYZ [ZZZ]"
+
+    def unset(*args)
+      self.class.initialize_stage_env
+      args.each { |arg| puts "WARNING:  Key '#{arg}' not found." unless Pvcglue.cloud.stage_env.delete(arg) }
+      self.class.save_stage_env
+      Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
+    end
+
+    desc "rm", "alternative to unset"
+
+    def rm(*args)
+      unset(*args)
     end
 
 
