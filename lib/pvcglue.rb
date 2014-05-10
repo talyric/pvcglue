@@ -9,6 +9,7 @@ require "pvcglue/env"
 require "pvcglue/deploy"
 require "pvcglue/capistrano"
 require "pvcglue/ssl"
+require "pvcglue/db"
 require "tilt"
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')

@@ -73,6 +73,10 @@ module Pvcglue
     #banner 'manager'
     subcommand "env", Env
 
+    desc "db SUBCOMMAND ...ARGS", "db utils"
+    method_option :stage, :aliases => "-s"
+    subcommand "db", Db
+
     desc "ssl SUBCOMMAND ...ARGS", "manage ssl certificates"
     method_option :stage, :required => true, :aliases => "-s"
     subcommand "ssl", Ssl
