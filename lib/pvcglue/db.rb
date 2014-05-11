@@ -1,6 +1,12 @@
 module Pvcglue
   class Db < Thor
 
+    desc "config", "create/update database.yml"
+
+    def config
+      Pvcglue.render_template('database.yml.erb', Pvcglue::Db.database_yml_file_name)
+    end
+
     desc "push", "push"
 
     def push(file_name)
@@ -38,10 +44,17 @@ module Pvcglue
         template = Tilt::ERBTemplate.new('config/database.yml')
         output = template.render
         puts output.inspect
+        info = YAML::load(output)
+        puts info.inspect
       end
     end
 
     # ------------------------------------------------------------------------------------------------------------------
+
+    def self.database_yml_file_name
+      File.join(Pvcglue::Capistrano.application_config_dir, 'database.yml')
+    end
+
 
     def self.stage_env_defaults
       {
