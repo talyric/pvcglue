@@ -45,9 +45,9 @@ module Pvcglue
     end
 
     def stage
-      #puts data[app_name].inspect
-      #puts data[app_name][:stages].inspect
-      #puts data[app_name][:stages][stage_name].inspect
+      # puts data[app_name].inspect
+      # puts data[app_name][:stages].inspect
+      # puts data[app_name][:stages][stage_name].inspect
       data[app_name][:stages][stage_name]
     end
 

@@ -67,8 +67,9 @@ module Pvcglue
         Pvcglue::Packages.apply('env-get-stage'.to_sym, Pvcglue::Manager.manager_node, 'pvcglue')
         write_stage_env_cache
       end
-      if Pvcglue.cloud.stage_env.empty?
-        Pvcglue.cloud.stage_env = stage_env_defaults
+      merged = stage_env_defaults.merge(Pvcglue.cloud.stage_env)
+      if merged != Pvcglue.cloud.stage_env
+        Pvcglue.cloud.stage_env = merged
         save_stage_env
       end
     end
@@ -84,6 +85,7 @@ module Pvcglue
           'DB_USER_POSTGRES_HOST' => db_host,
           'DB_USER_POSTGRES_PORT' => "5432",
           'DB_USER_POSTGRES_USERNAME' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
+          'DB_USER_POSTGRES_DATABASE' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
           'DB_USER_POSTGRES_PASSWORD' => new_password,
           'MEMCACHE_SERVERS' => memcached_host
       }

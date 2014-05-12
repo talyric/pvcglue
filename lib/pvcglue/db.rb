@@ -9,25 +9,29 @@ module Pvcglue
 
     desc "push", "push"
 
-    def push(file_name)
+    def push(file_name = nil)
+      raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
 
     end
 
     desc "pull", "pull"
 
-    def pull(file_name)
-
+    def pull(file_name = nil)
+      raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
+      self.class.dump(self.class.remote, file_name)
     end
 
     desc "dump", "dump"
 
-    def dump(file_name)
-
+    def dump(file_name = nil)
+      raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
+      self.class.dump(self.class.local, file_name)
     end
 
     desc "restore", "restore"
 
-    def restore(file_name)
+    def restore(file_name = nil)
+      raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
 
     end
 
@@ -35,17 +39,9 @@ module Pvcglue
 
     def info
       if Pvcglue.cloud.stage_name
-        puts "not ready yet"
+        pp self.class.remote
       else
-        # require 'YAML'
-        # info = YAML::load(IO.read("config/database.yml"))
-        # puts info.inspect
-        # require 'tilt/erb'
-        template = Tilt::ERBTemplate.new('config/database.yml')
-        output = template.render
-        puts output.inspect
-        info = YAML::load(output)
-        puts info.inspect
+        pp self.class.local
       end
     end
 
@@ -55,63 +51,63 @@ module Pvcglue
       File.join(Pvcglue::Capistrano.application_config_dir, 'database.yml')
     end
 
-
-    def self.stage_env_defaults
-      {
-          'RAILS_SECRET_TOKEN' => SecureRandom.hex(64),
-          'DB_USER_POSTGRES_HOST' => db_host,
-          'DB_USER_POSTGRES_PORT' => "5432",
-          'DB_USER_POSTGRES_USERNAME' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
-          'DB_USER_POSTGRES_PASSWORD' => new_password,
-          'MEMCACHE_SERVERS' => memcached_host
-      }
+    class Db_Config < Struct.new(:host, :port, :database, :username, :password)
     end
 
-    def self.db_host
-      node = Pvcglue.cloud.find_node('db')
-      node['db']['private_ip']
-    end
-
-    def self.memcached_host
-      node = Pvcglue.cloud.find_node('memcached')
-      "#{node['memcached']['private_ip']}:11211"
-    end
-
-    def self.new_password
-      "a#{SecureRandom.hex(16)}"
-    end
-
-    def self.write_stage_env_cache
-      File.write(stage_env_cache_file_name, TOML.dump(Pvcglue.cloud.stage_env))
-    end
-
-    def self.read_cached_stage_env
-      # TODO:  Only use cache in development of gem, do not cache by default, use Manager config
-      if File.exists?(stage_env_cache_file_name)
-        stage_env = File.read(stage_env_cache_file_name)
-        Pvcglue.cloud.stage_env = TOML.parse(stage_env)
-        return true
+    def self.local_info
+      @local_info ||= begin
+        template = Tilt::ERBTemplate.new('config/database.yml')
+        output = template.render
+        # puts output.inspect
+        info = YAML::load(output)
+        # puts info.inspect
+        info
       end
-      false
     end
 
-    def self.stage_env_file_name
-      File.join(Pvcglue::Manager.manager_dir, stage_env_file_name_base)
+    def self.local
+      @local ||= begin
+        dev = local_info["development"]
+        Db_Config.new(dev["host"], dev["port"], dev["database"], dev["username"], dev["password"])
+      end
     end
 
-    def self.stage_env_file_name_base
-      @stage_env_file_name_base ||= "#{Pvcglue.configuration.cloud_name}_#{Pvcglue.configuration.application_name}_#{Pvcglue.cloud.stage_name_validated}.env.toml"
+    def self.remote
+      @remote ||= begin
+        Pvcglue::Env.initialize_stage_env
+        env = Pvcglue.cloud.stage_env
+        Db_Config.new(db_host_public,
+                      env["DB_USER_POSTGRES_PORT"],
+                      env["DB_USER_POSTGRES_DATABASE"],
+                      env["DB_USER_POSTGRES_USERNAME"],
+                      env["DB_USER_POSTGRES_PASSWORD"])
+      end
     end
 
-    def self.stage_env_cache_file_name
-      File.join(Pvcglue.configuration.tmp_dir, "pvcglue_cache_#{stage_env_file_name_base}")
-    end
-
-    def self.clear_stage_env_cache
-      File.delete(stage_env_cache_file_name) if File.exists?(stage_env_cache_file_name)
+    def self.db_host_public
+      node = Pvcglue.cloud.find_node('db')
+      node['db']['public_ip']
     end
 
 
+    def self.file_helper(file_name)
+      # TODO:  make it more helpful ;)
+      stage = Pvcglue.cloud.stage_name || "dev"
+      file_name = "#{Pvcglue.configuration.application_name}_#{stage}_#{Time.now.strftime("%Y-%m-%d")}.dump" unless file_name
+      # "#{File.dirname(file_name)}/#{File.basename(file_name, '.*')}.dump"
+      file_name
+    end
+
+    def self.dump(source, file_name)
+      cmd = "pg_dump -Fc --no-acl --no-owner -h #{source.host} -p #{source.port}"
+      cmd += " -U #{source.username}" if source.username
+      cmd += " #{source.database} -v -f #{file_helper(file_name)}"
+      puts cmd
+      unless system({"PGPASSWORD" => source.password}, cmd)
+        puts "ERROR:"
+        puts $?.inspect
+      end
+    end
   end
 
 end
