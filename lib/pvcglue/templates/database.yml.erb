@@ -1,3 +1,5 @@
+# This is a generated file.  Do not modify...or else!  :)
+#
 # Add your username and password to your `.bash_profile` or equivalent, if needed.
 # (If you don't need a username or password locally for postgresql, you can skip this.)
 #
@@ -23,33 +25,33 @@ server_common: &default_settings
 
 development:
   <<: *default_settings
-  database: <%= %{<%= ['store-dev', ENV['DB_USER_POSTGRES_DISABLE_BRANCHES'] == 'true' ? nil : `git rev-parse --abbrev-ref HEAD`.strip].compact.join('-').downcase %}+'>' %>
+  database: <%= %{<%= ['#{Pvcglue.cloud.app_name}_dev', ENV['DB_USER_POSTGRES_DISABLE_BRANCHES'] == 'true' ? nil : `git rev-parse --abbrev-ref HEAD`.strip].compact.join('_').downcase %}+'>' %>
 
 test:
   <<: *default_settings
-  database: <%= %{<%= ['store-test', ENV['DB_USER_POSTGRES_DISABLE_BRANCHES'] == 'true' ? nil : `git rev-parse --abbrev-ref HEAD`.strip].compact.join('-').downcase %}+'>' %>
+  database: <%= %{<%= ['#{Pvcglue.cloud.app_name}_test', ENV['DB_USER_POSTGRES_DISABLE_BRANCHES'] == 'true' ? nil : `git rev-parse --abbrev-ref HEAD`.strip].compact.join('_').downcase %}+'>' %>
 
 
 alpha:
   <<: *default_settings
-  database: <%= 'store_alpha' %>
+  database: <%= Pvcglue.cloud.app_name + '_alpha' %>
 
 beta:
   <<: *default_settings
-  database: <%= 'store_beta' %>
+  database: <%= Pvcglue.cloud.app_name + '_beta' %>
 
 gamma:
   <<: *default_settings
-  database: <%= 'store_gamma' %>
+  database: <%= Pvcglue.cloud.app_name + '_gamma' %>
 
 delta:
   <<: *default_settings
-  database: <%= 'store_delta' %>
+  database: <%= Pvcglue.cloud.app_name + '_delta' %>
 
 preview:
   <<: *default_settings
-  database: <%= 'store_preview' %>
+  database: <%= Pvcglue.cloud.app_name + '_preview' %>
 
 production:
   <<: *default_settings
-  database: <%= 'store_production' %>
+  database: <%= Pvcglue.cloud.app_name + '_production' %>
