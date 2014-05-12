@@ -31,6 +31,7 @@ module Pvcglue
 
     def set_stage(stage)
       @stage_name = stage
+      @stage_name.downcase! if @stage_name
     end
 
     def stage_name

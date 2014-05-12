@@ -11,28 +11,28 @@ module Pvcglue
 
     def push(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
-
+      pg_restore(self.class.remote, file_name)
     end
 
     desc "pull", "pull"
 
     def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
-      self.class.dump(self.class.remote, file_name)
+      pg_dump(self.class.remote, file_name)
     end
 
     desc "dump", "dump"
 
     def dump(file_name = nil)
       raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
-      self.class.dump(self.class.local, file_name)
+      pg_dump(self.class.local, file_name)
     end
 
     desc "restore", "restore"
 
     def restore(file_name = nil)
       raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
-
+      pg_restore(self.class.local, file_name)
     end
 
     desc "info", "info"
@@ -98,16 +98,44 @@ module Pvcglue
       file_name
     end
 
-    def self.dump(source, file_name)
-      cmd = "pg_dump -Fc --no-acl --no-owner -h #{source.host} -p #{source.port}"
-      cmd += " -U #{source.username}" if source.username
-      cmd += " #{source.database} -v -f #{file_helper(file_name)}"
-      puts cmd
-      unless system({"PGPASSWORD" => source.password}, cmd)
-        puts "ERROR:"
-        puts $?.inspect
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # silence Thor warnings, as these are not Thor commands.  (But we still need 'say' and 'ask' and friends.)
+    no_commands do
+
+      def destroy_prod?
+        say("Are you *REALLY* sure you want to DESTROY the PRODUCTION database?")
+        input = ask("Type 'destroy production' if you are:")
+        raise(Thor::Error, "Ain't gonna do it.") if input.downcase != "destroy production"
+        puts "ok, going through with the it..."
+      end
+
+
+      def pg_dump(source, file_name)
+        cmd = "pg_dump -Fc --no-acl --no-owner -h #{source.host} -p #{source.port}"
+        cmd += " -U #{source.username}" if source.username
+        cmd += " #{source.database} -v -f #{self.class.file_helper(file_name)}"
+        puts cmd
+        unless system({"PGPASSWORD" => source.password}, cmd)
+          puts "ERROR:"
+          puts $?.inspect
+        end
+      end
+
+      def pg_restore(dest, file_name)
+        Pvcglue.cloud.stage_name == 'production' && destroy_prod?
+        cmd = "pg_restore --verbose --clean --no-acl --no-owner -h #{dest.host} -p #{dest.port}"
+        cmd += " -U #{dest.username}" if dest.username
+        cmd += " -d #{dest.database} #{self.class.file_helper(file_name)}"
+        puts cmd
+        unless system({"PGPASSWORD" => dest.password}, cmd)
+          puts "ERROR:"
+          puts $?.inspect
+        end
       end
     end
+
   end
 
 end
