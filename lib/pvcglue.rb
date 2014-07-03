@@ -1,4 +1,5 @@
 require "pvcglue/version"
+require "thor"
 require "pvcglue/configuration"
 require "pvcglue/manager"
 require "pvcglue/cloud"

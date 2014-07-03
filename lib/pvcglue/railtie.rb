@@ -5,7 +5,8 @@ module Pvcglue
     railtie_name :pvcglue
 
     rake_tasks do
-      load "tasks/db_utils.rake"
+      ap __FILE__
+      load "tasks/pvc_db_utils.rake"
     end
   end
 end
