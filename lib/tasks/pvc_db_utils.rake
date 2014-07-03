@@ -1,4 +1,3 @@
-# Version 1.0.1 [11/26/2013]
 namespace :db do
   desc "Rebuild (drop, create, migrate) db. Then restore (or seed) and clone the test db.  Will restore db/rebuild.sql by default.  Use `rake db:rebuild[filename]` to restore db/filename.sql. Use `rake db:rebuild[-seed]` to instead load seed data."
   task :rebuild, [:filename] do |t, args|
@@ -54,10 +53,10 @@ namespace :db do
     Rake::Task['db:drop'].invoke
     puts "Creating the db..."
     Rake::Task['db:create'].invoke
-    puts "Migrating the db..."
-    Rake::Task['db:migrate'].invoke
 
     if args.filename == "-seed"
+      puts "Migrating the db..."
+      Rake::Task['db:migrate'].invoke
       puts "Seeding the db..."
       Rake::Task['db:seed'].invoke
     else
@@ -65,8 +64,6 @@ namespace :db do
       puts "Restoring dump: #{args.filename}..."
       Rake::Task['db:restore'].invoke(args.filename)
     end
-
-    # ActiveRecord::Base.connection.execute("INSERT INTO schema_migrations (version) VALUES(20131208080621)")
 
     puts "Cloning the test db..."
     Rake::Task['db:test:prepare'].invoke
