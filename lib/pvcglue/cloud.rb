@@ -209,6 +209,9 @@ module Pvcglue
       data[app_name][:repo_url]
     end
 
+    def swapfile_size
+      data[app_name][:swapfile_size] || stage[:swapfile_size] || 1024
+    end
   end
 
   def self.cloud

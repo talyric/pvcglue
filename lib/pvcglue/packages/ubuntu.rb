@@ -13,11 +13,22 @@ package 'swap' do
   depends_on 'swap-fstab'
 
   validate do
-    sudo("swapon -s") =~ /\/swapfile/
+    # TODO:  This may be brittle
+    # Ex:  "Filename\t\t\t\tType\t\tSize\tUsed\tPriority\n/swapfile                               file\t\t524284\t306372\t-1\n"
+    result = sudo("swapon -s")
+    data = result.split("\n").last.split("\t")[2]
+    # sudo("swapon -s") =~ /\/swapfile                               file		#{Pvcglue.cloud.swapfile_size}	0	-1/
+    megs = (data.to_f / 1024).round
+    puts megs.inspect
+    puts Pvcglue.cloud.swapfile_size.inspect
+    megs == Pvcglue.cloud.swapfile_size
   end
 
   apply do
-    sudo("fallocate -l 512M /swapfile")
+    sudo("swapoff -a")
+    sudo("rm /swapfile")
+    sudo("fallocate -l #{Pvcglue.cloud.swapfile_size}M /swapfile")
+    # sudo("dd if=/dev/zero of=/swapfile bs=1024 count=#{Pvcglue.cloud.swapfile_size}k")
     sudo("sudo chown root:root /swapfile && sudo chmod 0600 /swapfile")
     sudo("echo 10 | sudo tee /proc/sys/vm/swappiness")
     sudo("echo vm.swappiness = 10 | sudo tee -a /etc/sysctl.conf")
