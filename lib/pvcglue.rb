@@ -17,8 +17,6 @@ require "tilt"
 
 module Pvcglue
 
-  require 'pvcglue/railtie' if defined?(Rails)
-
   def self.gem_dir
     Gem::Specification.find_by_name('pvcglue').gem_dir
   end
