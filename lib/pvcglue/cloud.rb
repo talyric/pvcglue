@@ -212,6 +212,14 @@ module Pvcglue
     def swapfile_size
       data[app_name][:swapfile_size] || stage[:swapfile_size] || 1024
     end
+
+    def gems
+      data[app_name][:gems]
+    end
+
+    def db_rebuild
+      !!stage[:db_rebuild]
+    end
   end
 
   def self.cloud

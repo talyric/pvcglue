@@ -65,9 +65,12 @@ namespace :db do
       Rake::Task['db:restore'].invoke(args.filename)
     end
 
-    puts "Cloning the test db..."
-    Rake::Task['db:test:prepare'].invoke
+    if Rails.env.development?
+      puts "Cloning the test db..."
+      Rake::Task['db:test:prepare'].invoke
+    end
     puts "Done with DB=#{db["database"]}"
+
   end
 
   desc "Reload schema, then seed. (Does not try to drop and recreate db, which causes problems on heroku.)"
