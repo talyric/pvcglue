@@ -218,8 +218,6 @@ module Pvcglue
     end
 
     def db_rebuild
-      puts '==============================================================='
-      puts stage[:db_rebuild]
       !!stage[:db_rebuild]
     end
   end
