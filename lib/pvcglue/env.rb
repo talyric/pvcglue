@@ -22,7 +22,7 @@ module Pvcglue
 
     def list
       self.class.initialize_stage_env
-      pp Pvcglue.cloud.stage_env
+      Pvcglue.cloud.stage_env.each { |key, value| puts "#{key}=#{value}" }
     end
 
     desc "default", "reset env to default.  Destructive!!!"

@@ -34,7 +34,7 @@ package 'postgresql-app-stage-conf' do
     run(%Q[sudo -u postgres psql -c "CREATE ROLE #{username} LOGIN CREATEDB PASSWORD '#{password}'"])
     run(%Q[sudo -u postgres psql -c "ALTER ROLE #{username} PASSWORD '#{password}' CREATEDB LOGIN"])
     run(%Q[sudo -u postgres psql -c "CREATE DATABASE #{db_name} WITH OWNER #{username}"])
-    run(%Q[sudo -u postgres psql -c "ALTER SCHEMA public OWNER TO #{username}"])
+    run(%Q[sudo -u postgres psql #{db_name} -c "ALTER SCHEMA public OWNER TO #{username}"])
   end
 end
 
