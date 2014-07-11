@@ -57,6 +57,7 @@ package 'manager-copy-id' do
     user_name = Pvcglue::Manager.user_name
     copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys_file_name}"]
     system "#{copy_id}"
+    run(%Q[cat "" >> #{authorized_keys_file_name}])
     sudo "chown #{user_name}:#{user_name} #{authorized_keys_file_name} && chmod 600 #{authorized_keys_file_name}"
   end
 end
