@@ -1,3 +1,14 @@
+# Basic Usage
+
+    pvc manager init # only once per machine
+    pvc manger build # only once
+    # create or edit configuration
+    pvc manager push # save the config
+    pvc <stage> build # anytime the config is changed
+    pvc <stage> env set KEY=value[, KEY2=value]
+    pvc <stage> capify
+    pvc <stage> deploy
+
 # Pvcglue
 
     Commands:
