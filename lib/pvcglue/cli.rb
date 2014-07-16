@@ -125,11 +125,12 @@ module Pvcglue
       sh(server)
     end
 
-    desc "capify", "update capistrano configuration"
+    desc "pvcify", "update capistrano, database.yml and other configurations"
     method_option :stage, :required => true, :aliases => "-s"
 
-    def capify
+    def pvcify
       Pvcglue::Capistrano.capify
+      Pvcglue::Db.configure_database_yml
     end
 
     desc "deploy", "deploy the app"

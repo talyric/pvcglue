@@ -26,12 +26,9 @@ module Pvcglue
         raise(Thor::Error, "Unknown file extension:  #{ext}.")
       end
 
-      data = File.read(file_name)
+      File.write(::Pvcglue.cloud.local_file_name, TOML.dump(cloud_data))
 
-
-
-      # name = Pvcglue.cloud.app_and_stage_name
-      # system("openssl req -new -newkey rsa:2048 -nodes -keyout #{name}.key -out #{name}.csr")
+      Pvcglue::Manager.push_configuration
     end
 
 

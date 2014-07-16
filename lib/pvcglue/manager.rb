@@ -12,8 +12,7 @@ module Pvcglue
     desc "push", "push"
 
     def push
-      Pvcglue::Packages.apply('manager-push'.to_sym, self.class.manager_node, 'pvcglue', 'manager')
-      self.class.clear_cloud_data_cache
+      Pvcglue::Manager.push_configuration
     end
 
     desc "pull", "pull"
@@ -120,6 +119,11 @@ module Pvcglue
 
     def self.manager_dir
       File.join(home_dir, '.pvc_manager')
+    end
+
+    def self.push_configuration
+      Pvcglue::Packages.apply('manager-push'.to_sym, manager_node, 'pvcglue', 'manager')
+      clear_cloud_data_cache
     end
 
   end

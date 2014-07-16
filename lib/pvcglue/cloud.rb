@@ -220,6 +220,30 @@ module Pvcglue
     def db_rebuild
       !!stage[:db_rebuild]
     end
+
+    def nginx_config_path
+      '/etc/nginx'
+    end
+
+    def nginx_config_ssl_path
+      File.join(nginx_config_path, 'ssl')
+    end
+
+    def nginx_ssl_crt_file_name
+      File.join(nginx_config_ssl_path, "#{app_and_stage_name}.crt")
+    end
+
+    def nginx_ssl_key_file_name
+      File.join(nginx_config_ssl_path, "#{app_and_stage_name}.key")
+    end
+
+    def ssl_crt
+      stage[:ssl_crt]
+    end
+
+    def ssl_key
+      stage[:ssl_key]
+    end
   end
 
   def self.cloud

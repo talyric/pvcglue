@@ -1,5 +1,6 @@
 package 'lb' do
   depends_on 'nginx'
+  depends_on 'ssl-cert'
   depends_on 'lb-config'
   depends_on 'lb-maintenance-files'
 
@@ -47,6 +48,16 @@ package 'maintenance_mode' do
       run "touch #{Pvcglue.cloud.maintenance_mode_file_name}"
     else
       run "rm #{Pvcglue.cloud.maintenance_mode_file_name}"
+    end
+  end
+end
+
+package 'ssl-cert' do
+  apply do
+    if Pvcglue.cloud.ssl_mode == :load_balancer_force_ssl
+      sudo(%(mkdir -p #{Pvcglue.cloud.nginx_config_ssl_path}))
+      sudo(%Q[echo '#{Pvcglue.cloud.ssl_crt}' | sudo tee #{Pvcglue.cloud.nginx_ssl_crt_file_name} && sudo chmod 600 #{Pvcglue.cloud.nginx_ssl_crt_file_name}])
+      sudo(%Q[echo '#{Pvcglue.cloud.ssl_key}' | sudo tee #{Pvcglue.cloud.nginx_ssl_key_file_name} && sudo chmod 600 #{Pvcglue.cloud.nginx_ssl_key_file_name}])
     end
   end
 end

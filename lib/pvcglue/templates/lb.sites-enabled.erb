@@ -54,8 +54,8 @@ server {
        # ssl_mode: none
   <% when :load_balancer_force_ssl %>
     ssl on;
-    ssl_certificate /etc/nginx/ssl/<%= Pvcglue.cloud.app_and_stage_name %>.crt;
-    ssl_certificate_key /etc/nginx/ssl/<%= Pvcglue.cloud.app_and_stage_name %>.key;
+    ssl_certificate <%= Pvcglue.cloud.nginx_ssl_crt_file_name %>;
+    ssl_certificate_key <%= Pvcglue.cloud.nginx_ssl_key_file_name %>;
   <% else
      raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode}'" %>
   <% end %>

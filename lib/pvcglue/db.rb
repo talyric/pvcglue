@@ -4,7 +4,7 @@ module Pvcglue
     desc "config", "create/update database.yml"
 
     def config
-      Pvcglue.render_template('database.yml.erb', Pvcglue::Db.database_yml_file_name)
+      Pvcglue::Db.configure_database_yml
     end
 
     desc "push", "push"
@@ -96,6 +96,10 @@ module Pvcglue
       file_name = "#{Pvcglue.configuration.application_name}_#{stage}_#{Time.now.strftime("%Y-%m-%d")}.dump" unless file_name
       # "#{File.dirname(file_name)}/#{File.basename(file_name, '.*')}.dump"
       file_name
+    end
+
+    def self.configure_database_yml
+      Pvcglue.render_template('database.yml.erb', Pvcglue::Db.database_yml_file_name)
     end
 
 
