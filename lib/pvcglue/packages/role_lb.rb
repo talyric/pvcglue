@@ -58,6 +58,7 @@ package 'ssl-cert' do
       sudo(%(mkdir -p #{Pvcglue.cloud.nginx_config_ssl_path}))
       sudo(%Q[echo '#{Pvcglue.cloud.ssl_crt}' | sudo tee #{Pvcglue.cloud.nginx_ssl_crt_file_name} && sudo chmod 600 #{Pvcglue.cloud.nginx_ssl_crt_file_name}])
       sudo(%Q[echo '#{Pvcglue.cloud.ssl_key}' | sudo tee #{Pvcglue.cloud.nginx_ssl_key_file_name} && sudo chmod 600 #{Pvcglue.cloud.nginx_ssl_key_file_name}])
+      # TODO:  Restart nginx!!!
     end
   end
 end

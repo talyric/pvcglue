@@ -26,7 +26,8 @@ module Pvcglue
         raise(Thor::Error, "Unknown file extension:  #{ext}.")
       end
 
-      File.write(::Pvcglue.cloud.local_file_name, TOML.dump(cloud_data))
+      # File.write(::Pvcglue.cloud.local_file_name, TOML.dump(cloud_data))
+      File.write(::Pvcglue.cloud.local_file_name, TOML::PvcDumper.new(cloud_data).toml_str)
 
       Pvcglue::Manager.push_configuration
     end
