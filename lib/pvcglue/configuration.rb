@@ -11,6 +11,7 @@ module Pvcglue
     attr_accessor :cloud_manager
     attr_accessor :cloud_name
     attr_accessor :application_name
+    attr_accessor :context
 
     def self.file_name
       ENV['PVCGLUE_FILE_NAME'] || '.pvcglue.toml'

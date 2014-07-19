@@ -8,6 +8,7 @@ set :rvm_ruby_version, '<%= Pvcglue.configuration.ruby_version %>'
 <% if Pvcglue.cloud.delayed_job_args %>
 set :delayed_job_args, "<%= Pvcglue.cloud.delayed_job_args %>"
 <% end %>
+set :ssh_options, {port: <%= Pvcglue.cloud.port_in_context(:deploy) %>}
 
 <% Pvcglue.cloud.nodes_in_stage('web').each do |node, node_config| %>
 server '<%= node_config[:public_ip] %>', roles: %w{web app db}, user: 'deploy' # server: <%= node.to_s %>

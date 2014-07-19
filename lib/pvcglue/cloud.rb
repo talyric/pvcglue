@@ -9,6 +9,7 @@ module Pvcglue
     attr_accessor :maintenance_mode
     attr_accessor :stage_env
     attr_accessor :passenger_ruby
+    attr_accessor :port_in_node_context
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -243,6 +244,25 @@ module Pvcglue
 
     def ssl_key
       stage[:ssl_key]
+    end
+
+    def port_in_context(context)
+      case context
+        when :bootstrap, :manager
+          port = "22"
+        when :env, :build, :shell, :deploy
+          port = data[app_name][:ssh_allowed_from_all_port] || "22"
+        else
+          raise "Context not specified or invalid"
+      end
+      puts "Setting port to #{port}"
+      @port_in_node_context = port
+    end
+
+    def port_in_node_context
+      raise "Context not specified or invalid" if @port_in_node_context.nil?
+      puts "Setting port_in_node_context to #{@port_in_node_context}"
+      @port_in_node_context
     end
   end
 

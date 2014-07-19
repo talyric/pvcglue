@@ -37,7 +37,7 @@ package 'lb-maintenance-files' do
     # run on remote
     run(%(mkdir -p #{dest_dir}))
     # run rsync from local machine (and it will connect to remote)
-    cmd = (%(rsync -rzv --exclude=maintenance.on --delete -e ssh #{source_dir}/ #{node.get(:user)}@#{node.host}:#{dest_dir}/))
+    cmd = (%(rsync -rzv --exclude=maintenance.on --delete -e 'ssh -p #{Pvcglue.cloud.port_in_node_context}' #{source_dir}/ #{node.get(:user)}@#{node.host}:#{dest_dir}/))
     raise $?.to_s unless system(cmd)
   end
 end

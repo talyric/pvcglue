@@ -6,7 +6,7 @@ module Pvcglue
     desc "bootstrap", "bootstrap"
 
     def bootstrap
-      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, self.class.manager_node, 'root', 'manager')
+      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, :manager, self.class.manager_node, 'root', 'manager')
     end
 
     desc "push", "push"
@@ -18,15 +18,21 @@ module Pvcglue
     desc "pull", "pull"
 
     def pull
-      Pvcglue::Packages.apply('manager-pull'.to_sym, self.class.manager_node, 'pvcglue', 'manager')
+      Pvcglue::Packages.apply('manager-pull'.to_sym, :manager, self.class.manager_node, 'pvcglue', 'manager')
       self.class.clear_cloud_data_cache
     end
 
-    desc "show", "show"
+    desc "show", "show manager data"
 
     def show
       self.class.initialize_cloud_data
       pp Pvcglue.cloud.data
+    end
+
+    desc "info", "show manager data"
+
+    def info
+      show
     end
 
     desc "s", "run shell"
@@ -43,7 +49,7 @@ module Pvcglue
       user_name = self.class.user_name
       cloud_name = Pvcglue.configuration.cloud_name
       puts "Connection to #{cloud_name} cloud on manager at (#{cloud_manager}) as user '#{user_name}'..."
-      system(%(ssh -t #{user_name}@#{cloud_manager} "cd #{working_dir} && bash -i"))
+      system(%(ssh #{Pvcglue.cloud.port_in_context(:manager)} -t #{user_name}@#{cloud_manager} "cd #{working_dir} && bash -i"))
     end
 
     desc "configure", "configure"
@@ -56,8 +62,8 @@ module Pvcglue
 
     def self.initialize_cloud_data
       unless read_cached_cloud_data
-        Pvcglue::Packages.apply('manager-get-config'.to_sym, manager_node, 'pvcglue', 'manager')
-        # Pvcglue::Packages.apply('manager-get-config'.to_sym, manager_node, 'pvcglue') # Can not use package as it causes infinite recursion, we'll just do it manually
+        Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
+        # Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue') # Can not use package as it causes infinite recursion, we'll just do it manually
         data = `ssh pvcglue@#{manager_node[:manager][:public_ip]} "cat #{Pvcglue::Manager.manager_file_name}"`
         # puts "*"*80
         # puts data
@@ -122,7 +128,7 @@ module Pvcglue
     end
 
     def self.push_configuration
-      Pvcglue::Packages.apply('manager-push'.to_sym, manager_node, 'pvcglue', 'manager')
+      Pvcglue::Packages.apply('manager-push'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
       clear_cloud_data_cache
     end
 

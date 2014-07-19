@@ -1,10 +1,10 @@
 module Pvcglue
   class Packages
-    def self.apply(package, nodes, user = 'deploy', package_filter = nil)
+    def self.apply(package, context, nodes, user = 'deploy', package_filter = nil)
       # puts nodes.inspect
       orca_suite = OrcaSuite.init(package_filter)
       nodes.each do |node, data|
-        orca_node = ::Orca::Node.new(node, data[:public_ip], :user => user)
+        orca_node = ::Orca::Node.new(node, data[:public_ip], {user: user, port: Pvcglue.cloud.port_in_context(context)})
         ::Pvcglue.cloud.current_node = {node => data}
         begin
           orca_suite.run(orca_node.name, package.to_s, :apply)

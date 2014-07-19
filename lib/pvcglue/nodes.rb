@@ -17,7 +17,7 @@ module Pvcglue
 
       %w(lb db web caching).each do |role|
         if apply_role?(role)
-          Pvcglue::Packages.apply(role.to_sym, Pvcglue.cloud.nodes_in_stage(role))
+          Pvcglue::Packages.apply(role.to_sym, :build, Pvcglue.cloud.nodes_in_stage(role))
         end
       end
 

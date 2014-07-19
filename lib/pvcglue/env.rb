@@ -6,15 +6,15 @@ module Pvcglue
     desc "push", "push"
 
     def push
-      Pvcglue::Packages.apply('env-push'.to_sym, Pvcglue::Manager.manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('env-push'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
       self.class.clear_stage_env_cache
-      Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
+      Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
     end
 
     desc "pull", "pull"
 
     def pull
-      Pvcglue::Packages.apply('env-pull'.to_sym, Pvcglue::Manager.manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('env-pull'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
       self.class.clear_stage_env_cache
     end
 
@@ -41,7 +41,7 @@ module Pvcglue
       options = Hash[args.each.map { |l| l.chomp.split('=') }]
       Pvcglue.cloud.stage_env.merge!(options)
       self.class.save_stage_env
-      Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
+      Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
     end
 
     desc "unset", "remove environment variable(s) for the stage XYZ [ZZZ]"
@@ -50,7 +50,7 @@ module Pvcglue
       self.class.initialize_stage_env
       args.each { |arg| puts "WARNING:  Key '#{arg}' not found." unless Pvcglue.cloud.stage_env.delete(arg) }
       self.class.save_stage_env
-      Pvcglue::Packages.apply('app-env-file'.to_sym, Pvcglue.cloud.nodes_in_stage('web'))
+      Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
     end
 
     desc "rm", "alternative to unset"
@@ -64,7 +64,7 @@ module Pvcglue
 
     def self.initialize_stage_env
       unless read_cached_stage_env
-        Pvcglue::Packages.apply('env-get-stage'.to_sym, Pvcglue::Manager.manager_node, 'pvcglue')
+        Pvcglue::Packages.apply('env-get-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
         write_stage_env_cache
       end
       merged = stage_env_defaults.merge(Pvcglue.cloud.stage_env)
@@ -75,7 +75,7 @@ module Pvcglue
     end
 
     def self.save_stage_env
-      Pvcglue::Packages.apply('env-set-stage'.to_sym, Pvcglue::Manager.manager_node, 'pvcglue')
+      Pvcglue::Packages.apply('env-set-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
       write_stage_env_cache
     end
 

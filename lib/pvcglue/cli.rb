@@ -28,6 +28,12 @@ module Pvcglue
       Pvcglue.configuration.options.each { |k, v| puts "    #{k}=#{v}" }
     end
 
+    desc "show", "show the pvcglue version and cloud settings"
+
+    def show
+      info
+    end
+
     desc "bootstrap", "bootstrap..."
     method_option :stage, :required => true, :aliases => "-s"
 
@@ -88,7 +94,7 @@ module Pvcglue
     def maintenance(mode)
       raise(Thor::Error, "invalid maintenance mode :(  (Hint:  try on or off.)") unless mode.in?(%w(on off))
       Pvcglue.cloud.maintenance_mode = mode
-      Pvcglue::Packages.apply(:maintenance_mode, Pvcglue.cloud.nodes_in_stage('lb'))
+      Pvcglue::Packages.apply(:maintenance_mode, :maintenance, Pvcglue.cloud.nodes_in_stage('lb'))
     end
 
     desc "maint", "enable or disable maintenance mode"
@@ -115,7 +121,7 @@ module Pvcglue
       # puts "*"*80
       # puts node.inspect
       puts "Connection to #{node_name} (#{node_data[:public_ip]}) as user 'deploy'..."
-      system("ssh deploy@#{node_data[:public_ip]}")
+      system("ssh -p #{Pvcglue.cloud.port_in_context(:shell)} deploy@#{node_data[:public_ip]}")
     end
 
     desc "s", "shell"
