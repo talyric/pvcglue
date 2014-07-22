@@ -215,7 +215,7 @@ module Pvcglue
     end
 
     def gems
-      data[app_name][:gems]
+      data[app_name][:gems] || []
     end
 
     def db_rebuild
