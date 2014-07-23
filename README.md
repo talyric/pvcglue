@@ -37,14 +37,9 @@ https://github.com/radar/guides/blob/master/gem-development.md
 
 Add this line to your application's Gemfile:
 
-    group :development do
-      gem 'pvcglue', "~> 0.1.0", :github => 'talyric/pvcglue', :branch => 'master', :require => false
+    gem 'pvcglue', "~> 0.1.7", :group => :development
+    gem 'pvcglue_dbutils', "~> 0.5.3"
 
-      # This should be used once gem is 'official' :)
-      #gem 'pvcglue'
-    end
-
-    gem 'pvcglue_dbutils', "~> 0.5.1", :github => 'talyric/pvcglue_dbutils', :branch => 'master' # must be available in all environments
 
 And then execute:
 
@@ -57,6 +52,21 @@ Or install it yourself as:
 ## Usage
 
 TODO: Write usage instructions here
+
+## Developing
+
+To use locally committed gem, use
+
+    bundle config local.pvcglue ~/projects/pvcglue
+
+and
+
+    bundle config --delete local.pvcglue
+
+to restore using remote repo.  See http://ryanbigg.com/2013/08/bundler-local-paths/ and http://bundler.io/v1.3/bundle_config.html
+
+    gem 'pvcglue', "~> 0.1.5", :github => 'talyric/pvcglue', :branch => 'master', :group => :development
+    gem 'pvcglue_dbutils', "~> 0.5.2", :github => 'talyric/pvcglue_dbutils', :branch => 'master' # must be available in all environments
 
 ## Contributing
 
