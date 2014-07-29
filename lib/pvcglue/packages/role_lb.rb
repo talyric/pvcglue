@@ -52,6 +52,16 @@ package 'maintenance_mode' do
   end
 end
 
+package 'bypass_mode' do
+  apply do
+    if Pvcglue.cloud.bypass_mode == 'off'
+      run "touch #{Pvcglue.cloud.maintenance_bypass_mode_file_name}"
+    else
+      run "rm #{Pvcglue.cloud.maintenance_bypass_mode_file_name}"
+    end
+  end
+end
+
 package 'ssl-cert' do
   apply do
     if Pvcglue.cloud.ssl_mode == :load_balancer_force_ssl

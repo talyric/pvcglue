@@ -7,6 +7,7 @@ module Pvcglue
     attr_accessor :current_node
     attr_accessor :current_hostname
     attr_accessor :maintenance_mode
+    attr_accessor :bypass_mode
     attr_accessor :stage_env
     attr_accessor :passenger_ruby
     attr_accessor :port_in_node_context
@@ -134,6 +135,10 @@ module Pvcglue
       File.join(maintenance_files_dir, 'maintenance.on')
     end
 
+    def maintenance_bypass_mode_file_name
+      File.join(maintenance_files_dir, 'maintenance_bypass.off')
+    end
+
     def deploy_to_app_current_temp_dir
       File.join(deploy_to_app_current_dir, 'tmp')
     end
@@ -250,7 +255,7 @@ module Pvcglue
       case context
         when :bootstrap, :manager
           port = "22"
-        when :env, :build, :shell, :deploy
+        when :env, :build, :shell, :deploy, :maintenance
           port = data[app_name][:ssh_allowed_from_all_port] || "22"
         else
           raise "Context not specified or invalid"

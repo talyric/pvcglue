@@ -11,3 +11,4 @@ end
 # puts ARGV.inspect
 
 Pvcglue::CLI.start
+puts "Done."

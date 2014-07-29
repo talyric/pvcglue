@@ -111,6 +111,23 @@ module Pvcglue
       maintenance(mode)
     end
 
+    desc "bypass", "enable or disable maintenance mode bypass for developers"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def bypass(mode)
+      raise(Thor::Error, "invalid maintenance bypass mode :(  (Hint:  try on or off.)") unless mode.in?(%w(on off))
+      Pvcglue.cloud.bypass_mode = mode
+      Pvcglue::Packages.apply(:bypass_mode, :maintenance, Pvcglue.cloud.nodes_in_stage('lb'))
+    end
+
+    desc "b", "enable or disable maintenance mode bypass for developers"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def b(mode)
+      bypass(mode)
+    end
+
+
     desc "sh", "run interactive shell on node"
     method_option :stage, :required => true, :aliases => "-s"
 

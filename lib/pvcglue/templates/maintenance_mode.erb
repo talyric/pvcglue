@@ -4,21 +4,32 @@
 
   set $maintenance off;
   set $maintenance_bypass off;
+
   # https://blog.ed.gs/2013/01/25/nginx-multiple-if-statements/
-  set $bypass_test no;
+  set $maintenance_test maint_off;
+  set $bypass_test bypass_on;
+  set $ip_test ip_unmatched;
+  set $all_tests no;
 
   if (-f $document_root/maintenance/maintenance.on) {
+    set $maintenance_test maint_on;
     set $maintenance on;
-    set $bypass_test yes;
+  }
+
+  if (-f $document_root/maintenance/maintenance_bypass.off) {
+    set $bypass_test bypass_off;
   }
 
   if ($remote_addr ~ <%= Pvcglue.cloud.dev_ip_addresses.join('|').gsub('.', '\.') %>) {
-    set $maintenance off;
-    set $bypass_test "${bypass_test}yes";
+    set $ip_test ip_match;
   }
 
-  if ($bypass_test = yesyes) {
-    set $maintenance_bypass on; # only add header when maintenance is on and the remote address is a dev ip address
+  set $all_tests "${maintenance_test}__${bypass_test}__${ip_test}";
+
+
+  if ($all_tests = maint_on__bypass_on__ip_match) {
+    set $maintenance off;
+    set $maintenance_bypass on; # only add header when maintenance is on and the remote address is a dev ip address and bypass is on
   }
 
   if ($uri ~ ^/maintenance/.*) {
