@@ -71,13 +71,16 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
         pvc restore path/to/dump/file.dump
 
 * edit configuration
-    pvc manager pull # to ensure the latest data
-    # edit the file listed after "Saved as:"
-    pvc manager push
+
+        pvc manager pull # to ensure the latest data
+
+    Edit the file listed after "Saved as:"
+
+        pvc manager push
 
 * update deployment settings after making changes to the configuration
 
-    pvc <stage> capify # must be done on all stages!
+        pvc <stage> capify # must be done on all stages!
 
 
 # Help
