@@ -1,15 +1,85 @@
-# Basic Usage
+# PVC Glue
 
-    pvc manager init # only once per machine
-    pvc manger build # only once
-    # create or edit configuration
-    pvc manager push # save the config
-    pvc <stage> build # anytime the config is changed
-    pvc <stage> env set KEY=value[, KEY2=value]
-    pvc <stage> capify
+Pico Virtual Cloud
+
+An opinionated cloud application manager for Rails applications using your own servers.
+
+Currently supported stack:
+
+  * Ubuntu 12.04 (with plans for supporting 14.04)
+  * Ruby >= 1.9 (multiple versions supported on same server)
+  * Rails >= 3.2
+  * RVM
+  * Postgresql 9.1
+  * Nginx
+  * Passenger > 4.0
+  * Memcached
+
+# This is a work in progress
+
+Although this project is being used on productions sites, this should be considered "Alpha" code, as things my change without notice until version 1.0.  :)
+
+# First Time Set Up for Existing Project
+
+Note:  An existing authorized user must perform steps 1-3.
+
+1.  Add the new user's public key to the manager
+
+    pvc manager user /path/to/id_rsa.pub
+
+2.  Add the new user's public key to the project(s)
+
+    pvc manager pull # to ensure the latest data
+    # edit the file listed after "Saved as:"
+    # add public SSH key of new user to project(s)
+    pvc manager push
+
+3.  Update all environments to allow access
+
+    pvc alpha bootstrap
+    pvc beta bootstrap # if not the same set of servers as alpha
+    pvc preview bootstrap # if not the same set of servers as alpha/beta
+    pvc production bootstrap
+
+4.  Configure the manager (only once per developer machine, if set as the default).
+
+    pvc manager configure # only once per developer machine, if set as default
+
+5.  Test.
+
+    pvc alpha c # start a rails console on the alpha web server
+
+## Common Usage
+
+Always do a `pvc manager pull` once before making any changes to ensure you have the latest data.  (Caching will be improved as time permitts.)
+
+* Deploy a stage
+
     pvc <stage> deploy
 
-# Pvcglue
+* Set an environment variable or variables
+
+    pvc <stage> env set XYZ=123 [ZZZ=321] # this will restart the app
+
+* Pull down a copy of the production db
+
+    pvc production db pull
+
+* Restore a db dump to you local development machine
+
+    pvc restore path/to/dump/file.dump
+
+* edit configuration
+    pvc manager pull # to ensure the latest data
+    # edit the file listed after "Saved as:"
+    pvc manager push
+
+* update deployment settings after making changes to the configuration
+
+    pvc <stage> capify # must be done on all stages!
+
+
+# Help
 
     Commands:
       pvc bootstrap -s, --stage=STAGE               # bootstrap...
@@ -18,17 +88,44 @@
       pvc capify -s, --stage=STAGE                  # update capistrano configuration
       pvc console -s, --stage=STAGE                 # open rails console
       pvc db SUBCOMMAND ...ARGS                     # db utils
+        pvc db config                                 # create/update database.yml
+        pvc db dump                                   # dump
+        pvc db help [COMMAND]                         # Describe subcommands or one specific subcommand
+        pvc db info                                   # info
+        pvc db pull                                   # pull
+        pvc db push                                   # push
+        pvc db restore                                # restore
       pvc deploy -s, --stage=STAGE                  # deploy the app
       pvc env SUBCOMMAND ...ARGS -s, --stage=STAGE  # manage stage environment
+        pvc env default                               # reset env to default. Destructive!!!
+        pvc env help [COMMAND]                        # Describe subcommands or one specific subcommand
+        pvc env list                                  # list
+        pvc env pull                                  # pull
+        pvc env push                                  # push
+        pvc env rm                                    # alternative to unset
+        pvc env set                                   # set environment variable(s) for the stage XYZ=123 [ZZZ=321]
+        pvc env unset                                 # remove environment variable(s) for the stage XYZ [ZZZ]
       pvc help [COMMAND]                            # Describe available commands or one specific c...
       pvc info                                      # show the pvcglue version and cloud settings
       pvc m -s, --stage=STAGE                       # enable or disable maintenance mode
       pvc maint -s, --stage=STAGE                   # enable or disable maintenance mode
       pvc maintenance -s, --stage=STAGE             # enable or disable maintenance mode
       pvc manager SUBCOMMAND ...ARGS                # manage manager
+        pvc manager bootstrap                         # bootstrap
+        pvc manager configure                         # configure
+        pvc manager help [COMMAND]                    # Describe subcommands or one specific subcommand
+        pvc manager info                              # show manager data
+        pvc manager pull                              # pull
+        pvc manager push                              # push
+        pvc manager s                                 # run shell
+        pvc manager shell                             # run shell
+        pvc manager show                              # show manager data
       pvc s -s, --stage=STAGE                       # shell
       pvc sh -s, --stage=STAGE                      # run interactive shell on node
       pvc ssl SUBCOMMAND ...ARGS -s, --stage=STAGE  # manage ssl certificates
+        pvc ssl csr                                   # create new csr
+        pvc ssl help [COMMAND]                        # Describe subcommands or one specific subcommand
+        pvc ssl import                                # import .key or .crt or both if no extension given (.crt must be 'pre...
       pvc version                                   # show the version of PVC...
 
 https://github.com/radar/guides/blob/master/gem-development.md
@@ -48,10 +145,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install pvcglue
-
-## Usage
-
-TODO: Write usage instructions here
 
 ## Developing
 

@@ -49,7 +49,24 @@ module Pvcglue
       user_name = self.class.user_name
       cloud_name = Pvcglue.configuration.cloud_name
       puts "Connection to #{cloud_name} cloud on manager at (#{cloud_manager}) as user '#{user_name}'..."
-      system(%(ssh #{Pvcglue.cloud.port_in_context(:manager)} -t #{user_name}@#{cloud_manager} "cd #{working_dir} && bash -i"))
+      system(%(ssh -p #{Pvcglue.cloud.port_in_context(:manager)} -t #{user_name}@#{cloud_manager} "cd #{working_dir} && bash -i"))
+    end
+
+    desc "user PATH_TO_FILE", "add or update user's ssh key to allow access to the manager"
+
+    def user(filename)
+      cloud_manager = Pvcglue.configuration.cloud_manager
+      user_name = self.class.user_name
+      cloud_name = Pvcglue.configuration.cloud_name
+      puts "Adding key to #{cloud_name} cloud on manager at (#{cloud_manager}) ..."
+      puts(%(ssh-copy-id -i "#{filename}" "#{user_name}@#{cloud_manager} -p #{Pvcglue.cloud.port_in_context(:manager)}"))
+      system(%(ssh-copy-id -i "#{filename}" "#{user_name}@#{cloud_manager} -p #{Pvcglue.cloud.port_in_context(:manager)}"))
+    end
+
+    desc "rm", "(not yet implemented) remove user's ssh key to disallow access to the manager"
+
+    def rm
+      raise(Thor::Error, "Sorry, not yet implemented.  :(")
     end
 
     desc "configure", "configure"
