@@ -25,29 +25,30 @@ Note:  An existing authorized user must perform steps 1-3.
 
 1.  Add the new user's public key to the manager
 
-    pvc manager user /path/to/id_rsa.pub
+        pvc manager user /path/to/id_rsa.pub
 
 2.  Add the new user's public key to the project(s)
 
-    pvc manager pull # to ensure the latest data
-    # edit the file listed after "Saved as:"
-    # add public SSH key of new user to project(s)
-    pvc manager push
+        pvc manager pull # to ensure the latest data
+
+    Edit the file listed after "Saved as:" add public SSH key of new user to project(s)
+
+        pvc manager push
 
 3.  Update all environments to allow access
 
-    pvc alpha bootstrap
-    pvc beta bootstrap # if not the same set of servers as alpha
-    pvc preview bootstrap # if not the same set of servers as alpha/beta
-    pvc production bootstrap
+        pvc alpha bootstrap
+        pvc beta bootstrap # if not the same set of servers as alpha
+        pvc preview bootstrap # if not the same set of servers as alpha/beta
+        pvc production bootstrap
 
 4.  Configure the manager (only once per developer machine, if set as the default).
 
-    pvc manager configure # only once per developer machine, if set as default
+        pvc manager configure # only once per developer machine, if set as default
 
 5.  Test.
 
-    pvc alpha c # start a rails console on the alpha web server
+        pvc alpha c # start a rails console on the alpha web server
 
 ## Common Usage
 
@@ -55,19 +56,19 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
 
 * Deploy a stage
 
-    pvc <stage> deploy
+        pvc <stage> deploy
 
 * Set an environment variable or variables
 
-    pvc <stage> env set XYZ=123 [ZZZ=321] # this will restart the app
+        pvc <stage> env set XYZ=123 [ZZZ=321] # this will restart the app
 
 * Pull down a copy of the production db
 
-    pvc production db pull
+        pvc production db pull
 
 * Restore a db dump to you local development machine
 
-    pvc restore path/to/dump/file.dump
+        pvc restore path/to/dump/file.dump
 
 * edit configuration
     pvc manager pull # to ensure the latest data
