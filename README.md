@@ -83,6 +83,11 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
         pvc <stage> capify # must be done on all stages!
 
 
+* restart delayed job workers (this may change once a bug is resolved)
+
+        cap production deploy:delayed_job_restart 
+
+
 # Help
 
     Commands:
