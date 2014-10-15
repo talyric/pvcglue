@@ -159,7 +159,7 @@ Or install it yourself as:
 
 ## Troubleshooting
 
-If you see this while trying to deploy
+### If you see this while trying to deploy
 
     DEBUG[426eda1d] 	Permission denied (publickey).
     DEBUG[426eda1d] 	fatal: The remote end hung up unexpectedly
@@ -179,7 +179,7 @@ And then add your key to the agent
 
 More information can be found at https://developer.github.com/guides/using-ssh-agent-forwarding/
 
-If you get an error like
+### If you get an error like
 
     DEBUG[d416069c] 	fatal: Not a valid object name
     DEBUG[d416069c] 	tar: This does not look like a tar archive
