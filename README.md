@@ -50,6 +50,8 @@ Note:  An existing authorized user must perform steps 1-3.
 
         pvc alpha c # start a rails console on the alpha web server
 
+6.  If you have any problems, see the [Troubleshooting](#troubleshooting) section.
+
 ## Common Usage
 
 Always do a `pvc manager pull` once before making any changes to ensure you have the latest data.  (Caching will be improved as time permitts.)
