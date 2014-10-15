@@ -179,6 +179,13 @@ And then add your key to the agent
 
 More information can be found at https://developer.github.com/guides/using-ssh-agent-forwarding/
 
+If you get an error like
+
+    DEBUG[d416069c] 	fatal: Not a valid object name
+    DEBUG[d416069c] 	tar: This does not look like a tar archive
+    DEBUG[d416069c] 	tar: Exiting with failure status due to previous errors
+
+it probably means that you have not pushed up the branch, yet.  :)
 
 ## Developing
 
