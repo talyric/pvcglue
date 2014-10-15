@@ -155,6 +155,29 @@ Or install it yourself as:
 
     $ gem install pvcglue
 
+## Troubleshooting
+
+If you see this while trying to deploy
+
+    DEBUG[426eda1d] 	Permission denied (publickey).
+    DEBUG[426eda1d] 	fatal: The remote end hung up unexpectedly
+
+it probably means that your SSH key is not being forwarded.
+
+You will need to edit (or create) `~/.ssh/config` and add the host(s) you want to connect to.  Replace `example.com` with the name or IP you want to connect to.  (Note:  You will need an entry for each 'web' server in the cluster in order to deploy.)
+
+    Host example.com
+      ForwardAgent yes
+
+You can use `Host *` if you understand the security risks, and are not connecting to any untrusted servers over SSH.
+
+And then add your key to the agent
+
+    ssh-add -K
+
+More information can be found at https://developer.github.com/guides/using-ssh-agent-forwarding/
+
+
 ## Developing
 
 To use locally committed gem, use
