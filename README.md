@@ -143,19 +143,20 @@ https://github.com/radar/guides/blob/master/gem-development.md
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add these lines to your application's Gemfile.  `dotenv-rails` must be listed first!
 
-    gem 'pvcglue', "~> 0.1.7", :group => :development
+    ################# Must be the first Gem ###################
+    gem 'dotenv-rails', "0.11.1"
+    ################# Must be the first Gem ###################
+
+Then add these lines to your application's Gemfile, whereever you like (usually at the end):
+
+    gem 'pvcglue', "~> 0.1.9", :group => :development
     gem 'pvcglue_dbutils', "~> 0.5.3"
-
 
 And then execute:
 
     $ bundle
-
-Or install it yourself as:
-
-    $ gem install pvcglue
 
 ## Troubleshooting
 
