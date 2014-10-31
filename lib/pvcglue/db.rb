@@ -16,9 +16,9 @@ module Pvcglue
 
     desc "pull", "pull"
 
-    def pull(file_name = nil, ignore_table = nil)
+    def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
-      pg_dump(self.class.remote, file_name, ignore_table)
+      pg_dump(self.class.remote, file_name, options[:fast])
     end
 
     desc "dump", "dump"
@@ -116,10 +116,14 @@ module Pvcglue
       end
 
 
-      def pg_dump(source, file_name, ignore_table)
+      def pg_dump(source, file_name, fast)
         cmd = "pg_dump -Fc --no-acl --no-owner -h #{source.host} -p #{source.port}"
         cmd += " -U #{source.username}" if source.username
-        cmd += " --exclude-table=#{ignore_table}" if ignore_table
+        if fast
+          Pvcglue.cloud.exclude_tables.each do |table|
+            cmd += " --exclude-table=#{table}"
+          end
+        end
         cmd += " #{source.database} -v -f #{self.class.file_helper(file_name)}"
         puts cmd
         unless system({"PGPASSWORD" => source.password}, cmd)

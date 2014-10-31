@@ -81,6 +81,7 @@ module Pvcglue
 
     desc "db SUBCOMMAND ...ARGS", "db utils"
     method_option :stage, :aliases => "-s"
+    method_option :fast, :type => :boolean, :aliases => "-f"
     subcommand "db", Db
 
     desc "ssl SUBCOMMAND ...ARGS", "manage ssl certificates"
