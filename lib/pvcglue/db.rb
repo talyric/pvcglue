@@ -15,7 +15,7 @@ module Pvcglue
     end
 
     desc "pull", "pull"
-
+    method_option :fast, :type => :boolean, :aliases => "-f"
     def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
       pg_dump(self.class.remote, file_name, options[:fast])
