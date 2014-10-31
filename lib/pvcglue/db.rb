@@ -14,11 +14,11 @@ module Pvcglue
       pg_restore(self.class.remote, file_name)
     end
 
-    desc "pull", "pull"
-
+    desc "pull", "Pull copy of database from remote stage.  Pass -f to exclude tables defined in the configutation file.  If no tables are specified in the `excluded_db_tables` option, 'versions' will be used by default."
+    method_option :fast, :type => :boolean, :aliases => "-f"
     def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
-      pg_dump(self.class.remote, file_name)
+      pg_dump(self.class.remote, file_name, options[:fast])
     end
 
     desc "dump", "dump"
@@ -116,9 +116,14 @@ module Pvcglue
       end
 
 
-      def pg_dump(source, file_name)
+      def pg_dump(source, file_name, fast)
         cmd = "pg_dump -Fc --no-acl --no-owner -h #{source.host} -p #{source.port}"
         cmd += " -U #{source.username}" if source.username
+        if fast
+          Pvcglue.cloud.exclude_tables.each do |table|
+            cmd += " --exclude-table=#{table}"
+          end
+        end
         cmd += " #{source.database} -v -f #{self.class.file_helper(file_name)}"
         puts cmd
         unless system({"PGPASSWORD" => source.password}, cmd)

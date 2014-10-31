@@ -166,6 +166,10 @@ module Pvcglue
       data[app_name][:time_zone] || 'America/Los_Angeles'
     end
 
+    def exclude_tables
+      data[app_name][:excluded_db_tables] || ['versions']
+    end
+
     def firewall_allow_incoming_on_port
       # These ports allow incoming connections from any ip address
       ports = []
