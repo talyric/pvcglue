@@ -12,11 +12,11 @@ events {
 
 http {
 
-  # Timeouts
-  client_header_timeout 3000;
-  client_body_timeout 3000;
-  proxy_read_timeout 500s;
-  proxy_send_timeout 500s;
+  	# Timeouts
+  	client_header_timeout 3000;
+  	client_body_timeout 3000;
+  	proxy_read_timeout 500s;
+  	proxy_send_timeout 500s;
 
 	##
 	# Basic Settings
@@ -30,7 +30,7 @@ http {
 	# server_tokens off;
 
 	server_names_hash_bucket_size 64;
-  client_max_body_size 4G;
+  	client_max_body_size 4G;
 	# server_name_in_redirect off;
 
 	include /etc/nginx/mime.types;
