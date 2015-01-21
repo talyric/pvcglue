@@ -64,7 +64,7 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
 
         pvc <stage> env set XYZ=123 [ZZZ=321] # this will restart the app
 
-* Pull down a copy of the production db
+* #####Pull down a copy of the production db
 
         pvc production db pull
         
