@@ -146,7 +146,7 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
         pvc ssl import                                # import .key or .crt or both if no extension given (.crt must be 'pre...
       pvc version                                   # show the version of PVC...
 
-https://github.com/radar/guides/blob/master/gem-development.md
+https://github.com/radar/guides/blob/master/gem-development.md#releasing-the-gem
 
 ## Installation
 
@@ -158,7 +158,7 @@ Add these lines to your application's Gemfile.  `dotenv-rails` must be listed fi
 
 Then add these lines to your application's Gemfile, whereever you like (usually at the end):
 
-    gem 'pvcglue', "~> 0.1.10", :group => :development
+    gem 'pvcglue', "~> 0.1.12", :group => :development
     gem 'pvcglue_dbutils', "~> 0.5.3"
 
 And then execute:
