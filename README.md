@@ -64,9 +64,16 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
 
         pvc <stage> env set XYZ=123 [ZZZ=321] # this will restart the app
 
-* Pull down a copy of the production db
+* #####Pull down a copy of the production db
 
         pvc production db pull
+        
+  If you are trying to access the db server from outside the allowed IP address, you will need to first add your IP as an allowed address to the db server.  This will only stay in effect until the `pvc <stage> build` command is issued again.  (This is a work-around for external developers accessing via changing IP addresses.)
+       
+       pvc production sh d
+       # Then on the remote server, execute:
+       sudo ufw allow from nnn.nnn.nnn.nnn
+       exit
 
 * Restore a db dump to you local development machine
 
