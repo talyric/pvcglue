@@ -35,6 +35,13 @@ module Pvcglue
       pg_restore(self.class.local, file_name)
     end
 
+    desc "destroy_all", "destroy_all"
+
+    def destroy_all
+      raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
+      pg_destroy(self.class.local)
+    end
+
     desc "info", "info"
 
     def info
@@ -122,6 +129,41 @@ module Pvcglue
         cmd += " #{source.database} -v -f #{self.class.file_helper(file_name)}"
         puts cmd
         unless system({"PGPASSWORD" => source.password}, cmd)
+          puts "ERROR:"
+          puts $?.inspect
+        end
+      end
+
+      def pg_destroy(dest)
+        sql = "\"select 'drop database '||datname||';' "\
+               "from pg_database "\
+               "where datistemplate=false and datname <> '#{dest.username}' "\
+               "and datname <> 'postgres'\""
+        # I had to use the double for loop because for whatever reason
+        # calling ${line[0]} throws a bad substitution error
+        # This is also why I escaped the string with a regex
+        bash = "#!/bin/bash\n while read line; do "\
+                  "s_esc=\"$(echo \"$line\" | sed 's/[^-A-Za-z0-9_]/\\ /g')\"; "\
+                  "for word in $s_esc; do "\
+                    "if [ $word = \"drop\" ]; then "\
+                      "for word in $s_esc; do "\
+                        "if [ $word != \"drop\" ] && [ $word != \"database\" ]; then "\
+                          "echo \"$s_esc\"; "\
+                          "dropdb \"$word\"\; "\
+                        "fi "\
+                      "done; "\
+                      "break; "\
+                    "fi "\
+                  "done; "\
+               "done < dd.sql; "
+               
+        cmd = "psql #{dest.username} -c "
+        cmd += sql
+        cmd += " > dd.sql;"
+        cmd += bash  
+        cmd += "rm dd.sql"
+        puts cmd
+        unless system({"PGPASSWORD" => dest.password}, cmd)
           puts "ERROR:"
           puts $?.inspect
         end
