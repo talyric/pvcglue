@@ -64,9 +64,16 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
 
         pvc <stage> env set XYZ=123 [ZZZ=321] # this will restart the app
 
-* Pull down a copy of the production db
+* #####Pull down a copy of the production db
 
         pvc production db pull
+        
+  If you are trying to access the db server from outside the allowed IP address, you will need to first add your IP as an allowed address to the db server.  This will only stay in effect until the `pvc <stage> build` command is issued again.  (This is a work-around for external developers accessing via changing IP addresses.)
+       
+       pvc production sh d
+       # Then on the remote server, execute:
+       sudo ufw allow from nnn.nnn.nnn.nnn
+       exit
 
 * Restore a db dump to you local development machine
 
@@ -139,7 +146,7 @@ Always do a `pvc manager pull` once before making any changes to ensure you have
         pvc ssl import                                # import .key or .crt or both if no extension given (.crt must be 'pre...
       pvc version                                   # show the version of PVC...
 
-https://github.com/radar/guides/blob/master/gem-development.md
+https://github.com/radar/guides/blob/master/gem-development.md#releasing-the-gem
 
 ## Installation
 
@@ -151,7 +158,7 @@ Add these lines to your application's Gemfile.  `dotenv-rails` must be listed fi
 
 Then add these lines to your application's Gemfile, whereever you like (usually at the end):
 
-    gem 'pvcglue', "~> 0.1.9", :group => :development
+    gem 'pvcglue', "~> 0.1.12", :group => :development
     gem 'pvcglue_dbutils', "~> 0.5.3"
 
 And then execute:

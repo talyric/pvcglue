@@ -166,6 +166,10 @@ module Pvcglue
       data[app_name][:time_zone] || 'America/Los_Angeles'
     end
 
+    def exclude_tables
+      data[app_name][:excluded_db_tables] || ['versions']
+    end
+
     def firewall_allow_incoming_on_port
       # These ports allow incoming connections from any ip address
       ports = []
@@ -213,6 +217,26 @@ module Pvcglue
 
     def repo_url
       data[app_name][:repo_url]
+    end
+
+    def client_header_timeout
+      data[app_name][:client_header_timeout] || stage[:client_header_timeout] || "60s"
+    end
+
+    def client_body_timeout
+      data[app_name][:client_body_timeout] || stage[:client_body_timeout] || "60s"
+    end
+
+    def proxy_read_timeout
+      data[app_name][:proxy_read_timeout] || stage[:proxy_read_timeout] || "60s"
+    end
+
+    def proxy_send_timeout
+      data[app_name][:proxy_send_timeout] || stage[:proxy_send_timeout] || "60s"
+    end
+
+    def client_max_body_size
+      data[app_name][:client_max_body_size] || stage[:client_max_body_size] || "1m"
     end
 
     def swapfile_size

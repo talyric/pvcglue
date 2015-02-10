@@ -12,6 +12,12 @@ events {
 
 http {
 
+ 	# Timeouts
+ 	client_header_timeout <%= Pvcglue.cloud.client_header_timeout %>;
+ 	client_body_timeout <%= Pvcglue.cloud.client_body_timeout %>;
+ 	proxy_read_timeout <%= Pvcglue.cloud.proxy_read_timeout %>;
+ 	proxy_send_timeout <%= Pvcglue.cloud.proxy_send_timeout %>;
+
 	##
 	# Basic Settings
 	##
@@ -24,6 +30,7 @@ http {
 	# server_tokens off;
 
 	server_names_hash_bucket_size 64;
+ 	client_max_body_size <%= Pvcglue.cloud.client_max_body_size %>;
 	# server_name_in_redirect off;
 
 	include /etc/nginx/mime.types;
