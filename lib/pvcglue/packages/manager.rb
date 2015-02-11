@@ -65,8 +65,14 @@ end
 package 'manager-push' do
   apply do
     if File.exists?(::Pvcglue.cloud.local_file_name)
-      data = File.read(::Pvcglue.cloud.local_file_name)
-      run(%Q[echo '#{data}' | tee #{::Pvcglue::Manager.manager_file_name}])
+      # scp foobar.txt your_username@remotehost.edu:/some/remote/directory
+      cmd = %{scp #{::Pvcglue.cloud.local_file_name} #{node.get(:user)}@#{node.host}:#{::Pvcglue::Manager.manager_file_name}}
+      puts "Running `#{cmd}`"
+
+      unless system cmd
+        raise(Thor::Error, "Error:  #{$?}")
+      end
+
       run(%Q[chmod 600 #{::Pvcglue::Manager.manager_file_name}])
     else
       puts "Local file not found:  #{::Pvcglue.cloud.local_file_name}"
@@ -76,13 +82,15 @@ end
 
 package 'manager-pull' do
   apply do
-    data = run("cat #{::Pvcglue::Manager.manager_file_name}")
-    if data.empty?
-      puts "Remote manager file not found:  #{::Pvcglue::Manager.manager_file_name}"
-    else
-      File.write(::Pvcglue.cloud.local_file_name, data)
-      puts "Saved as:  #{::Pvcglue.cloud.local_file_name}"
+    # scp your_username@remotehost.edu:foobar.txt /some/local/directory
+    cmd = %{scp #{node.get(:user)}@#{node.host}:#{::Pvcglue::Manager.manager_file_name} #{::Pvcglue.cloud.local_file_name}}
+    puts "Running `#{cmd}`"
+
+    unless system cmd
+      raise(Thor::Error, "Error:  #{$?}")
     end
+
+    puts "Saved as:  #{::Pvcglue.cloud.local_file_name}"
   end
 end
 
