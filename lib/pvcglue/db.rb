@@ -1,3 +1,4 @@
+require 'yaml'
 module Pvcglue
   class Db < Thor
 
