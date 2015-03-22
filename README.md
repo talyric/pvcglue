@@ -158,7 +158,7 @@ Add these lines to your application's Gemfile.  `dotenv-rails` must be listed fi
 
 Then add these lines to your application's Gemfile, whereever you like (usually at the end):
 
-    gem 'pvcglue', "~> 0.1.12", :group => :development
+    gem 'pvcglue', "~> 0.1.15", :group => :development
     gem 'pvcglue_dbutils', "~> 0.5.3"
 
 And then execute:
