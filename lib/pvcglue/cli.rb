@@ -148,6 +148,13 @@ module Pvcglue
       sh(server)
     end
 
+    desc "up", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def up
+      Pvcglue::Capistrano.deploy
+    end
+
     desc "pvcify", "update capistrano, database.yml and other configurations"
     method_option :stage, :required => true, :aliases => "-s"
 
@@ -156,12 +163,6 @@ module Pvcglue
       Pvcglue::Db.configure_database_yml
     end
 
-    desc "deploy", "deploy the app"
-    method_option :stage, :required => true, :aliases => "-s"
-
-    def deploy
-      Pvcglue::Capistrano.deploy
-    end
   end
 
 end

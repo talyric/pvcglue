@@ -4,11 +4,11 @@ require 'pvcglue/cli'
 # Allow use of Capistrano style environment syntax and convert to 'standard' syntax
 # Example:  `pvc production bootstrap` ==> `pvc bootstrap --stage=production`
 # TODO: refactor to use a list of user specified environments
-if ARGV.count >= 2 && %w[alpha beta gamma delta preview production staging all].include?(ARGV[0])
+if ARGV.count >= 2 && %w[local alpha beta gamma delta preview production staging all].include?(ARGV[0])
   ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
 end
 
 # puts ARGV.inspect
 
 Pvcglue::CLI.start
-puts "Done."
+puts "ZZZZZZZZZZZZZZZZZZZZDone."
