@@ -148,10 +148,10 @@ module Pvcglue
       sh(server)
     end
 
-    desc "up", "start local virtual machines"
+    desc "deploy", "deploy the app"
     method_option :stage, :required => true, :aliases => "-s"
 
-    def up
+    def deploy
       Pvcglue::Capistrano.deploy
     end
 
@@ -162,6 +162,56 @@ module Pvcglue
       Pvcglue::Capistrano.capify
       Pvcglue::Db.configure_database_yml
     end
+
+    desc "start", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def start
+      Pvcglue::Vagrant.start
+    end
+
+    desc "stop", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def stop
+      Pvcglue::Vagrant.stop
+    end
+
+    desc "restart", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def restart
+      Pvcglue::Vagrant.restart
+    end
+
+    desc "destroy", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def destroy
+      Pvcglue::Vagrant.destroy
+    end
+
+    desc "suspend", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def suspend
+      Pvcglue::Vagrant.suspend
+    end
+
+    desc "kill", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def kill
+      Pvcglue::Vagrant.kill
+    end
+
+    desc "rebuild", "start local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def rebuild
+      Pvcglue::Vagrant.rebuild
+    end
+
 
   end
 

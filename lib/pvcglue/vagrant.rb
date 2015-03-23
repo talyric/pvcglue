@@ -2,7 +2,7 @@ module Pvcglue
   class Vagrant
     MACHINES = %w(manager lb web web_2 db memcached)
 
-    def self.up
+    def self.start
       if system("vagrant up")
         cache_info_for_machines
       else
@@ -10,6 +10,31 @@ module Pvcglue
         puts "Nope!"
       end
 
+    end
+
+    def self.stop
+      system("vagrant halt")
+    end
+
+    def self.restart
+      system("vagrant reload")
+    end
+
+    def self.rebuild
+      system("vagrant destroy --force")
+      start
+    end
+
+    def self.destroy
+      system("vagrant destroy --force")
+    end
+
+    def self.suspend
+      system("vagrant suspend")
+    end
+
+    def self.kill
+      system("vagrant halt --force")
     end
 
     def self.remove_cache_info_for_machines
@@ -48,9 +73,11 @@ module Pvcglue
       machines = {}
       MACHINES.each do |machine|
         machines[machine] = {}
+        puts "Getting networking info from #{machine}..."
         data = `vagrant ssh #{machine} -c "ip a"`
-        data.scan(/inet (.*)\/.*global (eth[01])/) do |ip, eth|
-          type = eth == 'eth0' ? :private : :public
+        puts data
+        data.scan(/inet (.*)\/.*global (eth[12])/) do |ip, eth|
+          type = eth == 'eth2' ? :private : :public
           machines[machine][type] = ip
         end
       end
