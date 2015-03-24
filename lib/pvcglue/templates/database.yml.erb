@@ -55,3 +55,7 @@ preview:
 production:
   <<: *default_settings
   database: <%= Pvcglue.cloud.app_name + '_production' %>
+
+local:
+  <<: *default_settings
+  database: <%= Pvcglue.cloud.app_name + '_local' %>

@@ -4,11 +4,12 @@ module Pvcglue
 
     def self.vagrant(command)
       raise(Thor::Error, "Vagrant (www.vagrantup.com) does not appear to be installed.  :(") unless vagrant_available?
-      system("vagrant #{command}")
+      Bundler.with_clean_env { system("vagrant #{command}") }
     end
 
     def self.vagrant_available?
-      `vagrant --version` =~ /Vagrant \d+\.\d+\.\d+/
+      # puts Bundler.with_clean_env { `vagrant --version` }
+      Bundler.with_clean_env { `vagrant --version` } =~ /Vagrant \d+\.\d+\.\d+/
     end
 
     def self.start
