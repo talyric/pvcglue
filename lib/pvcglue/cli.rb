@@ -163,53 +163,67 @@ module Pvcglue
       Pvcglue::Db.configure_database_yml
     end
 
-    desc "start", "start local virtual machines"
+    desc "start", "start local virtual machines (build first, if required)"
     method_option :stage, :required => true, :aliases => "-s"
 
     def start
-      Pvcglue::Vagrant.start
+      Pvcglue::Local.start
     end
 
-    desc "stop", "start local virtual machines"
+    desc "stop", "shut down local virtual machines"
     method_option :stage, :required => true, :aliases => "-s"
 
     def stop
-      Pvcglue::Vagrant.stop
+      Pvcglue::Local.stop
     end
 
-    desc "restart", "start local virtual machines"
+    desc "restart", "stop and then start local virtual machines"
     method_option :stage, :required => true, :aliases => "-s"
 
     def restart
-      Pvcglue::Vagrant.restart
+      Pvcglue::Local.restart
     end
 
-    desc "destroy", "start local virtual machines"
+    desc "destroy", "destory local virtual machines"
     method_option :stage, :required => true, :aliases => "-s"
 
     def destroy
-      Pvcglue::Vagrant.destroy
+      Pvcglue::Local.destroy
     end
 
-    desc "suspend", "start local virtual machines"
+    desc "suspend", "suspend local virtual machines"
     method_option :stage, :required => true, :aliases => "-s"
 
     def suspend
-      Pvcglue::Vagrant.suspend
+      Pvcglue::Local.suspend
     end
 
-    desc "kill", "start local virtual machines"
+    desc "status", "show status of local virtual machines"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def status
+      Pvcglue::Local.status
+    end
+
+    desc "kill", "force shutdown (power off) local virtual machines - may cause data corruption"
     method_option :stage, :required => true, :aliases => "-s"
 
     def kill
-      Pvcglue::Vagrant.kill
+      Pvcglue::Local.kill
     end
 
-    desc "rebuild", "start local virtual machines"
+    desc "rebuild", "destroy, build and start local virtual machines"
     method_option :stage, :required => true, :aliases => "-s"
 
     def rebuild
-      Pvcglue::Vagrant.rebuild
+      Pvcglue::Local.rebuild
+    end
+
+    desc "update_config", "debug use"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def update_config
+      Pvcglue::Local.update_local_config_from_cache
     end
 
 

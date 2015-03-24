@@ -9,6 +9,7 @@ module Pvcglue
   class Configuration < Thor
 
     attr_accessor :cloud_manager
+    attr_accessor :local_cloud_manager
     attr_accessor :cloud_name
     attr_accessor :application_name
     attr_accessor :context
@@ -21,19 +22,36 @@ module Pvcglue
       ENV['PVCGLUE_ENV_PREFIX'] || 'PVCGLUE'
     end
 
+    def self.project_file_name
+      File.join(self.application_dir, file_name)
+    end
+
+    def self.application_dir
+      Dir.pwd
+    end
 
     # silence Thor warnings, as these are not Thor commands.  (But we still need 'say' and 'ask' and friends.)
     no_commands do
 
       def initialize
-        #ENV["PVCGLUE_#{'application_name'.upcase}"] = 'override'
-        init(:cloud_manager) || configure_manager
-        raise(Thor::Error, "The manager has not been configured.  :(") if cloud_manager.nil?
+        if Pvcglue::Manager.local_mode?
+          init(:local_cloud_manager)
+          @cloud_manager = @local_cloud_manager
+        else
+          init(:cloud_manager) || configure_manager
+        end
+
+        # raise(Thor::Error, "The manager has not been configured.  :(") if cloud_manager.nil?
+        raise("The manager has not been configured.  :(") if cloud_manager.nil?
         init_except_manager
       end
 
       def init_except_manager
-        init(:cloud_name, 'cluster_one')
+        if Pvcglue::Manager.local_mode?
+          @cloud_name = 'local_cloud'
+        else
+          init(:cloud_name, 'cluster_one')
+        end
         init(:application_name, find_app_name)
       end
 
@@ -84,17 +102,31 @@ module Pvcglue
       end
 
       def project_file_name
-        File.join(application_dir, self.class.file_name)
+        self.class.project_file_name
       end
 
       def user_file_name
         File.join(Dir.home, self.class.file_name)
       end
 
+      # Thanks to http://stackoverflow.com/a/1509957/444774
+      def underscore(camel_cased_word)
+        camel_cased_word.to_s.gsub(/::/, '/').
+            gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2').
+            gsub(/([a-z\d])([A-Z])/, '\1_\2').
+            tr("-", "_").
+            downcase
+      end
+
       def find_app_name
-        # try rack file...anyone know a better way, without loading Rails?
+        # try known files...anyone know a better way, without loading Rails?
         rack_up = File.join(application_dir, 'config.ru')
-        $1.downcase if File.exists?(rack_up) && File.read(rack_up) =~ /^run (.*)::/
+        app_name = underscore($1) if File.exists?(rack_up) && File.read(rack_up) =~ /^run (.*)::/
+        unless app_name
+          file_name = File.join(application_dir, 'config', 'application.rb')
+          app_name = underscore($1) if File.exists?(file_name) && File.read(file_name) =~ /^module (.*)/
+        end
+        app_name
       end
 
       def options
@@ -118,7 +150,7 @@ module Pvcglue
       end
 
       def application_dir
-        Dir.pwd
+        self.class.application_dir
       end
 
       def app_maintenance_files_dir
@@ -126,7 +158,7 @@ module Pvcglue
       end
 
       def ruby_version_file_name
-        File.join(application_dir,'.ruby-version')
+        File.join(application_dir, '.ruby-version')
       end
 
       def ruby_version

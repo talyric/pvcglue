@@ -75,9 +75,31 @@ module Pvcglue
       Pvcglue.configuration.configure_manager
     end
 
+    desc "mode", "set mode (default or local)"
+
+    def mode(mode = "default")
+      raise(Thor::Error, "invalid manager mode :(  (Hint:  try 'default' or 'local'.)") unless mode.in?(%w(default local))
+      if mode == 'default' && Pvcglue::Manager.local_mode?
+        Pvcglue::Manager.set_default_mode
+      elsif mode == 'local' && !Pvcglue::Manager.local_mode?
+        Pvcglue::Manager.set_local_mode
+      else
+        puts "The manager is already set to the #{mode} mode."
+      end
+    end
+
     # ------------------------------------------------------------------------------------------------------------------
 
+    def self.set_local_mode
+      File.write(Pvcglue::Manager.mode_file_name, %q(description = "The existence of this file sets the pvcglue manager mode to 'local'.  Use `pvc manager mode default` to reset."))
+    end
+
+    def self.set_default_mode
+      File.delete(Pvcglue::Manager.mode_file_name) if Pvcglue::Manager.local_mode?
+    end
+
     def self.initialize_cloud_data
+      # return if get_local_cloud_data
       unless read_cached_cloud_data
         Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
         # Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue') # Can not use package as it causes infinite recursion, we'll just do it manually
@@ -93,6 +115,15 @@ module Pvcglue
         write_cloud_data_cache
       end
     end
+
+    # def self.get_local_cloud_data
+    #   return unless Pvcglue.cloud.stage_name.in? %w(local test)
+    #   puts "*"*80
+    #   puts Pvcglue.cloud.stage_name
+    #   puts "*"*80
+    #   raise(Thor::Error, "stopped.  :(")
+    #
+    # end
 
     def self.write_cloud_data_cache
       File.write(Pvcglue.configuration.cloud_cache_file_name, TOML.dump(Pvcglue.cloud.data))
@@ -147,6 +178,14 @@ module Pvcglue
     def self.push_configuration
       Pvcglue::Packages.apply('manager-push'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
       clear_cloud_data_cache
+    end
+
+    def self.local_mode?
+      File.exists?(Pvcglue::Manager.mode_file_name)
+    end
+
+    def self.mode_file_name
+      File.join(Pvcglue::Configuration.application_dir, '.pvcglue-manager-mode-local.toml')
     end
 
   end

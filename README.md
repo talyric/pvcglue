@@ -1,6 +1,6 @@
 # PVC Glue
 
-Pico Virtual Cloud
+Pico Virtual Cloud Glue creates a tightly integrated (very small) virtual cloud for your Rails application.
 
 An opinionated cloud application manager for Rails applications using your own servers.
 
