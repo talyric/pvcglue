@@ -199,11 +199,13 @@ module Pvcglue
         # cat ~/.ssh/id_rsa.pub | vagrant ssh manager -c 'sudo tee /root/.ssh/authorized_keys'
         raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine} -c 'sudo tee /root/.ssh/authorized_keys')
       end
+      FileUtils.mkdir_p(File.dirname(cache_file_name)) # the 'tmp' directory may not always exist
       File.write(cache_file_name, machines.to_json)
       machines
     end
 
     def self.cache_file_name
+      # TODO:  Remove caching, maybe?
       File.join(Pvcglue::Configuration.application_dir, 'tmp', 'pvcglue-machines.json')
     end
   end
