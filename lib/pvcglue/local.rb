@@ -13,6 +13,7 @@ module Pvcglue
     end
 
     def self.start
+      raise Pvcglue.cloud.stage_name
       if vagrant("up")
         update_local_config(get_info_for_machines)
       else
@@ -35,7 +36,9 @@ module Pvcglue
       # puts data.inspect
       # puts machines.inspect
       # puts machines[:manager][:public_ip].inspect
-      data[:local_cloud_manager] = machines[:manager][:public_ip]
+      manager_ip = machines[:manager][:public_ip].to_s # to_s in case it's nil
+      raise(Thor::Error, "Manager IP is not valid. :(") unless manager_ip =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
+      data[:local_cloud_manager] = manager_ip
       File.write(manager_file_name, TOML.dump(data.stringify_keys))
 
       app_name = Pvcglue.configuration.application_name
@@ -47,11 +50,11 @@ module Pvcglue
         data = {app_name =>
                     {"excluded_db_tables" => ["versions"],
                      "name" => app_name,
-                     "repo_url" => "git@github.com:talyric/pvcglue-dev-box.git",
+                     "repo_url" => "git@github.com:talyric/pvcglue-dev-box.git", # TODO: get with git
                      "ssh_allowed_from_all_port" => "22222",
                      "swapfile_size" => 128,
                      "time_zone" => "America/Los_Angeles",
-                     "authorized_keys" => {"example" => "ssh-rsa AAA...ZZZ== example@dev.local"},
+                     "authorized_keys" => {"example" => "ssh-rsa AAA...ZZZ== example@dev.local"}, # TODO: get from ~/.ssh/id_rsa
                      "dev_ip_addresses" => {"example" => "127.0.0.1"},
                      "gems" => {"delayed_job" => false, "whenever" => false},
                      "stages" =>
