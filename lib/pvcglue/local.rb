@@ -3,6 +3,7 @@ module Pvcglue
     MACHINES = %w(manager lb web web_2 db memcached)
 
     def self.vagrant(command)
+      raise(Thor::Error, "This command can only be used for the 'local' and 'test' stages.") unless Pvcglue.cloud.stage_name.in? %w(local test)
       raise(Thor::Error, "Vagrant (www.vagrantup.com) does not appear to be installed.  :(") unless vagrant_available?
       Bundler.with_clean_env { system("vagrant #{command}") }
     end
@@ -13,13 +14,16 @@ module Pvcglue
     end
 
     def self.start
-      raise Pvcglue.cloud.stage_name
-      if vagrant("up")
+      if vagrant("up #{machines_in_stage}")
         update_local_config(get_info_for_machines)
       else
         remove_cache_info_for_machines
         raise(Thor::Error, "Error starting virtual machines.  :(")
       end
+    end
+
+    def self.machines_in_stage
+      "/#{Pvcglue.cloud.stage_name}-\\|manager/" # must escape '|' for shell
     end
 
     def self.update_local_config_from_cache
@@ -38,7 +42,8 @@ module Pvcglue
       # puts machines[:manager][:public_ip].inspect
       manager_ip = machines[:manager][:public_ip].to_s # to_s in case it's nil
       raise(Thor::Error, "Manager IP is not valid. :(") unless manager_ip =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
-      data[:local_cloud_manager] = manager_ip
+      data["local_cloud_manager"] = manager_ip
+      # data["#{Pvcglue.cloud.stage_name}_cloud_manager"] = manager_ip
       File.write(manager_file_name, TOML.dump(data.stringify_keys))
 
       app_name = Pvcglue.configuration.application_name
@@ -54,7 +59,7 @@ module Pvcglue
                      "ssh_allowed_from_all_port" => "22222",
                      "swapfile_size" => 128,
                      "time_zone" => "America/Los_Angeles",
-                     "authorized_keys" => {"example" => "ssh-rsa AAA...ZZZ== example@dev.local"}, # TODO: get from ~/.ssh/id_rsa
+                     "authorized_keys" => {"example" => File.read(File.expand_path('~/.ssh/id_rsa.pub'))}, # TODO: error checking
                      "dev_ip_addresses" => {"example" => "127.0.0.1"},
                      "gems" => {"delayed_job" => false, "whenever" => false},
                      "stages" =>
@@ -109,15 +114,15 @@ module Pvcglue
       # puts "*"*80
       # puts data[app_name][:stages][:local][:roles][:caching][:memcached][:public_ip].inspect
       # puts "*"*80
-
-      data[app_name][:stages][:local][:roles][:caching][:memcached][:public_ip] = machines[:memcached][:public_ip]
-      data[app_name][:stages][:local][:roles][:caching][:memcached][:private_ip] = machines[:memcached][:private_ip]
-      data[app_name][:stages][:local][:roles][:db][:db][:public_ip] = machines[:db][:public_ip]
-      data[app_name][:stages][:local][:roles][:db][:db][:private_ip] = machines[:db][:private_ip]
-      data[app_name][:stages][:local][:roles][:lb][:lb][:public_ip] = machines[:lb][:public_ip]
-      data[app_name][:stages][:local][:roles][:lb][:lb][:private_ip] = machines[:lb][:private_ip]
-      data[app_name][:stages][:local][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip]
-      data[app_name][:stages][:local][:roles][:web][:web_1][:private_ip] = machines[:web][:private_ip]
+      stage_name = Pvcglue.cloud.stage_name
+      data[app_name][:stages][stage_name][:roles][:caching][:memcached][:public_ip] = machines[:memcached][:public_ip]
+      data[app_name][:stages][stage_name][:roles][:caching][:memcached][:private_ip] = machines[:memcached][:private_ip]
+      data[app_name][:stages][stage_name][:roles][:db][:db][:public_ip] = machines[:db][:public_ip]
+      data[app_name][:stages][stage_name][:roles][:db][:db][:private_ip] = machines[:db][:private_ip]
+      data[app_name][:stages][stage_name][:roles][:lb][:lb][:public_ip] = machines[:lb][:public_ip]
+      data[app_name][:stages][stage_name][:roles][:lb][:lb][:private_ip] = machines[:lb][:private_ip]
+      data[app_name][:stages][stage_name][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip]
+      data[app_name][:stages][stage_name][:roles][:web][:web_1][:private_ip] = machines[:web][:private_ip]
       # data[app_name][:stages][:local][:roles][:web][:web_2][:public_ip] = machines[:web_2][:public_ip]
       # data[app_name][:stages][:local][:roles][:web][:web_2][:private_ip] = machines[:web_2][:private_ip]
 
@@ -127,28 +132,28 @@ module Pvcglue
     end
 
     def self.stop
-      vagrant("halt")
+      vagrant("halt #{machines_in_stage}")
     end
 
     def self.restart
-      vagrant("reload")
+      vagrant("reload #{machines_in_stage}")
     end
 
     def self.rebuild
-      vagrant("destroy --force")
+      vagrant("destroy #{machines_in_stage} --force")
       start
     end
 
     def self.destroy
-      vagrant("destroy --force")
+      vagrant("destroy #{machines_in_stage} --force")
     end
 
     def self.suspend
-      vagrant("suspend")
+      vagrant("suspend #{machines_in_stage}")
     end
 
     def self.kill
-      vagrant("halt --force")
+      vagrant("halt #{machines_in_stage} --force")
     end
 
     def self.status
@@ -191,16 +196,17 @@ module Pvcglue
       machines = {}
       MACHINES.each do |machine|
         machines[machine] = {}
-        puts "Getting networking info from #{machine}..."
-        data = `vagrant ssh #{machine} -c "ip a"`
+        machine_name = machine == 'manager' ? machine : "#{Pvcglue.cloud.stage_name}-#{machine}"
+        puts "Getting networking info from #{machine_name}..."
+        data = `vagrant ssh #{machine_name} -c "ip a"`
         puts data
         data.scan(/inet (.*)\/.*global (eth[12])/) do |ip, eth|
           type = eth == 'eth2' ? :private_ip : :public_ip
           machines[machine][type] = ip
         end
-        puts "Adding you public key to the root user for #{machine}..."
+        puts "Adding you public key to the root user for #{machine_name}..."
         # cat ~/.ssh/id_rsa.pub | vagrant ssh manager -c 'sudo tee /root/.ssh/authorized_keys'
-        raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine} -c 'sudo tee /root/.ssh/authorized_keys')
+        raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine_name} -c 'sudo tee /root/.ssh/authorized_keys')
       end
       FileUtils.mkdir_p(File.dirname(cache_file_name)) # the 'tmp' directory may not always exist
       File.write(cache_file_name, machines.to_json)
