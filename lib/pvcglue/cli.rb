@@ -155,6 +155,17 @@ module Pvcglue
       Pvcglue::Capistrano.deploy
     end
 
+    desc "rake", "run rake task on remote stage"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def rake(*tasks)
+      if Pvcglue.cloud.stage_name == 'production'
+      # if Pvcglue.cloud.stage_name == 'local'
+        raise(Thor::Error, "\nDidn't think so!\n") unless yes?("\n\nStop!  Think!  Are you sure you want to do this on the #{Pvcglue.cloud.stage_name} stage? (y/N)")
+      end
+      Pvcglue::Capistrano.rake(tasks)
+    end
+
     desc "pvcify", "update capistrano, database.yml and other configurations"
     method_option :stage, :required => true, :aliases => "-s"
 

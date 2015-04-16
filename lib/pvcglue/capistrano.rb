@@ -31,5 +31,9 @@ module Pvcglue
     def self.deploy
       system("cap #{Pvcglue.cloud.stage_name} deploy")
     end
+
+    def self.rake(params)
+      system("cap #{Pvcglue.cloud.stage_name} invoke[#{params.join(" ")}]")
+    end
   end
 end
