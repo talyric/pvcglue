@@ -146,14 +146,36 @@ module Pvcglue
           raise(Thor::Error, "Error:  #{$?}")
         end
 
-        cmd = %{scp -P #{port} #{user}@#{host}:#{file_name} #{self.class.file_helper(file_name)}}
+        cmd = %{scp -P #{port} #{user}@#{host}:#{file_name} #{file_name}}
         puts "Running `#{cmd}`"
 
         unless system cmd
           raise(Thor::Error, "Error:  #{$?}")
         end
+      end
 
+      def pg_restore(db, file_name)
+        Pvcglue.cloud.stage_name == 'production' && destroy_prod?
 
+        host = Pvcglue.cloud.nodes_in_stage('db')['db']['public_ip']
+        port = Pvcglue.cloud.port_in_context(:shell)
+        user = 'deploy'
+        file_name = self.class.file_helper(file_name)
+
+        cmd = %{scp -P #{port} #{file_name} #{user}@#{host}:#{file_name}}
+        unless system cmd
+          raise(Thor::Error, "Error:  #{$?}")
+        end
+
+        cmd = "pg_restore --verbose --clean --no-acl --no-owner -h #{db.host} -p #{db.port}"
+        cmd += " -U #{db.username}" if db.username
+        cmd += " -d #{db.database} #{self.class.file_helper(file_name)}"
+        puts cmd
+
+        unless Pvcglue.run_remote(host, port, user, " PGPASSWORD=#{db.password} #{cmd}")
+          puts "ERROR:"
+          puts $?.inspect
+        end
       end
 
       def pg_destroy(dest)
@@ -191,17 +213,6 @@ module Pvcglue
         end
       end
 
-      def pg_restore(dest, file_name)
-        Pvcglue.cloud.stage_name == 'production' && destroy_prod?
-        cmd = "pg_restore --verbose --clean --no-acl --no-owner -h #{dest.host} -p #{dest.port}"
-        cmd += " -U #{dest.username}" if dest.username
-        cmd += " -d #{dest.database} #{self.class.file_helper(file_name)}"
-        puts cmd
-        unless system({"PGPASSWORD" => dest.password}, cmd)
-          puts "ERROR:"
-          puts $?.inspect
-        end
-      end
     end
 
   end
