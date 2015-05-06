@@ -35,6 +35,16 @@ module Pvcglue
     data
   end
 
+  def self.run_remote(host, port, user, cmd)
+    cmd = "ssh -p #{port} #{user}@#{host} '#{cmd}'"
+    # puts "Running `#{cmd}`"
+
+    unless system cmd
+      raise(Thor::Error, "Error:  #{$?}")
+    end
+    true
+  end
+
   class Version
     def self.version
       VERSION

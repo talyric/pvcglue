@@ -15,7 +15,7 @@ module Pvcglue
       pg_restore(self.class.remote, file_name)
     end
 
-    desc "pull", "Pull copy of database from remote stage.  Pass -f to exclude tables defined in the configutation file.  If no tables are specified in the `excluded_db_tables` option, 'versions' will be used by default."
+    desc "pull", "Pull copy of database from remote stage.  Pass -f to exclude tables defined in the configuration file.  If no tables are specified in the `excluded_db_tables` option, 'versions' will be used by default."
     method_option :fast, :type => :boolean, :aliases => "-f"
     def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
@@ -25,14 +25,14 @@ module Pvcglue
     desc "dump", "dump"
 
     def dump(file_name = nil)
-      raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
+      raise(Thor::Error, "Stage should not be set for this command.  (Use 'pull' for remote databases.)") unless Pvcglue.cloud.stage_name.nil?
       pg_dump(self.class.local, file_name)
     end
 
     desc "restore", "restore"
 
     def restore(file_name = nil)
-      raise(Thor::Error, "Stage should not be set for this command.") unless Pvcglue.cloud.stage_name.nil?
+      raise(Thor::Error, "Stage should not be set for this command.  (Use 'push' for remote databases.)") unless Pvcglue.cloud.stage_name.nil?
       pg_restore(self.class.local, file_name)
     end
 
@@ -101,7 +101,7 @@ module Pvcglue
     def self.file_helper(file_name)
       # TODO:  make it more helpful ;)
       stage = Pvcglue.cloud.stage_name || "dev"
-      file_name = "#{Pvcglue.configuration.application_name}_#{stage}_#{Time.now.strftime("%Y-%m-%d")}.dump" unless file_name
+      file_name = "#{Pvcglue.configuration.application_name}_#{stage}_#{Time.now.strftime("%Y-%m-%d-%H%M")}.dump" unless file_name
       # "#{File.dirname(file_name)}/#{File.basename(file_name, '.*')}.dump"
       file_name
     end
@@ -118,26 +118,42 @@ module Pvcglue
 
       def destroy_prod?
         say("Are you *REALLY* sure you want to DESTROY the PRODUCTION database?")
-        input = ask("Type 'destroy production' if you are:")
-        raise(Thor::Error, "Ain't gonna do it.") if input.downcase != "destroy production"
-        puts "ok, going through with the it..."
+        input = ask("Type 'destroy #{source.database}' if you are:")
+        raise(Thor::Error, "Ain't gonna do it.") if input.downcase != "destroy #{source.database}"
+        puts "ok, going through with the it...  (I sure hope you know what you are doing, Keith!)"
       end
 
 
-      def pg_dump(source, file_name, fast)
-        cmd = "pg_dump -Fc --no-acl --no-owner -h #{source.host} -p #{source.port}"
-        cmd += " -U #{source.username}" if source.username
+      def pg_dump(db, file_name, fast)
+        host = Pvcglue.cloud.nodes_in_stage('db')['db']['public_ip']
+        port = Pvcglue.cloud.port_in_context(:shell)
+        user = 'deploy'
+        file_name = self.class.file_helper(file_name)
+
+        cmd = "pg_dump -Fc --no-acl --no-owner -h #{db.host} -p #{db.port}"
+        cmd += " -U #{db.username}" if db.username
         if fast
           Pvcglue.cloud.exclude_tables.each do |table|
             cmd += " --exclude-table=#{table}"
           end
         end
-        cmd += " #{source.database} -v -f #{self.class.file_helper(file_name)}"
+        cmd += " #{db.database} -v -f #{file_name}"
+
         puts cmd
-        unless system({"PGPASSWORD" => source.password}, cmd)
+        unless Pvcglue.run_remote(host, port, user, " PGPASSWORD=#{db.password} #{cmd}")
           puts "ERROR:"
           puts $?.inspect
+          raise(Thor::Error, "Error:  #{$?}")
         end
+
+        cmd = %{scp -P #{port} #{user}@#{host}:#{file_name} #{self.class.file_helper(file_name)}}
+        puts "Running `#{cmd}`"
+
+        unless system cmd
+          raise(Thor::Error, "Error:  #{$?}")
+        end
+
+
       end
 
       def pg_destroy(dest)
