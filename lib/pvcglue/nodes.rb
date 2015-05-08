@@ -15,7 +15,7 @@ module Pvcglue
     def run
       puts "This is where it should configure the nodes for #{@roles_filter}.  :)"
 
-      %w(lb db web caching).each do |role|
+      %w(lb db web caching redis).each do |role|
         if apply_role?(role)
           Pvcglue::Packages.apply(role.to_sym, :build, Pvcglue.cloud.nodes_in_stage(role))
         end

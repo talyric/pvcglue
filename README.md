@@ -165,6 +165,40 @@ And then execute:
 
     $ bundle
 
+
+Notes:
+
+    .ruby-version
+    .ruby-gemset
+    Ruby verions in Gemfile
+
+    pvc manager configure # once per machine
+    pvc manager bootstrap
+
+    add *.toml and *.dump to .gitignore
+
+
+    create main toml file
+
+    add maintenance/maintenance.html
+
+    pvc alpha bootstrap
+    pvc alpha pvcify
+    pvc alpha build
+    pvc alpha deploy
+
+    modify config/initializers/secret_token.rb to include
+
+      if Rails.env.production?
+        Store::Application.config.secret_token = ENV['RAILS_SECRET_TOKEN'] || raise('No secret token specified.  :(')
+      else
+        Store::Application.config.secret_token = '1175ba3ce440d59b811fd9464c5657ca09f171535fd885719f263ddec3af6ef5df42c266d96868479357b7959b05cfcac7dd1663a696931c5f347c96665e1623'
+      end
+
+
+
+
+
 ## Troubleshooting
 
 ### If you see this while trying to deploy

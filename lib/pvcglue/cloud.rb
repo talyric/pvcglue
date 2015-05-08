@@ -56,7 +56,8 @@ module Pvcglue
     end
 
     def stage_roles
-      raise(Thor::Error, "Stage not defined:  #{stage_name}.") if stage.nil?
+      raise("Stage not defined:  #{stage_name}.") if stage.nil?
+      # raise(Thor::Error, "Stage not defined:  #{stage_name}.") if stage.nil?
       stage[:roles]
     end
 
@@ -73,7 +74,7 @@ module Pvcglue
     end
 
     # find node by full node_name or by matching prefix of node_name
-    def find_node(node_name)
+    def find_node(node_name, raise_error = true)
       puts "*"*80
       raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
       return {node_name => nodes_in_stage[node_name]} if nodes_in_stage[node_name]
@@ -82,7 +83,8 @@ module Pvcglue
         puts key
         return {key => value} if key.start_with?(node_name)
       end
-      raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
+      raise("Not found:  #{node_name} in #{stage_name}.") if raise_error
+      # raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
     end
 
     def nodes_in_stage(role_filter = 'all')

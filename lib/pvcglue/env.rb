@@ -87,7 +87,8 @@ module Pvcglue
           'DB_USER_POSTGRES_USERNAME' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
           'DB_USER_POSTGRES_DATABASE' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
           'DB_USER_POSTGRES_PASSWORD' => new_password,
-          'MEMCACHE_SERVERS' => memcached_host
+          'MEMCACHE_SERVERS' => memcached_host,
+          'REDIS_SERVER' => redis_host
       }
     end
 
@@ -97,8 +98,13 @@ module Pvcglue
     end
 
     def self.memcached_host
-      node = Pvcglue.cloud.find_node('memcached')
-      "#{node['memcached']['private_ip']}:11211"
+      node = Pvcglue.cloud.find_node('memcached', false)
+      node ? "#{node['memcached']['private_ip']}:11211" : ""
+    end
+
+    def self.redis_host
+      node = Pvcglue.cloud.find_node('redis', false)
+      node ? "#{node['redis']['private_ip']}:6379" : ""
     end
 
     def self.new_password

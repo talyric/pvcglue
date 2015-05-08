@@ -1,6 +1,7 @@
 module Pvcglue
   class Local
-    MACHINES = %w(manager lb web web_2 db memcached)
+    # MACHINES = %w(manager lb web web_2 db memcached)
+    MACHINES = %w(manager lb web db)
 
     def self.vagrant(command)
       raise(Thor::Error, "This command can only be used for the 'local' and 'test' stages.") unless Pvcglue.cloud.stage_name.in? %w(local test)
@@ -67,9 +68,11 @@ module Pvcglue
                               {"db_rebuild" => true,
                                "domains" => ["#{app_name}.local"],
                                "ssl" => "none",
-                               "roles" =>
-                                   {"caching" =>
-                                        {"memcached" => {"private_ip" => "0.0.0.0", "public_ip" => "0.0.0.0"}},
+                               "roles" => {
+                                   # "caching" =>
+                                   #      {"memcached" => {"private_ip" => "0.0.0.0", "public_ip" => "0.0.0.0"}},
+                                   "redis" =>
+                                        {"redis" => {"private_ip" => "0.0.0.0", "public_ip" => "0.0.0.0"}},
                                     "db" => {"db" => {"private_ip" => "0.0.0.0", "public_ip" => "0.0.0.0"}},
                                     "lb" =>
                                         {"lb" =>
@@ -115,10 +118,12 @@ module Pvcglue
       # puts data[app_name][:stages][:local][:roles][:caching][:memcached][:public_ip].inspect
       # puts "*"*80
       stage_name = Pvcglue.cloud.stage_name
-      data[app_name][:stages][stage_name][:roles][:caching][:memcached][:public_ip] = machines[:memcached][:public_ip]
-      data[app_name][:stages][stage_name][:roles][:caching][:memcached][:private_ip] = machines[:memcached][:private_ip]
+      # data[app_name][:stages][stage_name][:roles][:caching][:memcached][:public_ip] = machines[:memcached][:public_ip]
+      # data[app_name][:stages][stage_name][:roles][:caching][:memcached][:private_ip] = machines[:memcached][:private_ip]
       data[app_name][:stages][stage_name][:roles][:db][:db][:public_ip] = machines[:db][:public_ip]
       data[app_name][:stages][stage_name][:roles][:db][:db][:private_ip] = machines[:db][:private_ip]
+      data[app_name][:stages][stage_name][:roles][:redis][:redis][:public_ip] = machines[:db][:public_ip]
+      data[app_name][:stages][stage_name][:roles][:redis][:redis][:private_ip] = machines[:db][:private_ip]
       data[app_name][:stages][stage_name][:roles][:lb][:lb][:public_ip] = machines[:lb][:public_ip]
       data[app_name][:stages][stage_name][:roles][:lb][:lb][:private_ip] = machines[:lb][:private_ip]
       data[app_name][:stages][stage_name][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip]
