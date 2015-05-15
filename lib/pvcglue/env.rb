@@ -134,7 +134,7 @@ module Pvcglue
     end
 
     def self.stage_env_cache_file_name
-      File.join(Pvcglue.configuration.tmp_dir, "pvcglue_cache_#{stage_env_file_name_base}")
+      File.join(Pvcglue.configuration.pvcglue_tmp_dir, "pvcglue_cache_#{stage_env_file_name_base}")
     end
 
     def self.clear_stage_env_cache

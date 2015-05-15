@@ -162,6 +162,9 @@ module Pvcglue
       ports = []
       from_all = data[app_name][:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
+      if stage_name == 'local'
+        Pvcglue::Local.ssh_config.each { |_, port| ports << port } # Yes, this is a hack, and should be refactored.  :)
+      end
       ports
     end
 
@@ -179,6 +182,7 @@ module Pvcglue
       from_all = data[app_name][:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
       ports.concat [80, 443] if current_node.values.first[:allow_public_access]
+      ports.concat ["2000:3000"] if stage_name == 'local'
       ports
     end
 

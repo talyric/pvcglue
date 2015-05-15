@@ -15,8 +15,11 @@ module Pvcglue
     end
 
     def self.start
+      FileUtils.rm_rf(local_cache_dir)
+
       if vagrant("up #{machines_in_stage}")
         update_local_config(get_info_for_machines)
+        get_ssh_config
       else
         remove_cache_info_for_machines
         raise(Thor::Error, "Error starting virtual machines.  :(")
@@ -28,7 +31,7 @@ module Pvcglue
     end
 
     def self.update_local_config_from_cache
-      data = File.read(cache_file_name)
+      data = File.read(machine_cache_file_name)
       machines = JSON.parse(data)
       update_local_config(machines)
     end
@@ -133,7 +136,7 @@ module Pvcglue
 
       Pvcglue.cloud.data = data
       File.write(::Pvcglue.cloud.local_file_name, TOML.dump(Pvcglue.cloud.data))
-      File.write(Pvcglue.configuration.cloud_cache_file_name, TOML.dump(Pvcglue.cloud.data))
+      File.write(Pvcglue.configuration.cloud_cache_file_name, TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str)
     end
 
     def self.stop
@@ -166,7 +169,7 @@ module Pvcglue
     end
 
     def self.remove_cache_info_for_machines
-      File.delete(cache_file_name)
+      File.delete(machine_cache_file_name)
     end
 
 =begin
@@ -213,14 +216,40 @@ module Pvcglue
         # cat ~/.ssh/id_rsa.pub | vagrant ssh manager -c 'sudo tee /root/.ssh/authorized_keys'
         raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine_name} -c 'sudo tee /root/.ssh/authorized_keys')
       end
-      FileUtils.mkdir_p(File.dirname(cache_file_name)) # the 'tmp' directory may not always exist
-      File.write(cache_file_name, machines.to_json)
+      FileUtils.mkdir_p(File.dirname(machine_cache_file_name)) # the 'tmp' directory may not always exist
+      File.write(machine_cache_file_name, machines.to_json)
       machines
     end
 
-    def self.cache_file_name
+    def self.get_ssh_config
+      data = `vagrant ssh-config`
+      puts data
+      out = {}
+      data.scan(/Host (.*?)$.*?Port (.*?)$/m) do |host_name, port|
+        out[host_name] = port
+      end
+      FileUtils.mkdir_p(File.dirname(ssh_config_cache_file_name)) # the 'tmp' directory may not always exist
+      File.write(ssh_config_cache_file_name, out.to_json)
+      puts out.inspect
+      out
+    end
+
+    def self.ssh_config
+      JSON.parse(File.read(ssh_config_cache_file_name))
+    end
+
+    def self.local_cache_dir
+      Pvcglue.configuration.pvcglue_tmp_dir
+    end
+
+    def self.machine_cache_file_name
       # TODO:  Remove caching, maybe?
-      File.join(Pvcglue::Configuration.application_dir, 'tmp', 'pvcglue-machines.json')
+      File.join(local_cache_dir, 'pvcglue-machines.json')
+    end
+
+    def self.ssh_config_cache_file_name
+      # TODO:  Remove caching, maybe?
+      File.join(local_cache_dir, 'pvcglue-ssh-config.json')
     end
   end
 

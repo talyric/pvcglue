@@ -137,12 +137,16 @@ module Pvcglue
         File.join(application_dir, 'tmp')
       end
 
+      def pvcglue_tmp_dir
+        File.join(tmp_dir, 'pvcglue')
+      end
+
       def cloud_cache_file_name
         # Just in case the Rails project hasn't yet been run, make sure the tmp
         # dir exists.
-        Dir.mkdir(tmp_dir) unless Dir.exist?(tmp_dir)
+        Dir.mkdir(pvcglue_tmp_dir) unless Dir.exist?(pvcglue_tmp_dir)
 
-        File.join(tmp_dir, "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.toml")
+        File.join(pvcglue_tmp_dir, "pvcglue_#{cloud_manager}_#{cloud_name}_#{application_name}_cache.toml")
       end
 
       def clear_cloud_cache
