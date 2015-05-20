@@ -117,6 +117,8 @@ module Pvcglue
 
     def self.read_cached_stage_env
       # TODO:  Only use cache in development of gem, do not cache by default, use Manager config
+      return false # disable cache for now
+
       if File.exists?(stage_env_cache_file_name)
         stage_env = File.read(stage_env_cache_file_name)
         Pvcglue.cloud.stage_env = TOML.parse(stage_env)

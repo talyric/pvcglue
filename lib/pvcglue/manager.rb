@@ -130,6 +130,7 @@ module Pvcglue
     end
 
     def self.read_cached_cloud_data
+      return false # disable cache for now
       # TODO:  Expire cache after given interval
       if File.exists?(Pvcglue.configuration.cloud_cache_file_name)
         data = File.read(Pvcglue.configuration.cloud_cache_file_name)
