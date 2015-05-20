@@ -19,7 +19,7 @@ module Pvcglue
 
       if vagrant("up #{machines_in_stage}")
         update_local_config(get_info_for_machines)
-        get_ssh_config
+        # get_ssh_config
       else
         remove_cache_info_for_machines
         raise(Thor::Error, "Error starting virtual machines.  :(")
@@ -34,6 +34,15 @@ module Pvcglue
       data = File.read(machine_cache_file_name)
       machines = JSON.parse(data)
       update_local_config(machines)
+    end
+
+    def self.get_user_ip_address
+      result = `ip route get 8.8.8.8 2>&1 | awk '{print $NF; exit}'`.strip # Ubuntu
+      result = `ipconfig getifaddr en0 2>&1` unless result =~ /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/ # OSX
+      raise "IP Address not found" unless result =~ /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/
+      puts "*"*80
+      puts "Machine IP address #{result}"
+      result
     end
 
     def self.update_local_config(machines)
@@ -64,7 +73,7 @@ module Pvcglue
                      "swapfile_size" => 128,
                      "time_zone" => "America/Los_Angeles",
                      "authorized_keys" => {"example" => File.read(File.expand_path('~/.ssh/id_rsa.pub'))}, # TODO: error checking
-                     "dev_ip_addresses" => {"example" => "127.0.0.1"},
+                     "dev_ip_addresses" => {"local" => "127.0.0.1", "user" => get_user_ip_address},
                      "gems" => {"delayed_job" => false, "whenever" => false},
                      "stages" =>
                          {"local" =>
@@ -131,12 +140,17 @@ module Pvcglue
       data[app_name][:stages][stage_name][:roles][:lb][:lb][:private_ip] = machines[:lb][:private_ip]
       data[app_name][:stages][stage_name][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip]
       data[app_name][:stages][stage_name][:roles][:web][:web_1][:private_ip] = machines[:web][:private_ip]
+
+      data[app_name][:dev_ip_addresses] = {"local" => "127.0.0.1", "user" => get_user_ip_address}
+      data[app_name][:stages][stage_name][:domains] = [machines[:lb][:public_ip]]
+
       # data[app_name][:stages][:local][:roles][:web][:web_2][:public_ip] = machines[:web_2][:public_ip]
       # data[app_name][:stages][:local][:roles][:web][:web_2][:private_ip] = machines[:web_2][:private_ip]
 
-      Pvcglue.cloud.data = data
+          Pvcglue.cloud.data = data
       File.write(::Pvcglue.cloud.local_file_name, TOML.dump(Pvcglue.cloud.data))
       File.write(Pvcglue.configuration.cloud_cache_file_name, TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str)
+      puts TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str
     end
 
     def self.stop
@@ -202,6 +216,7 @@ module Pvcglue
 
     def self.get_info_for_machines
       machines = {}
+      vagrant_ips = []
       MACHINES.each do |machine|
         machines[machine] = {}
         machine_name = machine == 'manager' ? machine : "#{Pvcglue.cloud.stage_name}-#{machine}"
@@ -212,30 +227,39 @@ module Pvcglue
           type = eth == 'eth2' ? :private_ip : :public_ip
           machines[machine][type] = ip
         end
+        data.scan(/inet (.*)\/.*global (eth0)/) do |ip, eth|
+          vagrant_ips << ip
+        end
         puts "Adding you public key to the root user for #{machine_name}..."
         # cat ~/.ssh/id_rsa.pub | vagrant ssh manager -c 'sudo tee /root/.ssh/authorized_keys'
         raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine_name} -c 'sudo tee /root/.ssh/authorized_keys')
       end
       FileUtils.mkdir_p(File.dirname(machine_cache_file_name)) # the 'tmp' directory may not always exist
       File.write(machine_cache_file_name, machines.to_json)
+      FileUtils.mkdir_p(File.dirname(vagrant_config_cache_file_name)) # the 'tmp' directory may not always exist
+      File.write(vagrant_config_cache_file_name, vagrant_ips.to_json)
       machines
     end
 
-    def self.get_ssh_config
-      data = `vagrant ssh-config`
-      puts data
-      out = {}
-      data.scan(/Host (.*?)$.*?Port (.*?)$/m) do |host_name, port|
-        out[host_name] = port
-      end
-      FileUtils.mkdir_p(File.dirname(ssh_config_cache_file_name)) # the 'tmp' directory may not always exist
-      File.write(ssh_config_cache_file_name, out.to_json)
-      puts out.inspect
-      out
-    end
+    # def self.get_ssh_config
+    #   data = `vagrant ssh-config`
+    #   puts data
+    #   out = {}
+    #   data.scan(/Host (.*?)$.*?Port (.*?)$/m) do |host_name, port|
+    #     out[host_name] = port
+    #   end
+    #   FileUtils.mkdir_p(File.dirname(ssh_config_cache_file_name)) # the 'tmp' directory may not always exist
+    #   File.write(ssh_config_cache_file_name, out.to_json)
+    #   puts out.inspect
+    #   out
+    # end
 
-    def self.ssh_config
-      JSON.parse(File.read(ssh_config_cache_file_name))
+    def self.vagrant_config
+      ips = JSON.parse(File.read(vagrant_config_cache_file_name))
+      # puts ips.inspect
+      ip = ips.first
+      parts = ip.split('.')
+      parts[0..2].join('.') + '.0/24'
     end
 
     def self.local_cache_dir
@@ -247,7 +271,7 @@ module Pvcglue
       File.join(local_cache_dir, 'pvcglue-machines.json')
     end
 
-    def self.ssh_config_cache_file_name
+    def self.vagrant_config_cache_file_name
       # TODO:  Remove caching, maybe?
       File.join(local_cache_dir, 'pvcglue-ssh-config.json')
     end

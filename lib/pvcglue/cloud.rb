@@ -162,9 +162,6 @@ module Pvcglue
       ports = []
       from_all = data[app_name][:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
-      if stage_name == 'local'
-        Pvcglue::Local.ssh_config.each { |_, port| ports << port } # Yes, this is a hack, and should be refactored.  :)
-      end
       ports
     end
 
@@ -190,6 +187,10 @@ module Pvcglue
       # Incoming connections to any port are allowed from these ip addresses
       addresses = dev_ip_addresses
       addresses.concat(stage_internal_addresses)
+      # puts addresses.inspect
+      if stage_name == 'local'
+        addresses << Pvcglue::Local.vagrant_config # Yes, this is a hack, and should be refactored.  :)
+      end
       # puts addresses.inspect
       addresses
     end
