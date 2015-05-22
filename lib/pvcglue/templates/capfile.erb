@@ -13,6 +13,8 @@ require 'capistrano/bundler'
 require 'capistrano/rails/assets'
 require 'capistrano/rails/migrations'
 <% if Pvcglue.cloud.gems[:whenever] %>
+
+set :whenever_identifier, ->{ "#{fetch(:application)}_#{fetch(:stage)}" }
 require 'whenever/capistrano'
 <% end %>
 

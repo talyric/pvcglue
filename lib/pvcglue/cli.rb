@@ -181,6 +181,13 @@ module Pvcglue
       Pvcglue::Local.start
     end
 
+    desc "up", "start; bootstrap; pvcify; build; deploy"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def up
+      Pvcglue::Local.up
+    end
+
     desc "stop", "shut down local virtual machines"
     method_option :stage, :required => true, :aliases => "-s"
 

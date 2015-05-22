@@ -14,6 +14,21 @@ module Pvcglue
       Bundler.with_clean_env { `vagrant --version` } =~ /Vagrant \d+\.\d+\.\d+/
     end
 
+    def self.system_live_out(cmd)
+      raise($?) unless system(cmd, out: $stdout, err: :out)
+    end
+
+    def self.up
+      start
+      system_live_out('pvc manager bootstrap')
+      system_live_out('pvc manager push')
+      system_live_out('pvc local pvcify')
+      system_live_out('pvc manager push')
+      system_live_out('pvc local bootstrap')
+      system_live_out('pvc local build')
+      system_live_out('pvc local deploy')
+    end
+
     def self.start
       FileUtils.rm_rf(local_cache_dir)
 
@@ -36,7 +51,7 @@ module Pvcglue
       update_local_config(machines)
     end
 
-    def self.get_user_ip_address
+    def self.get_machine_ip_address
       result = `ip route get 8.8.8.8 2>&1 | awk '{print $NF; exit}'`.strip # Ubuntu
       result = `ipconfig getifaddr en0 2>&1` unless result =~ /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/ # OSX
       raise "IP Address not found" unless result =~ /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/
@@ -73,7 +88,7 @@ module Pvcglue
                      "swapfile_size" => 128,
                      "time_zone" => "America/Los_Angeles",
                      "authorized_keys" => {"example" => File.read(File.expand_path('~/.ssh/id_rsa.pub'))}, # TODO: error checking
-                     "dev_ip_addresses" => {"local" => "127.0.0.1", "user" => get_user_ip_address},
+                     "dev_ip_addresses" => {"local" => "127.0.0.1", "user" => get_machine_ip_address},
                      "gems" => {"delayed_job" => false, "whenever" => false},
                      "stages" =>
                          {"local" =>
@@ -130,6 +145,7 @@ module Pvcglue
       # puts data[app_name][:stages][:local][:roles][:caching][:memcached][:public_ip].inspect
       # puts "*"*80
       stage_name = Pvcglue.cloud.stage_name
+      # stage_name = :local
       # data[app_name][:stages][stage_name][:roles][:caching][:memcached][:public_ip] = machines[:memcached][:public_ip]
       # data[app_name][:stages][stage_name][:roles][:caching][:memcached][:private_ip] = machines[:memcached][:private_ip]
       data[app_name][:stages][stage_name][:roles][:db][:db][:public_ip] = machines[:db][:public_ip]
@@ -141,16 +157,18 @@ module Pvcglue
       data[app_name][:stages][stage_name][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip]
       data[app_name][:stages][stage_name][:roles][:web][:web_1][:private_ip] = machines[:web][:private_ip]
 
-      data[app_name][:dev_ip_addresses] = {"local" => "127.0.0.1", "user" => get_user_ip_address}
+      # puts "*"*80
+      # puts machines.inspect
+      data[app_name][:dev_ip_addresses] = {"local" => "127.0.0.1", "user" => get_machine_ip_address}
       data[app_name][:stages][stage_name][:domains] = [machines[:lb][:public_ip]]
 
       # data[app_name][:stages][:local][:roles][:web][:web_2][:public_ip] = machines[:web_2][:public_ip]
       # data[app_name][:stages][:local][:roles][:web][:web_2][:private_ip] = machines[:web_2][:private_ip]
 
-          Pvcglue.cloud.data = data
-      File.write(::Pvcglue.cloud.local_file_name, TOML.dump(Pvcglue.cloud.data))
+      Pvcglue.cloud.data = data
+      File.write(::Pvcglue.cloud.local_file_name, TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str)
       File.write(Pvcglue.configuration.cloud_cache_file_name, TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str)
-      puts TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str
+      # puts TOML::PvcDumper.new(Pvcglue.cloud.data).toml_str
     end
 
     def self.stop
@@ -238,6 +256,7 @@ module Pvcglue
       File.write(machine_cache_file_name, machines.to_json)
       FileUtils.mkdir_p(File.dirname(vagrant_config_cache_file_name)) # the 'tmp' directory may not always exist
       File.write(vagrant_config_cache_file_name, vagrant_ips.to_json)
+      # puts machines.inspect
       machines
     end
 

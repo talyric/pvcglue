@@ -28,6 +28,8 @@ module Pvcglue
   end
 
   def self.render_template(template, file_name = nil)
+    puts '-'*80
+    puts "---> render_template(template=#{template}, file_name=#{file_name}"
     data = Tilt.new(Pvcglue.template_file_name(template)).render
     if file_name
       File.write(file_name, data)

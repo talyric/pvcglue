@@ -4,7 +4,7 @@ apt_package 'ufw'
 
 package 'bootstrap-manager' do
   # TODO: firewall and ssh port config
-  #depends_on 'time-zone'
+  depends_on 'authenticate-host'
   depends_on 'htop'
   # depends_on 'ufw'
   #depends_on 'deploy-user'
@@ -12,6 +12,12 @@ package 'bootstrap-manager' do
   #depends_on 'firewall-config'
   depends_on 'pvcglue-user'
   depends_on 'manager-copy-id'
+end
+
+package 'authenticate-host' do
+  apply do
+    sudo "ls" # side-effect will add host to known_hosts
+  end
 end
 
 package 'pvcglue-user' do
@@ -55,7 +61,7 @@ package 'manager-copy-id' do
   apply do
     authorized_keys_file_name = Pvcglue::Manager.authorized_keys_file_name
     user_name = Pvcglue::Manager.user_name
-    copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys_file_name}"]
+    copy_id = %Q[cat ~/.ssh/id_rsa.pub | ssh -o BatchMode=yes -o StrictHostKeyChecking=no #{node.get(:user)}@#{node.host} "cat >> #{authorized_keys_file_name}"]
     system "#{copy_id}"
     run(%Q[cat "" >> #{authorized_keys_file_name}])
     sudo "chown #{user_name}:#{user_name} #{authorized_keys_file_name} && chmod 600 #{authorized_keys_file_name}"
