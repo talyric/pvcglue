@@ -68,7 +68,7 @@ module Pvcglue
       # puts data.inspect
       # puts machines.inspect
       # puts machines[:manager][:public_ip].inspect
-      manager_ip = machines[:manager][:public_ip].to_s # to_s in case it's nil
+      manager_ip = machines[:manager][:public_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
       raise(Thor::Error, "Manager IP is not valid. :(") unless manager_ip =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
       data["local_cloud_manager"] = manager_ip
       # data["#{Pvcglue.cloud.stage_name}_cloud_manager"] = manager_ip
@@ -148,19 +148,19 @@ module Pvcglue
       # stage_name = :local
       # data[app_name][:stages][stage_name][:roles][:caching][:memcached][:public_ip] = machines[:memcached][:public_ip]
       # data[app_name][:stages][stage_name][:roles][:caching][:memcached][:private_ip] = machines[:memcached][:private_ip]
-      data[app_name][:stages][stage_name][:roles][:db][:db][:public_ip] = machines[:db][:public_ip]
-      data[app_name][:stages][stage_name][:roles][:db][:db][:private_ip] = machines[:db][:private_ip]
-      data[app_name][:stages][stage_name][:roles][:redis][:redis][:public_ip] = machines[:db][:public_ip]
-      data[app_name][:stages][stage_name][:roles][:redis][:redis][:private_ip] = machines[:db][:private_ip]
-      data[app_name][:stages][stage_name][:roles][:lb][:lb][:public_ip] = machines[:lb][:public_ip]
-      data[app_name][:stages][stage_name][:roles][:lb][:lb][:private_ip] = machines[:lb][:private_ip]
-      data[app_name][:stages][stage_name][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip]
-      data[app_name][:stages][stage_name][:roles][:web][:web_1][:private_ip] = machines[:web][:private_ip]
+      data[app_name][:stages][stage_name][:roles][:db][:db][:public_ip] = machines[:db][:public_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:db][:db][:private_ip] = machines[:db][:private_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:redis][:redis][:public_ip] = machines[:db][:public_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:redis][:redis][:private_ip] = machines[:db][:private_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:lb][:lb][:public_ip] = machines[:lb][:public_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:lb][:lb][:private_ip] = machines[:lb][:private_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:web][:web_1][:public_ip] = machines[:web][:public_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:roles][:web][:web_1][:private_ip] = machines[:web][:private_ip].to_s # to_s in case it's nil, as 'nil' is invalid TOML
 
       # puts "*"*80
       # puts machines.inspect
-      data[app_name][:dev_ip_addresses] = {"local" => "127.0.0.1", "user" => get_machine_ip_address}
-      data[app_name][:stages][stage_name][:domains] = [machines[:lb][:public_ip]]
+      data[app_name][:dev_ip_addresses] = {"local" => "127.0.0.1", "user" => get_machine_ip_address.to_s} # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:domains] = [[machines[:lb][:public_ip]].to_s] # to_s in case it's nil, as 'nil' is invalid TOML
 
       # data[app_name][:stages][:local][:roles][:web][:web_2][:public_ip] = machines[:web_2][:public_ip]
       # data[app_name][:stages][:local][:roles][:web][:web_2][:private_ip] = machines[:web_2][:private_ip]
@@ -248,6 +248,8 @@ module Pvcglue
         data.scan(/inet (.*)\/.*global (eth0)/) do |ip, eth|
           vagrant_ips << ip
         end
+        raise "Public IP not found" unless machines[machine][:public_ip]
+        raise "Private IP not found" unless machines[machine][:private_ip]
         puts "Adding you public key to the root user for #{machine_name}..."
         # cat ~/.ssh/id_rsa.pub | vagrant ssh manager -c 'sudo tee /root/.ssh/authorized_keys'
         raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine_name} -c 'sudo tee /root/.ssh/authorized_keys')
