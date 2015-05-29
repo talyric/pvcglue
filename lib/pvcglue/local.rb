@@ -79,6 +79,8 @@ module Pvcglue
       data = TOML.load_file(::Pvcglue.cloud.local_file_name) if File.exists?(::Pvcglue.cloud.local_file_name)
       data = TOML.load_file(Pvcglue.configuration.cloud_cache_file_name) if data.empty? && File.exists?(Pvcglue.configuration.cloud_cache_file_name)
       # TODO:  get repo_url from git, if possible
+      puts "*"*80
+      puts data.inspect
       if data.empty?
         data = {app_name =>
                     {"excluded_db_tables" => ["versions"],
@@ -160,7 +162,8 @@ module Pvcglue
       # puts "*"*80
       # puts machines.inspect
       data[app_name][:dev_ip_addresses] = {"local" => "127.0.0.1", "user" => get_machine_ip_address.to_s} # to_s in case it's nil, as 'nil' is invalid TOML
-      data[app_name][:stages][stage_name][:domains] = [[machines[:lb][:public_ip]].to_s] # to_s in case it's nil, as 'nil' is invalid TOML
+      # data[app_name][:stages][stage_name][:domains] = [[machines[:lb][:public_ip]].to_s] # to_s in case it's nil, as 'nil' is invalid TOML
+      data[app_name][:stages][stage_name][:domains] = [machines[:lb][:public_ip] || ''] # to_s in case it's nil, as 'nil' is invalid TOML
 
       # data[app_name][:stages][:local][:roles][:web][:web_2][:public_ip] = machines[:web_2][:public_ip]
       # data[app_name][:stages][:local][:roles][:web][:web_2][:private_ip] = machines[:web_2][:private_ip]
