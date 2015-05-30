@@ -47,6 +47,7 @@ module Pvcglue
       end
 
       def init_except_manager
+        # TODO:  This 'caches' the file name and then if local_mode is enabled, it still uses the 'cached' file name...Must Fix!
         if Pvcglue::Manager.local_mode?
           @cloud_name = 'local_cloud'
         else
