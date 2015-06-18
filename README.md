@@ -4,6 +4,8 @@ Pico Virtual Cloud Glue creates a tightly integrated (very small) virtual cloud 
 
 An opinionated cloud application manager for Rails applications using your own servers.
 
+![pvcglue diagram](/../master/images/pvcglue.png?raw=true "PVC Glue Server Diagram")
+
 Currently supported stack:
 
   * Ubuntu 12.04 (with plans for supporting 14.04)
