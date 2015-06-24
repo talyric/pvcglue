@@ -9,6 +9,6 @@ if ARGV.count >= 2 && %w[local test alpha beta gamma delta preview production st
 end
 
 # puts ARGV.inspect
-
+raise 'got hedre'
 Pvcglue::CLI.start
 puts "----- Done -----"

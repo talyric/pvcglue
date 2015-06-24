@@ -186,6 +186,11 @@ module Pvcglue
           end
         end
 
+        Pvcglue::Packages.apply('postgresql-app-stage-db-drop'.to_sym, :build, Pvcglue.cloud.nodes_in_stage(db))
+        Pvcglue::Packages.apply('postgresql-app-stage-conf'.to_sym, :build, Pvcglue.cloud.nodes_in_stage(db))
+
+        raise
+
         cmd = "pg_restore --verbose --clean --no-acl --no-owner -h #{db.host} -p #{db.port}"
         cmd += " -U #{db.username}" if db.username
         cmd += " -d #{db.database} #{file_name}"

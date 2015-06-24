@@ -38,6 +38,14 @@ package 'postgresql-app-stage-conf' do
   end
 end
 
+package 'postgresql-app-stage-db-drop' do
+  apply do
+    username = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_USERNAME']
+    db_name = username # just for clarity in later statements.  This also must match database.yml.
+    run(%Q[sudo -u postgres psql -c "DROP DATABASE #{db_name}"])
+  end
+end
+
 package 'postgresql-root-password' do
   apply do
     # TODO: Use this to implement setting of the root password
