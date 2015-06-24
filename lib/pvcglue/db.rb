@@ -8,15 +8,16 @@ module Pvcglue
       Pvcglue::Db.configure_database_yml
     end
 
+    method_option :fast, :type => :boolean, :aliases => "-f"
+
     desc "push", "push"
 
     def push(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
-      pg_restore(self.class.remote, file_name)
+      pg_restore(self.class.remote, file_name, options[:fast])
     end
 
     desc "pull", "Pull copy of database from remote stage.  Pass -f to exclude tables defined in the configuration file.  If no tables are specified in the `excluded_db_tables` option, 'versions' will be used by default."
-    method_option :fast, :type => :boolean, :aliases => "-f"
 
     def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
@@ -171,7 +172,7 @@ module Pvcglue
         end
       end
 
-      def pg_restore(db, file_name)
+      def pg_restore(db, file_name, fast = false)
         Pvcglue.cloud.stage_name == 'production' && destroy_prod?
         file_name = self.class.file_helper(file_name)
 
@@ -180,16 +181,18 @@ module Pvcglue
           port = Pvcglue.cloud.port_in_context(:shell)
           user = 'deploy'
 
-          cmd = %{scp -P #{port} #{file_name} #{user}@#{host}:#{file_name}}
+          # cmd = %{scp -P #{port} #{file_name} #{user}@#{host}:#{file_name}}
+          cmd = %{rsync -avhPe "ssh -p #{port}" --progress #{file_name} #{user}@#{host}:#{file_name}}
           unless system cmd
             raise(Thor::Error, "Error:  #{$?}")
           end
+
+          unless fast
+            # Drop and recreate DB
+            Pvcglue::Packages.apply('postgresql-app-stage-db-drop'.to_sym, :build, Pvcglue.cloud.nodes_in_stage('db'))
+            Pvcglue::Packages.apply('postgresql-app-stage-conf'.to_sym, :build, Pvcglue.cloud.nodes_in_stage('db'))
+          end
         end
-
-        Pvcglue::Packages.apply('postgresql-app-stage-db-drop'.to_sym, :build, Pvcglue.cloud.nodes_in_stage(db))
-        Pvcglue::Packages.apply('postgresql-app-stage-conf'.to_sym, :build, Pvcglue.cloud.nodes_in_stage(db))
-
-        raise
 
         cmd = "pg_restore --verbose --clean --no-acl --no-owner -h #{db.host} -p #{db.port}"
         cmd += " -U #{db.username}" if db.username

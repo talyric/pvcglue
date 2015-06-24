@@ -7,7 +7,6 @@ module Pvcglue
   class CLI < Thor
 
     def initialize(args = [], local_options = {}, config = {})
-      raise 'got hedre'
       super
       Pvcglue.cloud.set_stage(options[:stage])
       # puts "/\\"*80

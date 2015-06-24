@@ -42,7 +42,38 @@ package 'postgresql-app-stage-db-drop' do
   apply do
     username = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_USERNAME']
     db_name = username # just for clarity in later statements.  This also must match database.yml.
+
+    sql = <<-SQL
+                UPDATE pg_catalog.pg_database
+                SET datallowconn=false WHERE datname='#{db_name}'
+    SQL
+    run(%Q[sudo -u postgres psql -c "#{sql}"])
+
+    # To simplify logic, try it with both versions.
+    # version >= 9.2
+    sql = <<-SQL
+                SELECT pg_terminate_backend(pg_stat_activity.pid)
+                FROM pg_stat_activity
+                WHERE pg_stat_activity.datname = '#{db_name}';
+    SQL
+    run(%Q[sudo -u postgres psql -c "#{sql}"])
+
+    # #puts "version < 9.2"
+    sql = <<-SQL
+                SELECT pg_terminate_backend(pg_stat_activity.procpid)
+                FROM pg_stat_activity
+                WHERE pg_stat_activity.datname = '#{db_name}';
+    SQL
+    run(%Q[sudo -u postgres psql -c "#{sql}"])
+
     run(%Q[sudo -u postgres psql -c "DROP DATABASE #{db_name}"])
+
+    sql = <<-SQL
+                UPDATE pg_catalog.pg_database
+                SET datallowconn=true WHERE datname='#{db_name}'
+    SQL
+    run(%Q[sudo -u postgres psql -c "#{sql}"])
+
   end
 end
 
