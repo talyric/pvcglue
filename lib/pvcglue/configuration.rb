@@ -170,6 +170,24 @@ module Pvcglue
         File.read(ruby_version_file_name).strip
       end
 
+      def rails_version
+        @rails_version ||= begin
+          `bundle exec rails -v`.sub('Rails ', '').strip
+        end
+      end
+
+      def rails_version_major
+        rails_version.split('.').first
+      end
+
+      def rails_bin_dir
+        if rails_version_major.to_i >= 4
+          'bin'
+        else
+          'script'
+        end
+      end
+
       def web_app_base_dir
         '/sites'
       end
