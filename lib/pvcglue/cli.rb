@@ -59,7 +59,7 @@ module Pvcglue
       # puts node.inspect
       puts "Connection to #{node_name} (#{node_data[:public_ip]}) as user 'deploy'..."
       working_dir = Pvcglue.cloud.deploy_to_app_current_dir
-      system(%(ssh -t deploy@#{node_data[:public_ip]} "cd #{working_dir} && echo 'Starting #{options[:stage].upcase} Rails console in #{working_dir}' && RAILS_ENV=#{options[:stage].downcase} script/rails c"))
+      system(%(ssh -t deploy@#{node_data[:public_ip]} "cd #{working_dir} && echo 'Starting #{options[:stage].upcase} Rails console in #{working_dir}' && bundle exec rails c #{options[:stage].downcase}"))
 
     end
 
