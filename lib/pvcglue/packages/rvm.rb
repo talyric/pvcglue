@@ -8,7 +8,8 @@ package 'rvm' do
 
   apply do
     run 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3'
-    run 'curl -sSL https://rvm.io/mpapis.asc | gpg --import -'
+    run 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3' # Do it again, the first time only sets things up, and does not import the keys
+    # run 'curl -sSL https://rvm.io/mpapis.asc | gpg --import -'
     run '\curl -sSL https://get.rvm.io | bash -s stable --with-default-gems="bundler"'
     run "rvm requirements"
   end
