@@ -21,7 +21,7 @@ module Pvcglue
         end
       end
 
-      Pvcglue::Capistrano.capify
+      Pvcglue::Pvcify.run
 
     end
 

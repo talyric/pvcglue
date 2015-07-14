@@ -27,6 +27,11 @@ module Pvcglue
       @current_node
     end
 
+    def current_node_data
+      current_node.values.first
+    end
+
+
     def current_hostname
       raise "Current current_hostname not set." if @current_hostname.nil?
       @current_hostname
@@ -122,12 +127,20 @@ module Pvcglue
       File.join(deploy_to_app_dir, 'shared')
     end
 
+    def deploy_to_app_shared_pids_dir
+      File.join(deploy_to_app_shared_dir, 'pids')
+    end
+
     def env_file_name
       File.join(deploy_to_app_shared_dir, ".env.#{stage_name_validated}")
     end
 
     def deploy_to_app_current_public_dir
       File.join(deploy_to_app_current_dir, 'public')
+    end
+
+    def deploy_to_app_current_bin_dir
+      File.join(deploy_to_app_current_dir, Pvcglue.configuration.rails_bin_dir)
     end
 
     def maintenance_files_dir
@@ -300,6 +313,12 @@ module Pvcglue
       raise "Context not specified or invalid" if @port_in_node_context.nil?
       puts "Setting port_in_node_context to #{@port_in_node_context}"
       @port_in_node_context
+    end
+
+    def delayed_job_worker_count
+      puts gems[:delayed_job].inspect
+      return 0 unless gems[:delayed_job]
+      (stage[:delayed_job_workers] || 1).to_i
     end
   end
 

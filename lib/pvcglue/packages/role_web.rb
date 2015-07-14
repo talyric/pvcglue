@@ -2,7 +2,6 @@ package 'web' do
   # rvm/ruby install based on http://ryanbigg.com/2010/12/ubuntu-ruby-rvm-rails-and-you/
   depends_on 'swap' # needed for deployment/asset building on < 1GB machines
   depends_on 'build-essential'
-  depends_on 'monit'
   depends_on 'git'
   depends_on 'rvm'
   depends_on 'no-rdoc'
@@ -18,6 +17,7 @@ package 'web' do
   depends_on 'imagemagick' # TODO:  app specific--will need to make system to include extra packages
   depends_on 'libpq-dev' # for pg gem
   depends_on 'nodejs'
+  depends_on 'monit-web'
 end
 
 

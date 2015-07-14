@@ -170,8 +170,7 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def pvcify
-      Pvcglue::Capistrano.capify
-      Pvcglue::Db.configure_database_yml
+      Pvcglue::Pvcify.run
     end
 
     desc "start", "start local virtual machines (build first, if required)"

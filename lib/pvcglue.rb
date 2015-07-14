@@ -11,8 +11,10 @@ require "pvcglue/deploy"
 require "pvcglue/capistrano"
 require "pvcglue/ssl"
 require "pvcglue/db"
-require "pvcglue/toml_pvc_dumper.rb"
-require "pvcglue/local.rb"
+require "pvcglue/toml_pvc_dumper"
+require "pvcglue/local"
+require "pvcglue/monit"
+require "pvcglue/pvcify"
 require "tilt"
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')

@@ -23,47 +23,76 @@ task :invoke, [:command] => 'deploy:set_rails_env' do |task, args|
 end
 
 namespace :deploy do
-<% if Pvcglue.cloud.gems[:delayed_job] %>
-  def args
-    fetch(:delayed_job_args, "")
-  end
+<% if Pvcglue.cloud.gems[:delayed_job] || Pvcglue.cloud.gems[:resque] %>
 
-  def delayed_job_roles
-    fetch(:delayed_job_server_role, :app)
-  end
-
-  desc 'Stop the delayed_job process'
-  task :delayed_job_stop do
-    on roles(delayed_job_roles) do
-      within release_path do
-        with rails_env: fetch(:rails_env) do
-          execute :'<%= Pvcglue.configuration.rails_bin_dir %>/delayed_job', :stop
-        end
-      end
+  desc 'Stop the workers'
+  task :stop_workers do
+    on roles(:app) do
+      execute :'curl -sS http://localhost:2812/<%= Pvcglue::Monit.worker_control_name %> -d "action=stop"'
     end
   end
 
-  desc 'Start the delayed_job process'
-  task :delayed_job_start do
-    on roles(delayed_job_roles) do
-      within release_path do
-        with rails_env: fetch(:rails_env) do
-          execute :'<%= Pvcglue.configuration.rails_bin_dir %>/delayed_job', args, :start
-        end
-      end
+  desc 'Start the workers'
+  task :start_workers do
+    on roles(:app) do
+      execute :'curl -sS http://localhost:2812/monit_reload -d "action=restart"'
+      execute :'sleep 5' # must wait for reload
+      execute :'curl -sS http://localhost:2812/<%= Pvcglue::Monit.worker_control_name %> -d "action=start"'
     end
   end
 
-  desc 'Restart the delayed_job process'
-  task :delayed_job_restart do
-    on roles(delayed_job_roles) do
-      within release_path do
-        with rails_env: fetch(:rails_env) do
-          execute :'<%= Pvcglue.configuration.rails_bin_dir %>/delayed_job', args, :restart
-        end
-      end
+  desc 'Restart the workers'
+  task :restart_workers do
+    on roles(:app) do
+      execute :'curl -sS http://localhost:2812/monit_reload -d "action=restart"'
+      execute :'sleep 5' # must wait for reload
+      execute :'curl -sS http://localhost:2812/<%= Pvcglue::Monit.worker_control_name %> -d "action=restart"'
     end
   end
+
+  after :started, :stop_workers
+  after :publishing, :start_workers
+
+  # def args
+  #   fetch(:delayed_job_args, "")
+  # end
+  #
+  # def delayed_job_roles
+  #   fetch(:delayed_job_server_role, :app)
+  # end
+  #
+  # desc 'Stop the delayed_job process'
+  # task :delayed_job_stop do
+  #   on roles(delayed_job_roles) do
+  #     within release_path do
+  #       with rails_env: fetch(:rails_env) do
+  #         execute :'<%= Pvcglue.configuration.rails_bin_dir %>/delayed_job', :stop
+  #       end
+  #     end
+  #   end
+  # end
+  #
+  # desc 'Start the delayed_job process'
+  # task :delayed_job_start do
+  #   on roles(delayed_job_roles) do
+  #     within release_path do
+  #       with rails_env: fetch(:rails_env) do
+  #         execute :'<%= Pvcglue.configuration.rails_bin_dir %>/delayed_job', args, :start
+  #       end
+  #     end
+  #   end
+  # end
+  #
+  # desc 'Restart the delayed_job process'
+  # task :delayed_job_restart do
+  #   on roles(delayed_job_roles) do
+  #     within release_path do
+  #       with rails_env: fetch(:rails_env) do
+  #         execute :'<%= Pvcglue.configuration.rails_bin_dir %>/delayed_job', args, :restart
+  #       end
+  #     end
+  #   end
+  # end
 
   #desc 'Restart Delayed Job'
   #task :restart_delayed_job do
@@ -77,7 +106,7 @@ namespace :deploy do
   #end
 
 
-  after :publishing, :delayed_job_restart # calling this directly is a work-around due to "NoMethodError: undefined method `verbosity'" error when calling task from a task in capistrano 3.1.0 and SSHKit 1.3.0
+  # after :publishing, :delayed_job_restart # calling this directly is a work-around due to "NoMethodError: undefined method `verbosity'" error when calling task from a task in capistrano 3.1.0 and SSHKit 1.3.0
 <% end %>
 
   desc 'Restart passenger app'
