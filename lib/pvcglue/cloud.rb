@@ -316,9 +316,13 @@ module Pvcglue
     end
 
     def delayed_job_worker_count
-      puts gems[:delayed_job].inspect
       return 0 unless gems[:delayed_job]
       (stage[:delayed_job_workers] || 1).to_i
+    end
+
+    def resque_worker_count
+      return 0 unless gems[:resque]
+      (stage[:resque_workers] || 1).to_i
     end
   end
 

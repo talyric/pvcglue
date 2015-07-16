@@ -36,8 +36,9 @@ package 'monit-install' do
   depends_on 'monit-config-files'
 
   validate do
-    return false unless run('monit -V') =~ /5\.14/
-    return false unless sudo('monit -t') =~ /Control file syntax OK/
+    # next:  thanks to http://stackoverflow.com/questions/2325471/using-return-in-a-ruby-block
+    next false unless run('monit -V') =~ /5\.14/
+    next false unless sudo('monit -t') =~ /Control file syntax OK/
     sudo('monit status') =~ /status\s*Running/
   end
 
@@ -50,7 +51,8 @@ package 'monit-install' do
     sudo 'ln -s /etc/monit/monitrc /etc/monitrc'
     sudo 'mkdir -p /var/lib/monit/'
     sudo 'mkdir -p /etc/monit/conf.d/'
-    sudo 'service monit restart'
+    sudo 'monit quit' # quit 'manually' and then start it as a service (or service monit stop, doesn't)
+    sudo 'service monit start'
   end
 
   remove do

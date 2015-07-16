@@ -10,11 +10,23 @@ check file <%= Pvcglue::Monit.worker_control_name %> with path <%= "#{Pvcglue.cl
   if does not exist then exec "/bin/true" else if succeeded then exec "/bin/true"
 
 <% Pvcglue.cloud.delayed_job_worker_count.times do |n| %>
-check process delayed_job.<%= n %>
+  check process <%= Pvcglue::Monit.safe_name(Pvcglue::Monit.delayed_job_queue_name(n)) %>
   with pidfile <%= Pvcglue.cloud.deploy_to_app_shared_pids_dir %>/delayed_job.<%= n %>.pid
   start program = "/home/deploy/.rvm/bin/rvm-shell -c 'cd <%= Pvcglue.cloud.deploy_to_app_current_dir %> && RAILS_ENV=<%= Pvcglue.cloud.stage_name %> <%= Pvcglue.cloud.deploy_to_app_current_bin_dir %>/delayed_job start -i <%= n %> --pid-dir=<%= Pvcglue.cloud.deploy_to_app_shared_pids_dir %>'" as uid deploy and gid deploy
   stop program = "/home/deploy/.rvm/bin/rvm-shell -c 'cd <%= Pvcglue.cloud.deploy_to_app_current_dir %> && RAILS_ENV=<%= Pvcglue.cloud.stage_name %> <%= Pvcglue.cloud.deploy_to_app_current_bin_dir %>/delayed_job stop -i <%= n %> --pid-dir=<%= Pvcglue.cloud.deploy_to_app_shared_pids_dir %>'" as uid deploy and gid deploy
   group <%= "#{Pvcglue.cloud.app_and_stage_name}_delayed_job" %>
+  group <%= "#{Pvcglue.cloud.app_and_stage_name}_workers" %>
+  depends on <%= Pvcglue::Monit.worker_control_name %>
+
+<% end %>
+
+<% Pvcglue.cloud.resque_worker_count.times do |n| %>
+# Based on https://github.com/resque/resque/blob/master/examples/monit/resque.monit
+check process <%= Pvcglue::Monit.safe_name(Pvcglue::Monit.resque_queue_name(n)) %>
+  with pidfile <%= Pvcglue::Monit.resque_pid_file_name(n) %>
+  start program = "/home/deploy/.rvm/bin/rvm-shell -c 'cd <%= Pvcglue.cloud.deploy_to_app_current_dir %> && nohup bundle exec rake environment resque:work RAILS_ENV=<%= Pvcglue.cloud.stage_name %> QUEUE=* VERBOSE=1 PIDFILE=<%= Pvcglue::Monit.resque_pid_file_name(n) %> >> log/resque_worker.log 2>&1'" as uid deploy and gid deploy
+  stop program = "/bin/sh -c 'kill -9 $(cat <%= Pvcglue::Monit.resque_pid_file_name(n) %>) && rm -f <%= Pvcglue::Monit.resque_pid_file_name(n) %>; exit 0;'" as uid deploy and gid deploy
+  group <%= "#{Pvcglue.cloud.app_and_stage_name}_resque" %>
   group <%= "#{Pvcglue.cloud.app_and_stage_name}_workers" %>
   depends on <%= Pvcglue::Monit.worker_control_name %>
 

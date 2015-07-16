@@ -253,7 +253,7 @@ module Pvcglue
         end
         raise "Public IP not found" unless machines[machine][:public_ip]
         raise "Private IP not found" unless machines[machine][:private_ip]
-        puts "Adding you public key to the root user for #{machine_name}..."
+        puts "Adding your public key to the root user for #{machine_name}..."
         # cat ~/.ssh/id_rsa.pub | vagrant ssh manager -c 'sudo tee /root/.ssh/authorized_keys'
         raise $? unless system %Q(cat ~/.ssh/id_rsa.pub | vagrant ssh #{machine_name} -c 'sudo tee /root/.ssh/authorized_keys')
       end
