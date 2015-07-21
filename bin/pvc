@@ -1,13 +1,14 @@
 #!/usr/bin/env ruby
 require 'pvcglue/cli'
+require 'benchmark'
 
 # Allow use of Capistrano style environment syntax and convert to 'standard' syntax
 # Example:  `pvc production bootstrap` ==> `pvc bootstrap --stage=production`
 # TODO: refactor to use a list of user specified environments
-if ARGV.count >= 2 && %w[local test alpha beta gamma delta preview production staging all].include?(ARGV[0])
+if ARGV.count >= 2 && %w[local vmtest test alpha beta gamma delta preview production staging all].include?(ARGV[0])
   ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
 end
 
 # puts ARGV.inspect
-Pvcglue::CLI.start
-puts "----- Done -----"
+# puts Benchmark.measure { Pvcglue::CLI.start }
+puts "----- Done #{Benchmark.measure { Pvcglue::CLI.start }}"

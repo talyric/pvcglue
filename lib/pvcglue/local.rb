@@ -4,7 +4,7 @@ module Pvcglue
     MACHINES = %w(manager lb web db)
 
     def self.vagrant(command)
-      raise(Thor::Error, "This command can only be used for the 'local' and 'test' stages.") unless Pvcglue.cloud.stage_name.in? %w(local test)
+      raise(Thor::Error, "This command can only be used for the 'local' and 'vmtest' stages.") unless Pvcglue.cloud.stage_name.in? %w(local vmtest)
       raise(Thor::Error, "Vagrant (www.vagrantup.com) does not appear to be installed.  :(") unless vagrant_available?
       Bundler.with_clean_env { system("vagrant #{command}") }
     end
@@ -20,13 +20,13 @@ module Pvcglue
 
     def self.up
       start
-      system_live_out('pvc manager bootstrap')
-      system_live_out('pvc manager push')
-      system_live_out('pvc local pvcify')
-      system_live_out('pvc manager push')
-      system_live_out('pvc local bootstrap')
-      system_live_out('pvc local build')
-      system_live_out('pvc local deploy')
+      system_live_out("pvc manager bootstrap")
+      system_live_out("pvc manager push")
+      system_live_out("pvc #{Pvcglue.cloud.stage_name} pvcify")
+      system_live_out("pvc manager push")
+      system_live_out("pvc #{Pvcglue.cloud.stage_name} bootstrap")
+      system_live_out("pvc #{Pvcglue.cloud.stage_name} build")
+      system_live_out("pvc #{Pvcglue.cloud.stage_name} deploy")
     end
 
     def self.start

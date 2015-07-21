@@ -6,11 +6,24 @@ module Pvcglue
       nodes.each do |node, data|
         orca_node = ::Orca::Node.new(node, data[:public_ip], {user: user, port: Pvcglue.cloud.port_in_context(context)})
         ::Pvcglue.cloud.current_node = {node => data}
+        tries = 3
         begin
-          orca_suite.run(orca_node.name, package.to_s, :apply)
-        ensure
-          ::Pvcglue.cloud.current_node = nil
-          ::Pvcglue.cloud.current_hostname = nil
+          begin
+            orca_suite.run(orca_node.name, package.to_s, :apply)
+          ensure
+            ::Pvcglue.cloud.current_node = nil
+            ::Pvcglue.cloud.current_hostname = nil
+          end
+        rescue
+          tries -= 1
+          if tries > 0
+            retry
+          else
+            puts "\n"*10
+            puts "*"*80
+            puts "ERROR, retrying..."
+            puts "*"*80
+          end
         end
       end
     end
