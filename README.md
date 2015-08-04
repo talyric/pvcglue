@@ -182,7 +182,7 @@ Notes:
 
     create main toml file
 
-    add maintenance/maintenance.html
+    add public/maintenance/maintenance.html
 
     pvc alpha bootstrap
     pvc alpha pvcify
