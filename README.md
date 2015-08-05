@@ -1,3 +1,9 @@
+###
+There is an issue with gem 'tilt', '>=2.0.0', use
+
+    gem 'tilt', '<2.0.0'
+
+in your project's Gemfile, as a temporary workaournd.
 # PVC Glue
 
 Pico Virtual Cloud Glue creates a tightly integrated (very small) virtual cloud for your Rails application.
