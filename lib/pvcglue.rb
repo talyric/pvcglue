@@ -20,6 +20,9 @@ require "tilt"
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 
 module Pvcglue
+  mattr_accessor :command_line_options do
+    {}
+  end
 
   def self.gem_dir
     Gem::Specification.find_by_name('pvcglue').gem_dir

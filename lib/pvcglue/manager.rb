@@ -1,6 +1,7 @@
 require 'pp'
 
 module Pvcglue
+
   class Manager < Thor
 
     desc "bootstrap", "bootstrap"
@@ -130,6 +131,11 @@ module Pvcglue
     end
 
     def self.read_cached_cloud_data
+      if Pvcglue.command_line_options[:cloud_manager_override]
+        data = File.read(Pvcglue.command_line_options[:cloud_manager_override])
+        Pvcglue.cloud.data = TOML.parse(data)
+        return true
+      end
       return false # disable cache for now
       # TODO:  Expire cache after given interval
       if File.exists?(Pvcglue.configuration.cloud_cache_file_name)

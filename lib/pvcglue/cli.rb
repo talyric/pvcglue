@@ -5,10 +5,12 @@ require 'pvcglue'
 module Pvcglue
 
   class CLI < Thor
+    class_option :cloud_manager_override
 
     def initialize(args = [], local_options = {}, config = {})
       super
       Pvcglue.cloud.set_stage(options[:stage])
+      Pvcglue.command_line_options = options
       # puts "/\\"*80
       # puts options.inspect
       # puts "*"*80
@@ -24,6 +26,7 @@ module Pvcglue
 
     def info
       puts "Pvcglue version #{Pvcglue::Version.version}"
+      puts "Options:  #{options}"
       puts "  Manager settings:"
       Pvcglue.configuration.options.each { |k, v| puts "    #{k}=#{v}" }
     end
@@ -245,5 +248,6 @@ module Pvcglue
 
 
   end
+
 
 end
