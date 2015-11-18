@@ -120,10 +120,10 @@ module Pvcglue
     # silence Thor warnings, as these are not Thor commands.  (But we still need 'say' and 'ask' and friends.)
     no_commands do
 
-      def destroy_prod?
+      def destroy_prod?(db)
         say("Are you *REALLY* sure you want to DESTROY the PRODUCTION database?")
-        input = ask("Type 'destroy #{source.database}' if you are:")
-        raise(Thor::Error, "Ain't gonna do it.") if input.downcase != "destroy #{source.database}"
+        input = ask("Type 'destroy #{db.database.downcase}' if you are:")
+        raise(Thor::Error, "Ain't gonna do it.") if input.downcase != "destroy #{db.database.downcase}"
         puts "ok, going through with the it...  (I sure hope you know what you are doing, Keith!)"
       end
 
@@ -173,7 +173,7 @@ module Pvcglue
       end
 
       def pg_restore(db, file_name, fast = false)
-        Pvcglue.cloud.stage_name == 'production' && destroy_prod?
+        Pvcglue.cloud.stage_name == 'production' && destroy_prod?(db)
         file_name = self.class.file_helper(file_name)
 
         if db.kind == :remote
