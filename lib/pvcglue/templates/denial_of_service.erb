@@ -1,3 +1,3 @@
 
-  limit_conn conn_limit_per_ip 10;
-  limit_req zone=req_limit_per_ip burst=30 nodelay;
+  limit_conn conn_limit_per_ip <%= Pvcglue.cloud.dos_conn_limit_per_ip %>;
+  limit_req zone=req_limit_per_ip burst=<%= Pvcglue.cloud.dos_burst %> nodelay;

@@ -240,6 +240,22 @@ module Pvcglue
       data[app_name][:repo_url]
     end
 
+    def dos_conn_limit_per_ip
+      data[app_name][:dos_conn_limit_per_ip] || stage[:dos_conn_limit_per_ip] || "10"
+    end
+
+    def dos_rate
+      data[app_name][:dos_rate] || stage[:dos_rate] || "1"
+    end
+
+    def dos_burst
+      data[app_name][:dos_burst] || stage[:dos_burst] || "30"
+    end
+
+    def additional_linked_dirs
+      data[app_name][:additional_linked_dirs] || stage[:additional_linked_dirs] || ""
+    end
+
     def client_header_timeout
       data[app_name][:client_header_timeout] || stage[:client_header_timeout] || "60s"
     end
