@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "thor", '~> 0.19', '>= 0.19.1'
   spec.add_dependency "toml-rb", '~> 0.1', '>= 0.1.6'
-  spec.add_dependency "orca", '~> 0.4', '>= 0.4.0'
+  spec.add_dependency "orca", '= 0.4', '= 0.4.0'
   spec.add_dependency 'capistrano', '~> 3.1.0', '>= 3.1.0'
   spec.add_dependency 'capistrano-bundler', '~> 1.1', '>= 1.1.1'
   spec.add_dependency 'capistrano-rails', '~> 1.1', '>= 1.1.1'
