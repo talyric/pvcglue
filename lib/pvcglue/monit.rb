@@ -5,7 +5,7 @@ module Pvcglue
     end
 
     def self.monitrc_file_name
-      File.join(Pvcglue.configuration.application_dir, 'monitrc')
+      File.join(Pvcglue.configuration.application_dir, "monitrc.#{Pvcglue.cloud.stage_name}")
     end
 
     def self.worker_control_name
