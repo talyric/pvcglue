@@ -39,7 +39,8 @@ package 'monit-install' do
     # next:  thanks to http://stackoverflow.com/questions/2325471/using-return-in-a-ruby-block
     next false unless run('monit -V') =~ /5\.14/
     next false unless sudo('monit -t') =~ /Control file syntax OK/
-    sudo('monit status') =~ /status\s*Running/
+    sudo('monit status') =~ /uptime/
+    # sudo('monit status') =~ /status\s*Running/
   end
 
   apply do
