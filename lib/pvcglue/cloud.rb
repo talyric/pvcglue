@@ -244,6 +244,10 @@ module Pvcglue
       stage[:ssl].to_sym || :none
     end
 
+    def lb_nginx_load_balancing_method
+      stage[:lb_nginx_load_balancing_method]
+    end
+
     def delayed_job_args
       stage[:delayed_job_args]
     end

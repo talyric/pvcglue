@@ -6,24 +6,24 @@ module Pvcglue
       nodes.each do |node, data|
         old_current_node = ::Pvcglue.cloud.current_node_without_nil_check # this is being called recursively, so keep the original data...kinda a hack for now
         orca_node = ::Orca::Node.new(node, data[:public_ip], {user: user, port: Pvcglue.cloud.port_in_context(context)})
-        puts "#"*800
-        puts orca_node.name
-        puts package.to_s
-        puts "^"*80
+        # puts "#"*800
+        # puts orca_node.name
+        # puts package.to_s
+        # puts "^"*80
         ::Pvcglue.cloud.current_node = {node => data}
-        tries = 1
+        tries = 3
         begin
           begin
-            puts "="*800
-            puts orca_node.name
-            puts package.to_s
-            puts "^"*80
+            # puts "="*800
+            # puts orca_node.name
+            # puts package.to_s
+            # puts "^"*80
             orca_suite.run(orca_node.name, package.to_s, :apply)
           ensure
-            puts "-"*800
-            puts orca_node.name
-            puts package.to_s
-            puts "^"*80
+            # puts "-"*800
+            # puts orca_node.name
+            # puts package.to_s
+            # puts "^"*80
             ::Pvcglue.cloud.current_node = old_current_node
 
             # ::Pvcglue.cloud.current_node = nil
