@@ -5,4 +5,11 @@ server {
   server_name        <%= Pvcglue.cloud.domains.join(' ') %>;
   rails_env          <%= Pvcglue.cloud.stage_name %>;
   root               <%= Pvcglue.cloud.deploy_to_app_current_public_dir %>;
+
+# Custom options from web_nginx_server
+
+<% Pvcglue.cloud.web_nginx_server.each do |option| %>
+  <%= "  #{option};\n" %>
+<% end %>
+
 }

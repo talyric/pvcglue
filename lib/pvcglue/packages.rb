@@ -4,24 +4,49 @@ module Pvcglue
       # puts nodes.inspect
       orca_suite = OrcaSuite.init(package_filter)
       nodes.each do |node, data|
+        old_current_node = ::Pvcglue.cloud.current_node_without_nil_check # this is being called recursively, so keep the original data...kinda a hack for now
         orca_node = ::Orca::Node.new(node, data[:public_ip], {user: user, port: Pvcglue.cloud.port_in_context(context)})
+        puts "#"*800
+        puts orca_node.name
+        puts package.to_s
+        puts "^"*80
         ::Pvcglue.cloud.current_node = {node => data}
-        tries = 3
+        tries = 1
         begin
           begin
+            puts "="*800
+            puts orca_node.name
+            puts package.to_s
+            puts "^"*80
             orca_suite.run(orca_node.name, package.to_s, :apply)
           ensure
-            ::Pvcglue.cloud.current_node = nil
+            puts "-"*800
+            puts orca_node.name
+            puts package.to_s
+            puts "^"*80
+            ::Pvcglue.cloud.current_node = old_current_node
+
+            # ::Pvcglue.cloud.current_node = nil
             ::Pvcglue.cloud.current_hostname = nil
           end
-        rescue
+        rescue Exception => e
           tries -= 1
           if tries > 0
+            puts "\n"*10
+            puts "*"*80
+            puts "ERROR, retrying..."
+            puts e.message
+            puts "*"*80
             retry
           else
             puts "\n"*10
             puts "*"*80
-            puts "ERROR, retrying..."
+            puts "ERROR, not retrying, fatal."
+            puts e.message
+            e.backtrace.each { |line| puts line }
+            puts e.message
+            puts node.inspect
+            puts data.inspect
             puts "*"*80
           end
         end

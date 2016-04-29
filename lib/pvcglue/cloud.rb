@@ -27,6 +27,10 @@ module Pvcglue
       @current_node
     end
 
+    def current_node_without_nil_check
+      @current_node
+    end
+
     def current_node_data
       current_node.values.first
     end
@@ -226,6 +230,14 @@ module Pvcglue
 
     def domains
       stage[:domains]
+    end
+
+    def web_nginx_http
+      current_node.values.first[:web_nginx_http] || []
+    end
+
+    def web_nginx_server
+      current_node.values.first[:web_nginx_server] || []
     end
 
     def ssl_mode
