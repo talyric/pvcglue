@@ -8,8 +8,6 @@ module Pvcglue
       Pvcglue::Db.configure_database_yml
     end
 
-    method_option :fast, :type => :boolean, :aliases => "-f"
-
     desc "push", "push"
 
     def push(file_name = nil)
@@ -18,6 +16,7 @@ module Pvcglue
     end
 
     desc "pull", "Pull copy of database from remote stage.  Pass -f to exclude tables defined in the configuration file.  If no tables are specified in the `excluded_db_tables` option, 'versions' will be used by default."
+    method_option :fast, :type => :boolean, :aliases => "-f"
 
     def pull(file_name = nil)
       raise(Thor::Error, "Stage required.") if Pvcglue.cloud.stage_name.nil?
