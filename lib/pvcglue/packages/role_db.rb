@@ -3,6 +3,7 @@ package 'db' do
   depends_on 'postgresql'
   depends_on 'postgresql-conf'
   depends_on 'postgresql-app-stage-conf'
+  depends_on 'monit-bootstrap'
 end
 
 package 'postgresql-conf' do

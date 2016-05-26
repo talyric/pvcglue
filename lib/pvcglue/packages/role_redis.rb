@@ -2,6 +2,7 @@ apt_package 'redis-server'
 
 package 'redis' do
   depends_on 'redis-server'
+  depends_on 'monit-bootstrap'
   file({
            :template => Pvcglue.template_file_name('redis.conf.erb'),
            :destination => '/etc/redis/redis.conf',

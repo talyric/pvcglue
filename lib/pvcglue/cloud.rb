@@ -356,6 +356,18 @@ module Pvcglue
       return 0 unless gems[:resque]
       (stage[:resque_workers] || 1).to_i
     end
+
+    def monit_mailserver
+      data[app_name][:monit_mailserver] || ""
+    end
+
+    def monit_alert
+      data[app_name][:monit_alert] || ""
+    end
+
+    def monit_disk_usage_threshold
+      stage[:monit_disk_usage_threshold] || data[app_name][:monit_disk_usage_threshold] || "80%"
+    end
   end
 
   def self.cloud

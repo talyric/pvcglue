@@ -273,7 +273,9 @@ check process monit_reload
 #if loadavg (5min) > 4 for 2 cycles then alert
 #if swap usage > 5% then alert
 
-#check filesystem rootfs with path /
-#if space usage > 80% then alert
-#set mailserver localhost
-#set alert you@example.com
+check device rootfs with path /
+  if space usage > <%= Pvcglue.cloud.monit_disk_usage_threshold %> then alert
+
+<%= Pvcglue.cloud.monit_mailserver %>
+
+<%= Pvcglue.cloud.monit_alert %>
