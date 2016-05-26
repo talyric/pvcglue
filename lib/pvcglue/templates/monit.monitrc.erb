@@ -274,8 +274,8 @@ check process monit_reload
 #if swap usage > 5% then alert
 
 check device rootfs with path /
-  if space usage > 90% then alert
-set mailserver smtp.gmail.com port 587
-  username "web.development.with.assembly@gmail.com" password "*b3JkQZFtrVC8Nu"
-  using tlsv12
-set alert benjamin.jacobs@ibethel.org
+  if space usage > <%= Pvcglue.cloud.monit_disk_usage_threshold %> then alert
+
+<%= Pvcglue.cloud.monit_mailserver %>
+
+<%= Pvcglue.cloud.monit_alert %>

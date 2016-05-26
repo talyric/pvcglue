@@ -3,6 +3,7 @@ package 'lb' do
   depends_on 'ssl-cert'
   depends_on 'lb-config'
   depends_on 'lb-maintenance-files'
+  depends_on 'monit-bootstrap'
 
   validate do
     trigger('nginx:running')
