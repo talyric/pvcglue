@@ -1,7 +1,6 @@
 require "active_support"
 require "active_support/core_ext" # for `with_indifferent_access`
 
-
 module Pvcglue
   class Cloud
     attr_accessor :data
@@ -19,7 +18,10 @@ module Pvcglue
     end
 
     def data=(data)
-      @data = data.with_indifferent_access # We may not want this dependency.
+      # @data = data.with_indifferent_access # We may not want this dependency.
+      # @data = data.to_dot # We may not want this dependency.
+      # @data = Hashie::Mash.new(data) # We may not want this dependency.
+      @data = ::SafeMash.new(data) # We may not want this dependency.
     end
 
     def current_node
@@ -57,11 +59,11 @@ module Pvcglue
       @stage_name
     end
 
-    def stage
-      # puts data[app_name].inspect
-      # puts data[app_name][:stages].inspect
-      # puts data[app_name][:stages][stage_name].inspect
-      data[app_name][:stages][stage_name]
+    def old_stage
+      # puts project.inspect
+      # puts project[:stages].inspect
+      # puts project[:stages][stage_name].inspect
+      project[:stages][stage_name]
     end
 
     def stage_roles
@@ -172,28 +174,28 @@ module Pvcglue
     end
 
     def authorized_keys
-      data[app_name][:authorized_keys]
+      project[:authorized_keys]
     end
 
     def ssh_ports
       ports = []
-      from_all = data[app_name][:ssh_allowed_from_all_port].to_i
+      from_all = project[:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
       ports
     end
 
     def timezone
-      data[app_name][:time_zone] || 'America/Los_Angeles'
+      project[:time_zone] || 'America/Los_Angeles'
     end
 
     def exclude_tables
-      data[app_name][:excluded_db_tables] || ['versions']
+      project[:excluded_db_tables] || ['versions']
     end
 
     def firewall_allow_incoming_on_port
       # These ports allow incoming connections from any ip address
       ports = []
-      from_all = data[app_name][:ssh_allowed_from_all_port].to_i
+      from_all = project[:ssh_allowed_from_all_port].to_i
       ports << from_all if from_all > 0
       ports.concat [80, 443] if current_node.values.first[:allow_public_access]
       ports.concat ["2000:3000"] if stage_name == 'local'
@@ -213,7 +215,7 @@ module Pvcglue
     end
 
     def dev_ip_addresses
-      data[app_name][:dev_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
+      project[:dev_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
     end
 
     def stage_internal_addresses
@@ -253,51 +255,51 @@ module Pvcglue
     end
 
     def repo_url
-      data[app_name][:repo_url]
+      project[:repo_url]
     end
 
     def dos_conn_limit_per_ip
-      data[app_name][:dos_conn_limit_per_ip] || stage[:dos_conn_limit_per_ip] || "10"
+      project[:dos_conn_limit_per_ip] || stage[:dos_conn_limit_per_ip] || "10"
     end
 
     def dos_rate
-      data[app_name][:dos_rate] || stage[:dos_rate] || "1"
+      project[:dos_rate] || stage[:dos_rate] || "1"
     end
 
     def dos_burst
-      data[app_name][:dos_burst] || stage[:dos_burst] || "30"
+      project[:dos_burst] || stage[:dos_burst] || "30"
     end
 
     def additional_linked_dirs
-      data[app_name][:additional_linked_dirs] || stage[:additional_linked_dirs] || ""
+      project[:additional_linked_dirs] || stage[:additional_linked_dirs] || ""
     end
 
     def client_header_timeout
-      data[app_name][:client_header_timeout] || stage[:client_header_timeout] || "60s"
+      project[:client_header_timeout] || stage[:client_header_timeout] || "60s"
     end
 
     def client_body_timeout
-      data[app_name][:client_body_timeout] || stage[:client_body_timeout] || "60s"
+      project[:client_body_timeout] || stage[:client_body_timeout] || "60s"
     end
 
     def proxy_read_timeout
-      data[app_name][:proxy_read_timeout] || stage[:proxy_read_timeout] || "60s"
+      project[:proxy_read_timeout] || stage[:proxy_read_timeout] || "60s"
     end
 
     def proxy_send_timeout
-      data[app_name][:proxy_send_timeout] || stage[:proxy_send_timeout] || "60s"
+      project[:proxy_send_timeout] || stage[:proxy_send_timeout] || "60s"
     end
 
     def client_max_body_size
-      data[app_name][:client_max_body_size] || stage[:client_max_body_size] || "1m"
+      project[:client_max_body_size] || stage[:client_max_body_size] || "1m"
     end
 
     def swapfile_size
-      data[app_name][:swapfile_size] || stage[:swapfile_size] || 1024
+      project[:swapfile_size] || stage[:swapfile_size] || 1024
     end
 
     def gems
-      data[app_name][:gems] || {}
+      project[:gems] || {}
     end
 
     def db_rebuild
@@ -333,7 +335,7 @@ module Pvcglue
         when :bootstrap, :manager
           port = "22"
         when :env, :build, :shell, :deploy, :maintenance
-          port = data[app_name][:ssh_allowed_from_all_port] || "22"
+          port = project[:ssh_allowed_from_all_port] || "22"
         else
           raise "Context not specified or invalid"
       end
@@ -358,15 +360,88 @@ module Pvcglue
     end
 
     def monit_mailserver
-      data[app_name][:monit_mailserver] || ""
+      project[:monit_mailserver] || ""
     end
 
     def monit_alert
-      data[app_name][:monit_alert] || ""
+      project[:monit_alert] || ""
     end
 
     def monit_disk_usage_threshold
-      stage[:monit_disk_usage_threshold] || data[app_name][:monit_disk_usage_threshold] || "80%"
+      stage[:monit_disk_usage_threshold] || project[:monit_disk_usage_threshold] || "80%"
+    end
+
+    # ==============================================================================================
+
+    def find_or_raise(data, name, key = 'name')
+      found = data.detect { |item| item[key] == name }
+      raise(Thor::Error, "Error:  #{name} not found.") unless found
+      found
+    end
+
+    def project
+      @project ||= begin
+        get_project
+      end
+    end
+
+    def get_project
+      find_or_raise(data.projects, app_name)
+    end
+
+    def stage
+      @stage ||= begin
+        find_or_raise(project.stages, stage_name)
+      end
+    end
+
+    def minions
+      @minions ||= get_minions
+    end
+
+    def find_machine(name)
+      name.tr!('=', '') # "==dev-lb==" ==> "dev-lb"
+      find_or_raise(data.machines, name)
+    end
+
+    def get_minions
+      minions = ::SafeMash.new
+      stage.stack.each do |item|
+        # ap item
+        machine = find_machine(item.machine_name)
+        # ap machine
+        minion = minions[machine.name]
+        # ap minion
+        unless minion
+          # check for duplicate roles:  ie. 2 web servers with the same id
+          minion = Pvcglue::Builder.new
+          minion.machine_name = item.machine_name
+          minion.roles = []
+          minion.private_ip = machine.private_ip
+          minion.public_ip = machine.public_ip
+          # sync machine options here
+        end
+        # ap minion
+        # puts "*"*175
+        # ap minion.roles
+        # ap item.role
+        minion.roles << item.role
+        # ap minion.roles
+
+        # if item.role_index?
+        #   minions
+        # end
+        # ap minion
+
+        minion.project = project
+        minion.stage = stage
+        minion.cloud_provider = data.cloud_provider
+        minion.cloud = ::Pvcglue.cloud
+
+        minions[machine.name] = minion
+      end
+      # ap minions
+      minions
     end
   end
 

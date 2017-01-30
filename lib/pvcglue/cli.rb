@@ -44,11 +44,11 @@ module Pvcglue
       Pvcglue::Bootstrap.run(roles)
     end
 
-    desc "build", "build..."
+    desc "build", "build...zzz"
     method_option :stage, :required => true, :aliases => "-s"
 
     def build(roles = 'all')
-      Pvcglue::Nodes.build(roles)
+      Pvcglue::Stack.build(roles)
     end
 
     desc "console", "open rails console"
