@@ -50,6 +50,9 @@ module Pvcglue
         Pvcglue.logger.info('Minions ready!  (finally)')
       end
 
+      Pvcglue.cloud.minions.each do |minion_name, minion|
+        minion.build!
+      end
 
       raise(Thor::Error, 'STOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 

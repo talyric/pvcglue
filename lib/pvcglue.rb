@@ -4,6 +4,11 @@ require 'pvcglue/configuration'
 require 'pvcglue/manager'
 require 'pvcglue/cloud'
 require 'pvcglue/packages'
+require 'pvcglue/packages/ssh_key_check'
+require 'pvcglue/packages/apt_update'
+require 'pvcglue/packages/apt_upgrade'
+require 'pvcglue/packages/swap'
+require 'pvcglue/packages/apt'
 require 'pvcglue/bootstrap'
 require 'pvcglue/nodes'
 require 'pvcglue/stack'
@@ -24,6 +29,7 @@ require 'pvcglue/builder'
 require 'droplet_kit'
 require 'pvcglue/digital_ocean'
 require 'logger'
+require 'pvcglue/connection'
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 
@@ -35,10 +41,11 @@ module Pvcglue
   mattr_accessor :logger do
 
     logger = Logger.new(STDOUT)
-    logger.level = Logger::INFO # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
+    # logger.level = Logger::INFO # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
+    logger.level = Logger::DEBUG # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
     # logger.warn('Starting up...')
     logger.formatter = proc do |severity, datetime, progname, msg|
-      "#{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}]  #{msg}\n"
+      "    #{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}] #{progname} #{msg}\n"
     end
     logger
   end

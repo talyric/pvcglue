@@ -3,17 +3,35 @@ module Pvcglue
     include Hashie::Extensions::Mash::SafeAssignment
 
     def build!
-      puts
-      puts
-      puts '*'*175
-      puts "Building #{machine_name}"
-      puts '-'*175
+      # puts
+      # puts
+      # puts '*'*175
+      Pvcglue.logger.info('BUILD') { "Building #{machine_name}" }
 
-      # bootstrap
+      # puts '-'*175
+
+      # puts public_ip
+      # connection.write_to_file(:root, "Hi!\n", 'test.txt')
+      # return
+
+      # puts public_ip
+      # ap connection.read_from_file(:root, 'test2.txt')
+      # return
+      #
+
+      # puts public_ip
+      # Pvcglue::Packages::AptUpdate.apply(self)
+      # return
+
+      Pvcglue::Packages::SshKeyCheck.apply(self)
+      Pvcglue::Packages::AptUpdate.apply(self)
+      Pvcglue::Packages::AptUpgrade.apply(self)
+      Pvcglue::Packages::Swap.apply(self)
+      Pvcglue::Packages::Apt.apply(self)
 
 
 
-      puts '='*175
+      # puts '='*175
     end
 
     def provision!

@@ -419,7 +419,8 @@ module Pvcglue
           minion.roles = []
           minion.private_ip = machine.private_ip
           minion.public_ip = machine.public_ip
-          # sync machine options here
+          minion.connection = Pvcglue::Connection.new(minion)
+          # TODO:  sync machine options here
         end
         # ap minion
         # puts "*"*175
