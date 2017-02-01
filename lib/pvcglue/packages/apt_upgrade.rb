@@ -5,27 +5,17 @@ module Pvcglue
 
       def installed?
         # TODO:  Add a "force" option
-        data = nil
-        if minion.connection.file_exists?(:root, LAST_APT_UPGRADE_FILENAME)
-          data = minion.connection.read_from_file(:root, LAST_APT_UPGRADE_FILENAME)
-        end
-        return false unless data
-        # begin
-        #   upgraded_at = DateTime.parse(JSON.parse(data)['upgraded_at'])
-        #   # TODO:  Possible timezone issue
-        #   upgraded_at > Time.now - 8.hours
-        # rescue JSON::ParserError
-        #   false
-        # end
+        updated_at = get_minion_state(:apt_upgraded_at)
+        return false unless updated_at
+
+        # updated_at > Time.now.utc - 8.hours
         # TODO:  Give the user a warning after a period of time
         true
       end
 
       def install!
         minion.connection.run(:root, 'DEBIAN_FRONTEND=noninteractive apt-get upgrade -y')
-        # TODO:  Possible timezone issue
-        data = {upgraded_at: Time.now}
-        minion.connection.write_to_file(:root, data.to_json, LAST_APT_UPGRADE_FILENAME)
+        set_minion_state(:apt_upgraded_at, Time.now.utc)
       end
     end
   end

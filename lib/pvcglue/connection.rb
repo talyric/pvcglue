@@ -16,13 +16,32 @@ module Pvcglue
     end
 
     attr_accessor :minion
+    attr_accessor :minion_state_data
 
     def file_exists?(user, file)
-      ssh(user, '-t', "test -e #{file}").exitstatus == 0
+      ssh?(user, '-t', "test -e #{file}").exitstatus == 0
+    end
+
+    def ssh_retry_wait(user, options, cmd, times, wait)
+      tries = 0
+      begin
+        result = ssh?(user, options, cmd)
+        unless result.exitstatus == 0
+          Pvcglue.logger.info("Command `#{cmd}` failed, retrying...")
+          sleep(wait)
+        end
+        tries += 1
+        raise "Exceeded #{times} retries:  #{result.inspect}" if tries >= times
+      end until result.exitstatus == 0
+    end
+
+    def ssh?(user, options, cmd)
+      # TODO:  Refactor ssh? & ssh
+      system_command('SSH', %Q(ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'))
     end
 
     def ssh(user, options, cmd)
-      system_command('SSH', %Q(ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'))
+      system_command!('SSH', %Q(ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'))
     end
 
     def system_command(description, cmd)
@@ -73,6 +92,14 @@ module Pvcglue
       data
     end
 
+    def write_to_file_from_template(user, template_file_name, file, owner = nil, group = nil, permissions = nil)
+      template = Tilt.new(Pvcglue.template_file_name(template_file_name))
+      data = template.render
+      ap data
+      return
+      write_to_file(user, data, file, owner, group, permissions)
+    end
+
     def write_to_file(user, data, file, owner = nil, group = nil, permissions = nil)
       tmp_file = Tempfile.new('pvc')
       begin
@@ -93,6 +120,12 @@ module Pvcglue
       system_command!('UPLOAD', %{scp #{local_file} #{user}@#{minion.public_ip}:#{remote_file}})
       # TODO:  Set owner, group and permissions, if specified
       raise 'Not implemented, yet!' unless owner.nil? && group.nil? && permissions.nil?
+    end
+
+    def file_matches?(user, data, remote_file)
+      # NOTE:  This could be optimized
+      return false unless file_exists?(user, remote_file)
+      read_from_file(user,remote_file) == data
     end
   end
 end

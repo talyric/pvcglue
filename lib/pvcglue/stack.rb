@@ -31,23 +31,32 @@ module Pvcglue
         # droplet = Pvcglue::DigitalOcean.client.droplets.find(id: 38371925)
         # minion.droplet = droplet
         # new_minions << minion if true || minion.provision!
-        new_minions << minion if minion.provision!
+        unless minion.provisioned?
+          if droplets.detect { |droplet| droplet.name == minion_name }
+            raise(Thor::Error, "Machine with the name of '#{minion_name}' already exists!")
+          end
+          minion.provision!
+          new_minions << minion
+        end
       end
 
       if new_minions.size > 0
         # ap new_minions
-        Pvcglue.logger.info("Checking status on #{new_minions.size} new minions...")
-        begin
-          lazy_minions = get_lazy_minions
-          unless lazy_minions.size == 0
-            # puts '*'*175
-            # ap waiting_for
-            Pvcglue.logger.info("Waiting for #{lazy_minions.map { |key, value| key }.join(', ')}...")
-            sleep(3)
-          end
-        end until lazy_minions.size == 0
-        write_config(new_minions)
-        Pvcglue.logger.info('Minions ready!  (finally)')
+        Pvcglue.logger.info("Checking status of new minions (#{new_minions.size})...")
+        time = Benchmark.realtime do
+          begin
+            lazy_minions = get_lazy_minions
+            unless lazy_minions.size == 0
+              # puts '*'*175
+              # ap waiting_for
+              Pvcglue.logger.info("Waiting for #{lazy_minions.map { |key, value| key }.join(', ')}...")
+              sleep(1.5)
+            end
+          end until lazy_minions.size == 0
+          write_config(new_minions)
+        end
+        Pvcglue.logger.info("Minions (finally) ready after #{time.round(2)} seconds!")
+        Pvcglue.cloud.reload_minions!
       end
 
       Pvcglue.cloud.minions.each do |minion_name, minion|
@@ -76,21 +85,22 @@ module Pvcglue
         minion.droplet = Pvcglue::DigitalOcean.client.droplets.find(id: droplet_id)
         # puts '='*175
         # ap minion.droplet
-        update_ip_addresses(minion, Pvcglue::DigitalOcean.get_ip_addresses(minion.droplet))
+        update_minion_data(minion, Pvcglue::DigitalOcean.get_ip_addresses(minion.droplet), droplet_id)
       end
     end
 
-    def update_ip_addresses(minion, ip_addresses)
-      unless minion.public_ip_address.nil? && minion.private_id_address.nil?
-        raise(Thor::Error, "#{minion.name} has previously defined ip address(es), can not change.")
+    def update_minion_data(minion, ip_addresses, cloud_id)
+      unless minion.public_ip_address.nil? && minion.private_id_address.nil? && minion.cloud_id.nil?
+        raise(Thor::Error, "#{minion.machine_name} has previously defined ip address(es) or cloud_id, can not change.")
       end
-      if ip_addresses.public.nil? || ip_addresses.private.nil?
-        raise(Thor::Error, "New IP addresses (#{ip_addresses}) are not valid.")
+      if ip_addresses.public.nil? || ip_addresses.private.nil? || cloud_id.nil?
+        raise(Thor::Error, "New IP addresses (#{ip_addresses}) or cloud_id (#{cloud_id}) are not valid.")
       end
       data = File.read(minion.cloud.local_file_name)
 
-      replacement = "\\1\\2\n\\1public_ip = '#{ip_addresses.public}'\n\\1private_ip = '#{ip_addresses.private}'"
-      new_data = data.sub(/( *)(name\s*=\s*['"]staging-lb['"])/, replacement)
+      replacement = "\\1\\2\n\\1public_ip = '#{ip_addresses.public}'\n\\1private_ip = '#{ip_addresses.private}'\n\\1cloud_id = '#{cloud_id}'"
+      new_data = data.sub(/( *)(name\s*=\s*['"]#{Regexp.quote(minion.machine_name)}['"])/, replacement)
+      raise "Unable to update minion data for #{minion.machine_name}." if data == new_data
 
       # replacement = "$1$2\n$1public_ip = '#{ip_addresses.public}'\n$1private_ip = '#{ip_addresses.private}'"
       # new_data = data.sub(/( *)(name\s*=\s*['"]staging-lb['"])/) do |match|
@@ -100,6 +110,10 @@ module Pvcglue
 
       Pvcglue.logger.debug("Updated configuration for machine named #{minion.machine_name}.")
       File.write(minion.cloud.local_file_name, new_data)
+    end
+
+    def droplets
+      @droplets ||= Pvcglue::DigitalOcean.client.droplets.all
     end
 
     def get_lazy_minions

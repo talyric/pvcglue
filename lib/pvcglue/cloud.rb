@@ -399,6 +399,13 @@ module Pvcglue
       @minions ||= get_minions
     end
 
+    def reload_minions!
+      @data = nil
+      @project = nil
+      @stage = nil
+      @minions = nil
+    end
+
     def find_machine(name)
       name.tr!('=', '') # "==dev-lb==" ==> "dev-lb"
       find_or_raise(data.machines, name)

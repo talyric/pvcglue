@@ -1,10 +1,10 @@
 #=======================================================================================================================
 package 'bootstrap' do
 #=======================================================================================================================
-  depends_on 'time-zone'
-  depends_on 'hostname'
-  depends_on 'htop'
-  depends_on 'ufw'
+  depends_on 'time-zone'                       # Later, if needed
+  depends_on 'hostname'                        # Later, if needed
+  depends_on 'htop'                            # DONE
+  depends_on 'ufw' # DONE
   depends_on 'applications_dir'
   depends_on 'authorized_keys_root'
   depends_on 'authorized_keys'

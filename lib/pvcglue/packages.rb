@@ -1,5 +1,6 @@
 module Pvcglue
   class Packages
+    MINION_STATE_FILENAME = '.minion_state'
 
     def self.apply(minion)
       package = new(minion)
@@ -26,8 +27,15 @@ module Pvcglue
     def run
       unless installed?
         install!
-        errors.add('Install failed') unless installed?
+        if post_install_check?
+          post_install!
+        else
+          # TODO:  Better error message
+          errors.add('Install failed')
+          return false
+        end
       end
+      true
     end
 
     def installed?
@@ -37,6 +45,61 @@ module Pvcglue
     def install!
       false
     end
+
+    def post_install_check?
+      # override to do a different (more time consuming/more detailed) check
+      installed?
+    end
+
+    def post_install!
+
+    end
+
+    def has_role?(roles)
+      !(roles.map(&:to_sym) & roles_to_sym).empty?
+    end
+
+    def has_roles?(roles)
+      has_role?(roles)
+    end
+
+    def roles_to_sym
+      minion.roles.map(&:to_sym)
+    end
+
+    def connection
+      @minion.connection
+    end
+
+    def load_state_data
+      if connection.file_exists?(:root, MINION_STATE_FILENAME)
+        data = connection.read_from_file(:root, MINION_STATE_FILENAME)
+      else
+        data = ''
+      end
+      # puts data
+      connection.minion_state_data = TOML.parse(data, symbolize_keys: true)
+    end
+
+    def get_minion_state(key)
+      unless connection.minion_state_data
+        load_state_data
+      end
+      # puts connection.minion_state_data
+      # ap key
+      connection.minion_state_data[key]
+    end
+
+    def set_minion_state(key, value)
+      unless connection.minion_state_data
+        load_state_data
+      end
+      connection.minion_state_data[key] = value
+      connection.write_to_file(:root, TOML.dump(connection.minion_state_data), MINION_STATE_FILENAME)
+    end
+
+
+
 
     # def self.apply(package, context, nodes, user = 'deploy', package_filter = nil)
     #   # puts nodes.inspect

@@ -1,26 +1,7 @@
 module Pvcglue
   class Packages
     class Apt < Pvcglue::Packages
-      PACKAGES = {
-          common: %w[
-        htop
-        ufw
-        unattended-upgrades
-        curl
-        ncdu
-          ],
-          lb: %w[
-          ],
-          web: %w[
-          ],
-          worker: %w[
-          ],
-          pg: %w[
-          ],
-          mc: %w[
-          ],
-      }
-      PACKAGE_LIST = %w(
+      WEB_WORKER_PACKAGES = %w[
         build-essential
         git
         git-core
@@ -30,19 +11,58 @@ module Pvcglue
         libxslt
         libxslt1-dev
         imagemagick
-
-      )
-
-      @test = false
+        passenger
+        nginx
+        nginx-extras
+      ]
+      PACKAGES = {
+          common: %w[
+        htop
+        ufw
+        unattended-upgrades
+        curl
+        ncdu
+          ],
+          lb: %w[
+          nginx
+          nginx-extras
+          ],
+          web: WEB_WORKER_PACKAGES,
+          worker: WEB_WORKER_PACKAGES,
+          pg: %w[
+          ],
+          mc: %w[
+          ],
+      }
 
       def installed?
-        @test
+        false # just let apt take care of this
       end
 
       def install!
-        @test = true
-        minion.connection.run(:root, 'apt install htop')
+        connection.run(:root, "DEBIAN_FRONTEND=noninteractive apt install -y #{get_package_list}")
       end
+
+      def get_package_list
+        get_packages.join(' ')
+      end
+
+      def post_install_check?
+        true
+      end
+
+      def all_packages
+        @all_packages ||= PACKAGES.with_indifferent_access
+      end
+
+      def get_packages
+        packages = all_packages[:common]
+        minion.roles.each do |role|
+          packages += all_packages[role] if all_packages[role]
+        end
+        packages
+      end
+
     end
   end
 end

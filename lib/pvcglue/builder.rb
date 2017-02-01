@@ -23,12 +23,13 @@ module Pvcglue
       # Pvcglue::Packages::AptUpdate.apply(self)
       # return
 
-      Pvcglue::Packages::SshKeyCheck.apply(self)
-      Pvcglue::Packages::AptUpdate.apply(self)
-      Pvcglue::Packages::AptUpgrade.apply(self)
-      Pvcglue::Packages::Swap.apply(self)
-      Pvcglue::Packages::Apt.apply(self)
-
+      # Pvcglue::Packages::SshKeyCheck.apply(self)
+      # Pvcglue::Packages::AptRepos.apply(self)
+      # Pvcglue::Packages::AptUpdate.apply(self)
+      # Pvcglue::Packages::AptUpgrade.apply(self)
+      # Pvcglue::Packages::Swap.apply(self)
+      # Pvcglue::Packages::Apt.apply(self)
+      Pvcglue::Packages::Firewall.apply(self)
 
 
       # puts '='*175
@@ -44,7 +45,7 @@ module Pvcglue
 
     def create!
       raise(Thor::Error, "#{cloud_provider.name} unknown") unless cloud_provider.name == 'digital-ocean'
-      Pvcglue.logger.warn("Provisioning a VM for #{machine_name} on #{cloud_provider.name}...")
+      Pvcglue.logger.warn("Provisioning a machine for #{machine_name} on #{cloud_provider.name}...")
 
       # TODO:  Tags.  production, staging, load-balancer, web, worker, database, postgress, cache, memcache...
       name = machine_name
@@ -53,7 +54,7 @@ module Pvcglue
       region = cloud_provider.region
       # ap cloud_provider.initial_users
       # ap cloud_provider
-      ssh_keys = cloud_provider.initial_users.map {|description, ssh_key| ssh_key}
+      ssh_keys = cloud_provider.initial_users.map { |description, ssh_key| ssh_key }
       backups = cloud_provider.backups.nil? ? true : cloud_provider.backups # default to true -- safety first!
       tags = cloud_provider.tags
 
