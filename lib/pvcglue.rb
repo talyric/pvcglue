@@ -4,13 +4,7 @@ require 'pvcglue/configuration'
 require 'pvcglue/manager'
 require 'pvcglue/cloud'
 require 'pvcglue/packages'
-require 'pvcglue/packages/ssh_key_check'
-require 'pvcglue/packages/apt_repos'
-require 'pvcglue/packages/apt_update'
-require 'pvcglue/packages/apt_upgrade'
-require 'pvcglue/packages/swap'
-require 'pvcglue/packages/apt'
-require 'pvcglue/packages/firewall'
+Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
 require 'pvcglue/bootstrap'
 require 'pvcglue/nodes'
 require 'pvcglue/stack'
@@ -27,7 +21,7 @@ require 'tilt'
 require 'awesome_print'
 require 'hashie'
 require 'pvcglue/custom_hashie'
-require 'pvcglue/builder'
+require 'pvcglue/minion'
 require 'droplet_kit'
 require 'pvcglue/digital_ocean'
 require 'logger'
@@ -47,10 +41,27 @@ module Pvcglue
     logger.level = Logger::DEBUG # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
     # logger.warn('Starting up...')
     logger.formatter = proc do |severity, datetime, progname, msg|
-      "    #{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}] #{progname} #{msg}\n"
+      minion_name = Pvcglue.logger_current_minion.try(:machine_name)
+      minion_name = "/#{minion_name}" if minion_name
+      description = Pvcglue.logger_package_description
+      if description
+        description = description.split('::').last || description
+        description = "/#{description.downcase}"
+      end
+      case severity[0..0]
+        when 'E'
+          color = :redish
+        when 'D'
+          color = :cyanish
+        else
+          color = :yellowish
+      end
+      "#{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}#{minion_name}#{description}]  #{msg}\n".send(color)
     end
     logger
   end
+  mattr_accessor :logger_package_description
+  mattr_accessor :logger_current_minion
 
   def self.gem_dir
     Gem::Specification.find_by_name('pvcglue').gem_dir
@@ -61,8 +72,8 @@ module Pvcglue
   end
 
   def self.render_template(template, file_name = nil)
-    puts '-'*80
-    puts "---> render_template(template=#{template}, file_name=#{file_name}"
+    # puts '-'*80
+    # puts "---> render_template(template=#{template}, file_name=#{file_name}"
     data = Tilt.new(Pvcglue.template_file_name(template)).render
     if file_name
       File.write(file_name, data)

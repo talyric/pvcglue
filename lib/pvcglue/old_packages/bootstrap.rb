@@ -1,20 +1,20 @@
 #=======================================================================================================================
 package 'bootstrap' do
 #=======================================================================================================================
-  depends_on 'time-zone'                       # Later, if needed
-  depends_on 'hostname'                        # Later, if needed
-  depends_on 'htop'                            # DONE
+  depends_on 'time-zone' # Later, if needed
+  depends_on 'hostname' # Later, if needed
+  depends_on 'htop' # DONE
   depends_on 'ufw' # DONE
-  depends_on 'applications_dir'
-  depends_on 'authorized_keys_root'
-  depends_on 'authorized_keys'
-  depends_on 'sshd-config'
-  depends_on 'firewall-config'
-  depends_on 'firewall-enabled'
-  depends_on 'unattended-security-upgrades'
+  depends_on 'applications_dir' # DONE
+  depends_on 'authorized_keys_root' # DONE
+  depends_on 'authorized_keys' # DONE
+  depends_on 'sshd-config' # Later, if needed
+  depends_on 'firewall-config' # DONE
+  depends_on 'firewall-enabled' # DONE
+  depends_on 'unattended-security-upgrades' # DONE
 end
 
-package 'applications_dir' do
+package 'applications_dir' do # DONE
   depends_on 'deploy-user'
   validate do
     stat = run("stat --format=%U:%G:%a #{Pvcglue.configuration.web_app_base_dir}").strip
@@ -28,7 +28,7 @@ package 'applications_dir' do
   end
 end
 
-package 'deploy-user' do
+package 'deploy-user' do # DONE
   apply do
     run "mkdir -p ~/.pvc && chmod 600 ~/.pvc"
     #run 'adduser --disabled-password --gecos "" deploy'
@@ -52,7 +52,7 @@ package 'deploy-user' do
 
 end
 
-package 'authorized_keys' do
+package 'authorized_keys' do # DONE
 
   file({
            :template => ::Pvcglue.template_file_name('authorized_keys.erb'),
@@ -64,7 +64,7 @@ package 'authorized_keys' do
        })
 end
 
-package 'authorized_keys_root' do
+package 'authorized_keys_root' do # DONE
 
   file({
            :template => ::Pvcglue.template_file_name('authorized_keys.erb'),

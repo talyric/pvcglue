@@ -1,7 +1,7 @@
 package 'lb' do
-  depends_on 'nginx'
-  depends_on 'ssl-cert'
-  depends_on 'lb-config'
+  depends_on 'nginx' # DONE
+  depends_on 'ssl-cert' # LATER
+  depends_on 'lb-config' # DONE
   depends_on 'lb-maintenance-files'
   depends_on 'monit-bootstrap'
 

@@ -8,8 +8,6 @@ module Pvcglue
         libpq-dev
         libxml2
         libxml2-dev
-        libxslt
-        libxslt1-dev
         imagemagick
         passenger
         nginx
@@ -36,11 +34,11 @@ module Pvcglue
       }
 
       def installed?
-        false # just let apt take care of this
+        false # just let apt take care of this for now
       end
 
       def install!
-        connection.run(:root, "DEBIAN_FRONTEND=noninteractive apt install -y #{get_package_list}")
+        connection.run!(:root, '', "DEBIAN_FRONTEND=noninteractive apt install -y #{get_package_list}")
       end
 
       def get_package_list

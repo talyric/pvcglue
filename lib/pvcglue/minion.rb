@@ -1,35 +1,23 @@
 module Pvcglue
-  class Builder < SafeMash
+  class Minion < SafeMash
     include Hashie::Extensions::Mash::SafeAssignment
 
     def build!
-      # puts
-      # puts
       # puts '*'*175
       Pvcglue.logger.info('BUILD') { "Building #{machine_name}" }
 
-      # puts '-'*175
-
-      # puts public_ip
-      # connection.write_to_file(:root, "Hi!\n", 'test.txt')
-      # return
-
-      # puts public_ip
-      # ap connection.read_from_file(:root, 'test2.txt')
-      # return
-      #
-
-      # puts public_ip
-      # Pvcglue::Packages::AptUpdate.apply(self)
-      # return
-
-      # Pvcglue::Packages::SshKeyCheck.apply(self)
-      # Pvcglue::Packages::AptRepos.apply(self)
-      # Pvcglue::Packages::AptUpdate.apply(self)
-      # Pvcglue::Packages::AptUpgrade.apply(self)
-      # Pvcglue::Packages::Swap.apply(self)
-      # Pvcglue::Packages::Apt.apply(self)
+      Pvcglue::Packages::SshKeyCheck.apply(self)
+      Pvcglue::Packages::AptRepos.apply(self)
+      Pvcglue::Packages::AptUpdate.apply(self)
+      Pvcglue::Packages::AptUpgrade.apply(self)
+      Pvcglue::Packages::Swap.apply(self)
+      Pvcglue::Packages::Apt.apply(self)
       Pvcglue::Packages::Firewall.apply(self)
+      Pvcglue::Packages::UnattendedUpgrades.apply(self)
+      Pvcglue::Packages::Users.apply(self)
+      Pvcglue::Packages::AuthorizedKeys.apply(self)
+      Pvcglue::Packages::Directories.apply(self)
+      Pvcglue::Packages::Roles.apply(self)
 
 
       # puts '='*175
@@ -77,9 +65,64 @@ module Pvcglue
       droplet = Pvcglue::DigitalOcean.client.droplets.create(droplet)
       self.droplet = droplet
       Pvcglue.logger.debug("Droplet ID:  #{droplet.id}")
-      # ap created
-      # raise(Thor::Error, 'STOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
       true
+    end
+
+    def has_role?(roles)
+      !(Array(roles).map(&:to_sym) & roles_to_sym).empty?
+    end
+
+    def has_roles?(roles)
+      has_role?(roles)
+    end
+
+    def roles_to_sym
+      roles.map(&:to_sym)
+    end
+
+    def get_user(user_name)
+      all_data.users.detect { |user| user.name == user_name }
+    end
+
+    def get_users_from_group(names)
+      names = Array(names)
+      users = []
+      names.each do |name|
+        if name =~ /\A==.*==\z/
+          group = all_data.groups[name[2..-3]]
+          # ap group
+          users.concat(get_users_from_group(group))
+        else
+          users << get_user(name)
+        end
+      end
+      users
+    end
+
+    def get_root_users
+      get_users_from_group(root_users)
+    end
+
+    def get_users
+      get_users_from_group(users)
+    end
+
+    def get_root_authorized_keys
+      get_authorized_keys(get_root_users)
+    end
+
+    def get_users_authorized_keys
+      get_authorized_keys(get_users)
+    end
+
+    def get_authorized_keys(users)
+      keys = []
+      users.each do |user|
+        user.public_keys.each do |id, public_key|
+          keys << public_key
+        end
+      end
+      keys
     end
   end
 end

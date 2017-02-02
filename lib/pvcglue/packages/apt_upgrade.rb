@@ -1,8 +1,6 @@
 module Pvcglue
   class Packages
     class AptUpgrade < Pvcglue::Packages
-      LAST_APT_UPGRADE_FILENAME = '.pvc_last_apt_upgrade.dat'
-
       def installed?
         # TODO:  Add a "force" option
         updated_at = get_minion_state(:apt_upgraded_at)
@@ -14,7 +12,7 @@ module Pvcglue
       end
 
       def install!
-        minion.connection.run(:root, 'DEBIAN_FRONTEND=noninteractive apt-get upgrade -y')
+        minion.connection.run!(:root, '', 'DEBIAN_FRONTEND=noninteractive apt-get upgrade -y')
         set_minion_state(:apt_upgraded_at, Time.now.utc)
       end
     end

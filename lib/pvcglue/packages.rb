@@ -5,7 +5,7 @@ module Pvcglue
     def self.apply(minion)
       package = new(minion)
       unless package.run
-        raise error_message if package.errors?
+        raise package.full_error_message if package.errors?
       end
     end
 
@@ -20,20 +20,35 @@ module Pvcglue
       errors.size > 0
     end
 
+    def full_error_message
+      errors.join('.  ')
+    end
+
     def minion
       @minion
     end
 
+    def user_name
+      @minion.cloud.minion_user_name
+    end
+
     def run
-      unless installed?
-        install!
-        if post_install_check?
-          post_install!
-        else
-          # TODO:  Better error message
-          errors.add('Install failed')
-          return false
+      begin
+        Pvcglue.logger_package_description = self.class.name
+        unless installed?
+          install!
+          if post_install_check?
+            post_install!
+          else
+            # TODO:  Better error message
+
+            errors << 'Install failed post install check.'
+            Pvcglue.logger.error { full_error_message }
+            return false
+          end
         end
+      ensure
+        Pvcglue.logger_package_description = ''
       end
       true
     end
@@ -56,15 +71,11 @@ module Pvcglue
     end
 
     def has_role?(roles)
-      !(roles.map(&:to_sym) & roles_to_sym).empty?
+      minion.has_role?(roles)
     end
 
     def has_roles?(roles)
-      has_role?(roles)
-    end
-
-    def roles_to_sym
-      minion.roles.map(&:to_sym)
+      minion.has_role?(roles)
     end
 
     def connection
@@ -97,8 +108,6 @@ module Pvcglue
       connection.minion_state_data[key] = value
       connection.write_to_file(:root, TOML.dump(connection.minion_state_data), MINION_STATE_FILENAME)
     end
-
-
 
 
     # def self.apply(package, context, nodes, user = 'deploy', package_filter = nil)

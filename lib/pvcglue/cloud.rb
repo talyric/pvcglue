@@ -21,7 +21,7 @@ module Pvcglue
       # @data = data.with_indifferent_access # We may not want this dependency.
       # @data = data.to_dot # We may not want this dependency.
       # @data = Hashie::Mash.new(data) # We may not want this dependency.
-      @data = ::SafeMash.new(data) # We may not want this dependency.
+      @data = ::SafeMash.new(data)
     end
 
     def current_node
@@ -99,19 +99,24 @@ module Pvcglue
     end
 
     def nodes_in_stage(role_filter = 'all')
-      # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
-      # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
-      nodes = stage_roles.each_with_object({}) do |(role, node), nodes|
-        if role_filter == 'all' || role == role_filter
-          nodes.merge!(node)
-        end
+      # # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
+      # # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
+      # nodes = stage_roles.each_with_object({}) do |(role, node), nodes|
+      #   if role_filter == 'all' || role == role_filter
+      #     nodes.merge!(node)
+      #   end
+      # end
+      # # puts nodes.inspect
+      # # puts "nodes_in_stage: only first returned"+"!*"*80
+      # # out = {}
+      # # out["memcached"] = nodes["memcached"]
+      # # puts out.inspect
+      # # out
+      if role_filter == 'all'
+        minions
+      else
+        minions.select { |minion_name, minion| minion.has_role?(:web) }
       end
-      # puts nodes.inspect
-      # puts "nodes_in_stage: only first returned"+"!*"*80
-      # out = {}
-      # out["memcached"] = nodes["memcached"]
-      # puts out.inspect
-      # out
     end
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
@@ -193,6 +198,7 @@ module Pvcglue
     end
 
     def firewall_allow_incoming_on_port
+      raise 'Not used currently > 0.9'
       # These ports allow incoming connections from any ip address
       ports = []
       from_all = project[:ssh_allowed_from_all_port].to_i
@@ -203,6 +209,7 @@ module Pvcglue
     end
 
     def firewall_allow_incoming_from_ip
+      raise 'Not used currently > 0.9'
       # Incoming connections to any port are allowed from these ip addresses
       addresses = dev_ip_addresses
       addresses.concat(stage_internal_addresses)
@@ -215,6 +222,8 @@ module Pvcglue
     end
 
     def dev_ip_addresses
+      return ['127.0.0.1']
+      # TODO:  Add this functionality back in later
       project[:dev_ip_addresses].values.each_with_object([]) { |address, addresses| addresses << address }
     end
 
@@ -373,6 +382,15 @@ module Pvcglue
 
     # ==============================================================================================
 
+    def minion_user_name_base
+      project[:user_name_base] || 'deploy'
+    end
+
+    def minion_user_name
+      "#{minion_user_name_base}-#{stage_name}"
+    end
+
+
     def find_or_raise(data, name, key = 'name')
       found = data.detect { |item| item[key] == name }
       raise(Thor::Error, "Error:  #{name} not found.") unless found
@@ -421,12 +439,15 @@ module Pvcglue
         # ap minion
         unless minion
           # check for duplicate roles:  ie. 2 web servers with the same id
-          minion = Pvcglue::Builder.new
+          minion = Pvcglue::Minion.new
           minion.machine_name = item.machine_name
           minion.roles = []
           minion.private_ip = machine.private_ip
           minion.public_ip = machine.public_ip
           minion.connection = Pvcglue::Connection.new(minion)
+          minion.root_users = machine.root_users
+          minion.users = machine.users
+          minion.cloud_id = machine.cloud_id
           # TODO:  sync machine options here
         end
         # ap minion
@@ -441,6 +462,7 @@ module Pvcglue
         # end
         # ap minion
 
+        minion.all_data = data
         minion.project = project
         minion.stage = stage
         minion.cloud_provider = data.cloud_provider

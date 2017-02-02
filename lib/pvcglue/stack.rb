@@ -28,6 +28,7 @@ module Pvcglue
 
       new_minions = []
       Pvcglue.cloud.minions.each do |minion_name, minion|
+        Pvcglue.logger_current_minion = minion
         # droplet = Pvcglue::DigitalOcean.client.droplets.find(id: 38371925)
         # minion.droplet = droplet
         # new_minions << minion if true || minion.provision!
@@ -60,8 +61,10 @@ module Pvcglue
       end
 
       Pvcglue.cloud.minions.each do |minion_name, minion|
+        Pvcglue.logger_current_minion = minion
         minion.build!
       end
+      Pvcglue.logger_current_minion = nil
 
       raise(Thor::Error, 'STOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
@@ -120,6 +123,7 @@ module Pvcglue
       droplets = Pvcglue::DigitalOcean.client.droplets.all
 
       minions = Pvcglue.cloud.minions.select do |minion_name, minion|
+        Pvcglue.logger_current_minion = minion
         # next unless minion.machine_name == 'staging-lb'
         # ap minion_name
         found = droplets.detect do |droplet|
