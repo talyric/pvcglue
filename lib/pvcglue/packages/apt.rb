@@ -12,6 +12,7 @@ module Pvcglue
         passenger
         nginx
         nginx-extras
+        nodejs
       ]
       PACKAGES = {
           common: %w[

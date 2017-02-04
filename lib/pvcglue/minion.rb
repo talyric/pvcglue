@@ -6,18 +6,19 @@ module Pvcglue
       # puts '*'*175
       Pvcglue.logger.info('BUILD') { "Building #{machine_name}" }
 
-      Pvcglue::Packages::SshKeyCheck.apply(self)
-      Pvcglue::Packages::AptRepos.apply(self)
-      Pvcglue::Packages::AptUpdate.apply(self)
-      Pvcglue::Packages::AptUpgrade.apply(self)
-      Pvcglue::Packages::Swap.apply(self)
-      Pvcglue::Packages::Apt.apply(self)
-      Pvcglue::Packages::Firewall.apply(self)
-      Pvcglue::Packages::UnattendedUpgrades.apply(self)
-      Pvcglue::Packages::Users.apply(self)
-      Pvcglue::Packages::AuthorizedKeys.apply(self)
-      Pvcglue::Packages::Directories.apply(self)
-      Pvcglue::Packages::Roles.apply(self)
+      minion = self # for readability
+      Pvcglue::Packages::SshKeyCheck.apply(minion)
+      Pvcglue::Packages::AptRepos.apply(minion)
+      Pvcglue::Packages::AptUpdate.apply(minion)
+      Pvcglue::Packages::AptUpgrade.apply(minion)
+      Pvcglue::Packages::Swap.apply(minion)
+      Pvcglue::Packages::Apt.apply(minion)
+      Pvcglue::Packages::Firewall.apply(minion)
+      Pvcglue::Packages::UnattendedUpgrades.apply(minion)
+      Pvcglue::Packages::Users.apply(minion)
+      Pvcglue::Packages::AuthorizedKeys.apply(minion)
+      Pvcglue::Packages::Directories.apply(minion)
+      Pvcglue::Packages::Roles.apply(minion)
 
 
       # puts '='*175

@@ -23,6 +23,9 @@ module Pvcglue
       def install!
         connection.write_to_file_from_template(:root, 'lb.nginx.conf.erb', '/etc/nginx/nginx.conf')
         connection.write_to_file_from_template(:root, 'lb.sites-enabled.erb', "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}")
+        Pvcglue::Packages::Rvm.apply(minion)
+        Pvcglue::Packages::Ruby.apply(minion)
+
         # Pvcglue.cloud.nodes_in_stage(:web).each {|k, v| puts v.machine_name}
 
         # file({

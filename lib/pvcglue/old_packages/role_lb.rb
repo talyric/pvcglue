@@ -2,8 +2,8 @@ package 'lb' do
   depends_on 'nginx' # DONE
   depends_on 'ssl-cert' # LATER
   depends_on 'lb-config' # DONE
-  depends_on 'lb-maintenance-files'
-  depends_on 'monit-bootstrap'
+  depends_on 'lb-maintenance-files' # DONE
+  depends_on 'monit-bootstrap' # LATER
 
   validate do
     trigger('nginx:running')
@@ -53,7 +53,7 @@ package 'maintenance_mode' do
   end
 end
 
-package 'bypass_mode' do
+package 'bypass_mode' do # LATER
   apply do
     if Pvcglue.cloud.bypass_mode == 'off'
       run "touch #{Pvcglue.cloud.maintenance_bypass_mode_file_name}"

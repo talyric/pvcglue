@@ -1,6 +1,6 @@
-package 'rvm' do
-  depends_on 'curl'
-  depends_on 'rvm-bashrc'
+package 'rvm' do # DONE
+  depends_on 'curl' # DONE
+  depends_on 'rvm-bashrc' # DONE
 
   validate do
     run('type rvm | head -n 1') =~ /rvm is a function/
@@ -19,7 +19,7 @@ package 'rvm' do
   end
 end
 
-package 'rvm-bashrc' do
+package 'rvm-bashrc' do # DONE
   file({
            :template => Pvcglue.template_file_name('web.bashrc.erb'),
            :destination => '/home/deploy/.bashrc',
@@ -30,7 +30,7 @@ package 'rvm-bashrc' do
        })
 end
 
-package 'gem' do
+package 'gem' do # ???
   depends_on 'rvm-ruby'
   action 'exists' do |gem_name|
     run("gem list -i #{gem_name}") =~ /true/
@@ -43,14 +43,14 @@ package 'gem' do
   end
 end
 
-package 'bundler' do
+package 'bundler' do # ???
   depends_on 'gem'
   apply { trigger 'gem:install', 'bundler' }
   remove { trigger 'gem:remove', 'bundler' }
   validate { trigger 'gem:exists', 'bundler' }
 end
 
-package 'rvm-ruby' do
+package 'rvm-ruby' do # DONE
   depends_on 'rvm'
 
   validate do
@@ -68,7 +68,7 @@ package 'rvm-ruby' do
 
 end
 
-package 'no-rdoc' do
+package 'no-rdoc' do # DONE
   file({
            :template => Pvcglue.template_file_name('gemrc.erb'),
            :destination => '/home/deploy/.gemrc',

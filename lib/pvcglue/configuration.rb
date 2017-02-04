@@ -188,11 +188,11 @@ module Pvcglue
         end
       end
 
-      def web_app_base_dir
-        # '/sites'
-        '~/www'
-        # "/home/#{user_name}/.ssh"
-      end
+      # def web_app_base_dir
+      #   # '/sites'
+      #   '~/www'
+      #   # "/home/#{user_name}/.ssh"
+      # end
     end
 
   end

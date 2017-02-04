@@ -115,14 +115,14 @@ module Pvcglue
       if role_filter == 'all'
         minions
       else
-        minions.select { |minion_name, minion| minion.has_role?(:web) }
+        minions.select { |minion_name, minion| minion.has_role?(role_filter) }
       end
     end
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
     def deploy_to_base_dir
       # stage[:deploy_to] || '/sites' # TODO:  verify if server setup supports `:deploy_to` override
-      Pvcglue.configuration.web_app_base_dir # TODO:  server setup does not yet support `:deploy_to` override, and would have to be refactored at a higher level than stage.
+      web_app_base_dir # TODO:  server setup does not yet support `:deploy_to` override, and would have to be refactored at a higher level than stage.
     end
 
     # ENV['PVC_DEPLOY_TO_APP'] = "#{ENV['PVC_DEPLOY_TO_BASE']}/#{ENV['PVC_APP_NAME']}/#{ENV['PVC_STAGE']}"
@@ -381,6 +381,12 @@ module Pvcglue
     end
 
     # ==============================================================================================
+
+    def web_app_base_dir
+      # '/sites'
+      "/home/#{minion_user_name}/www"
+    end
+
 
     def minion_user_name_base
       project[:user_name_base] || 'deploy'

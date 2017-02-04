@@ -43,7 +43,7 @@ module Pvcglue
 
     def ssh?(user, options, cmd)
       # TODO:  Refactor ssh? & ssh
-      if cmd.include?("'") # Quick fix, should be refactored to handle escaping of `'`
+      if cmd.include?("'") # TODO:  Quick fix, should be refactored to do proper escaping
         system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} "#{cmd}"))
       else
         system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'))
@@ -71,6 +71,7 @@ module Pvcglue
       full_cmd = "ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'"
       Pvcglue.logger.debug { full_cmd }
       result = `#{full_cmd}`
+      Pvcglue.verbose? { result }
       Pvcglue.logger.debug { "exit_code=#{$?.to_i}" }
       result
     end
@@ -114,6 +115,7 @@ module Pvcglue
       begin
         download_file(user, file, tmp_file.path)
         data = tmp_file.read
+        Pvcglue.verbose? { data }
       ensure
         tmp_file.close
         tmp_file.unlink # deletes the temp file
@@ -125,6 +127,7 @@ module Pvcglue
       Pvcglue.logger.debug { "Writing to #{file} from template '#{template_file_name}'" }
       template = Tilt.new(Pvcglue.template_file_name(template_file_name))
       data = template.render
+
       write_to_file(user, data, file, owner, group, permissions)
     end
 
@@ -134,6 +137,7 @@ module Pvcglue
         tmp_file.write(data)
         tmp_file.flush
         upload_file(user, tmp_file.path, file, owner, group, permissions)
+        Pvcglue.verbose? { data }
       ensure
         tmp_file.close
         tmp_file.unlink # deletes the temp file

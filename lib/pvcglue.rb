@@ -26,6 +26,7 @@ require 'droplet_kit'
 require 'pvcglue/digital_ocean'
 require 'logger'
 require 'pvcglue/connection'
+require 'paint'
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 
@@ -48,20 +49,53 @@ module Pvcglue
         description = description.split('::').last || description
         description = "/#{description.downcase}"
       end
+      foreground = nil
+      # background = 'black'
+      background = nil
       case severity[0..0]
         when 'E'
-          color = :redish
+          foreground = 'red'
+        when 'W'
+          # foreground = 'black'
+          # background = 'yellow'
+          foreground = 'yellow'
+        when 'I'
+          foreground = 'purple'
         when 'D'
-          color = :cyanish
+          foreground = 'cyan'
         else
-          color = :yellowish
+          foreground = 'black'
+          background = 'red'
       end
-      "#{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}#{minion_name}#{description}]  #{msg}\n".send(color)
+      # case severity[0..0]
+      #    when 'E'
+      #      color = :redish
+      #    when 'W'
+      #      color = :yellowish
+      #    when 'I'
+      #      color = :purpleish
+      #    when 'D'
+      #      color = :cyanish
+      #    else
+      #      color = :yellowish
+      #  end
+      #  "#{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}#{minion_name}#{description}]  #{msg}\n".send(color)
+      Paint["#{severity[0..0]} [#{datetime.strftime('%H:%M:%S')}#{minion_name}#{description}]  #{msg}\n", foreground, background]
     end
     logger
   end
   mattr_accessor :logger_package_description
   mattr_accessor :logger_current_minion
+
+  def self.verbose?
+    if Pvcglue.command_line_options[:verbose]
+      puts yield
+    end
+  end
+
+  def self.reset_minion_state?
+    !!Pvcglue.command_line_options[:reset_minion_state]
+  end
 
   def self.gem_dir
     Gem::Specification.find_by_name('pvcglue').gem_dir

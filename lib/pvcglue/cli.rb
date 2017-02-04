@@ -6,6 +6,8 @@ module Pvcglue
 
   class CLI < Thor
     class_option :cloud_manager_override
+    class_option :verbose
+    class_option :reset_minion_state
 
     def initialize(args = [], local_options = {}, config = {})
       super
@@ -96,8 +98,11 @@ module Pvcglue
 
     def maintenance(mode)
       raise(Thor::Error, "invalid maintenance mode :(  (Hint:  try on or off.)") unless mode.in?(%w(on off))
-      Pvcglue.cloud.maintenance_mode = mode
-      Pvcglue::Packages.apply(:maintenance_mode, :maintenance, Pvcglue.cloud.nodes_in_stage('lb'))
+      # Pvcglue.cloud.maintenance_mode = mode
+      # Pvcglue::Packages.apply(:maintenance_mode, :maintenance, Pvcglue.cloud.nodes_in_stage('lb'))
+      Pvcglue.cloud.nodes_in_stage('lb').each do |minioin_name, minion|
+        Pvcglue::Packages::MaintenanceMode.apply(minion, {maintenance_mode: mode})
+      end
     end
 
     desc "maint", "enable or disable maintenance mode"
@@ -163,7 +168,7 @@ module Pvcglue
 
     def rake(*tasks)
       if Pvcglue.cloud.stage_name == 'production'
-      # if Pvcglue.cloud.stage_name == 'local'
+        # if Pvcglue.cloud.stage_name == 'local'
         raise(Thor::Error, "\nDidn't think so!\n") unless yes?("\n\nStop!  Think!  Are you sure you want to do this on the #{Pvcglue.cloud.stage_name} stage? (y/N)")
       end
       Pvcglue::Capistrano.rake(tasks)

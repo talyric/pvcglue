@@ -2,17 +2,19 @@ module Pvcglue
   class Packages
     MINION_STATE_FILENAME = '.minion_state'
 
-    def self.apply(minion)
-      package = new(minion)
+    def self.apply(minion, options = {})
+      package = new(minion, options)
       unless package.run
         raise package.full_error_message if package.errors?
       end
     end
 
     attr_accessor :errors
+    attr_accessor :options
 
-    def initialize(minion)
+    def initialize(minion, options)
       @minion = minion
+      @options = options
       @errors = []
     end
 
@@ -92,19 +94,25 @@ module Pvcglue
       connection.minion_state_data = TOML.parse(data, symbolize_keys: true)
     end
 
-    def get_minion_state(key)
+
+    def get_minion_state_data
       unless connection.minion_state_data
-        load_state_data
+        if Pvcglue.reset_minion_state?
+          Pvcglue.logger.warn('Minion state data reset.')
+          connection.minion_state_data = {}
+        else
+          load_state_data
+        end
       end
-      # puts connection.minion_state_data
-      # ap key
+    end
+
+    def get_minion_state(key)
+      get_minion_state_data
       connection.minion_state_data[key]
     end
 
     def set_minion_state(key, value)
-      unless connection.minion_state_data
-        load_state_data
-      end
+      get_minion_state_data
       connection.minion_state_data[key] = value
       connection.write_to_file(:root, TOML.dump(connection.minion_state_data), MINION_STATE_FILENAME)
     end
