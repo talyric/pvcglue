@@ -21,30 +21,24 @@ module Pvcglue
       end
 
       def install!
-        connection.write_to_file_from_template(:root, 'lb.nginx.conf.erb', '/etc/nginx/nginx.conf')
-        connection.write_to_file_from_template(:root, 'lb.sites-enabled.erb', "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}")
         Pvcglue::Packages::Rvm.apply(minion)
         Pvcglue::Packages::Ruby.apply(minion)
+        Pvcglue::Packages::Env.apply(minion)
+        connection.write_to_file_from_template(:root, 'web.nginx.conf.erb', '/etc/nginx/nginx.conf')
 
-        # Pvcglue.cloud.nodes_in_stage(:web).each {|k, v| puts v.machine_name}
+        set_passenger_ruby # needs to be set before rendering 'web.sites-enabled.erb'
+        connection.write_to_file_from_template(:root, 'web.sites-enabled.erb', "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}")
 
-        # file({
-        #          :template => Pvcglue.template_file_name('lb.nginx.conf.erb'),
-        #          :destination => '/etc/./nginx/nginx.conf', # !!! Yes the extra '.' is important !!!  It makes this nginx.conf a 'different' nginx.conf than the web server.  Seems to be a "feature" of the orca gem.
-        #          :create_dirs => false,
-        #          :permissions => 0644,
-        #          :user => 'root',
-        #          :group => 'root'
-        #      }) { sudo('service nginx restart') }
-        #
-        # file({
-        #          :template => Pvcglue.template_file_name('lb.sites-enabled.erb'),
-        #          :destination => "/etc/./nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}", # !!! Yes the extra '.' is important !!!  It makes this nginx.conf a 'different' nginx.conf than the web server.  Seems to be a "feature" of the orca gem.
-        #          :create_dirs => false,
-        #          :permissions => 0644,
-        #          :user => 'root',
-        #          :group => 'root'
-        #      }) { sudo('service nginx restart') }
+
+      end
+
+      def set_passenger_ruby
+        info = connection.run_get_stdout!(user_name, '', "rvm use #{Pvcglue.configuration.ruby_version} && $(which passenger-config) --ruby-command")
+        if info =~ /passenger_ruby (.*)/
+          Pvcglue.cloud.passenger_ruby = $1
+        else
+          raise "'passenger_ruby' not found." unless Pvcglue.cloud.passenger_ruby
+        end
 
       end
     end

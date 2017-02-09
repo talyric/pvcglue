@@ -61,6 +61,7 @@ module Pvcglue
       end
 
       Pvcglue.cloud.minions.each do |minion_name, minion|
+        next unless minion.has_role?(@roles_filter)
         Pvcglue.logger_current_minion = minion
         minion.build!
       end

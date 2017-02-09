@@ -399,7 +399,12 @@ module Pvcglue
 
     def find_or_raise(data, name, key = 'name')
       found = data.detect { |item| item[key] == name }
-      raise(Thor::Error, "Error:  #{name} not found.") unless found
+      # raise(Thor::Error, "Error:  #{name} not found.") unless found
+      unless found
+        puts "name=#{name}, key=#{key}, data="
+        ap data
+        raise("Error:  #{name} not found.")
+      end
       found
     end
 
@@ -410,7 +415,13 @@ module Pvcglue
     end
 
     def get_project
-      find_or_raise(data.projects, app_name)
+      find_or_raise(data.projects, @app_name_override || app_name)
+    end
+
+    def set_manager_as_project
+      # raise('project already initialized') if @project
+      # @project = find_or_raise(data.projects, 'pvcglue_manager')
+      @app_name_override = 'pvcglue_manager'
     end
 
     def stage

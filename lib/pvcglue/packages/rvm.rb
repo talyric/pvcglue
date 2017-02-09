@@ -6,7 +6,7 @@ module Pvcglue
       end
 
       def install!
-        connection.write_to_file_from_template(user_name, 'gemrc.erb', "/home/#{user_name}/.gemrc")
+        connection.write_to_file_from_template(user_name, 'gemrc.erb', "/home/#{user_name}/.gemrc") # sets:  gem: --no-ri --no-rdoc
         connection.write_to_file_from_template(user_name, 'web.bashrc.erb', "/home/#{user_name}/.bashrc")
 
         connection.run_get_stdout!(user_name, '', 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3')

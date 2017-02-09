@@ -10,6 +10,7 @@ module Pvcglue
       end
 
       def install!
+        Pvcglue::Packages::Manager.apply(minion) if has_role?(:manager)
         Pvcglue::Packages::LoadBalancer.apply(minion) if has_role?(:lb)
         Pvcglue::Packages::Web.apply(minion) if has_role?(:web)
         Pvcglue::Packages::Worker.apply(minion) if has_role?(:worker)

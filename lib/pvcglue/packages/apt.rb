@@ -22,9 +22,13 @@ module Pvcglue
         curl
         ncdu
           ],
+          manager: %w[
+            git
+            git-core
+          ],
           lb: %w[
-          nginx
-          nginx-extras
+            nginx
+            nginx-extras
           ],
           web: WEB_WORKER_PACKAGES,
           worker: WEB_WORKER_PACKAGES,

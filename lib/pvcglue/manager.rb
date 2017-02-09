@@ -7,7 +7,10 @@ module Pvcglue
     desc "bootstrap", "bootstrap"
 
     def bootstrap
-      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, :manager, self.class.manager_node, 'root', 'manager')
+      Pvcglue.cloud.set_manager_as_project
+      Pvcglue.cloud.set_stage('manager')
+      Pvcglue::Stack.build('all')
+      # Pvcglue::Packages.apply('bootstrap-manager'.to_sym, :manager, self.class.manager_node, 'root', 'manager')
     end
 
     desc "push", "push"
@@ -163,11 +166,13 @@ module Pvcglue
     end
 
     def self.user_name
-      'pvcglue'
+      raise('Old username should not be used')
+      # 'pvcglue'
     end
 
     def self.home_dir
-      File.join('/home', user_name)
+      # File.join('/home', user_name)
+      '~'
     end
 
     def self.authorized_keys_file_name
@@ -179,7 +184,7 @@ module Pvcglue
     end
 
     def self.manager_dir
-      File.join(home_dir, '.pvc_manager')
+      File.join(home_dir, 'manager')
     end
 
     def self.push_configuration

@@ -8,6 +8,7 @@ module Pvcglue
     class_option :cloud_manager_override
     class_option :verbose
     class_option :reset_minion_state
+    class_option :save_before_upload
 
     def initialize(args = [], local_options = {}, config = {})
       super

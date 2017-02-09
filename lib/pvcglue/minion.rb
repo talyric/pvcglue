@@ -17,12 +17,19 @@ module Pvcglue
       Pvcglue::Packages::UnattendedUpgrades.apply(minion)
       Pvcglue::Packages::Users.apply(minion)
       Pvcglue::Packages::AuthorizedKeys.apply(minion)
-      Pvcglue::Packages::Directories.apply(minion)
+      Pvcglue::Packages::DirBase.apply(minion)
+      Pvcglue::Packages::DirShared.apply(minion)
       Pvcglue::Packages::Roles.apply(minion)
 
 
       # puts '='*175
     end
+
+    # def build_manager!
+    #   Pvcglue.logger.info('MANAGER') { "Building #{machine_name}" }
+    #   Pvcglue.cloud.set_manager_as_project
+    #   build!
+    # end
 
     def provision!
       create! unless provisioned?
@@ -70,6 +77,7 @@ module Pvcglue
     end
 
     def has_role?(roles)
+      return true if roles == 'all'
       !(Array(roles).map(&:to_sym) & roles_to_sym).empty?
     end
 

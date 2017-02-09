@@ -1,17 +1,17 @@
 require 'toml'
-apt_package 'htop'
-apt_package 'ufw'
+apt_package 'htop' # DONE
+apt_package 'ufw' # DONE
 
 package 'bootstrap-manager' do
   # TODO: firewall and ssh port config
-  depends_on 'authenticate-host'
-  depends_on 'htop'
+  depends_on 'authenticate-host' # DONE
+  depends_on 'htop' # DONE
   # depends_on 'ufw'
   #depends_on 'deploy-user'
   #depends_on 'sshd-config'
   #depends_on 'firewall-config'
-  depends_on 'pvcglue-user'
-  depends_on 'manager-copy-id'
+  depends_on 'pvcglue-user' # DONE
+  depends_on 'manager-copy-id' # DONE
 end
 
 package 'authenticate-host' do
@@ -20,7 +20,7 @@ package 'authenticate-host' do
   end
 end
 
-package 'pvcglue-user' do
+package 'pvcglue-user' do # DONE
   apply do
     # Local variables used to improve readability of bash commands :)
     user_name = Pvcglue::Manager.user_name

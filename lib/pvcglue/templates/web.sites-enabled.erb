@@ -8,7 +8,7 @@ server {
 
 # Custom options from web_nginx_server
 
-<% Pvcglue.cloud.web_nginx_server.each do |option| %>
+<% (minion.web_nginx_server || []).each do |option| %>
   <%= "  #{option};\n" %>
 <% end %>
 

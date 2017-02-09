@@ -193,11 +193,44 @@ module Pvcglue
       #   '~/www'
       #   # "/home/#{user_name}/.ssh"
       # end
+
+      def build_log_extra_dir
+        @build_log_extra_dir ||= begin
+          option = Pvcglue.command_line_options[:save_before_upload]
+          if option != 'save_before_upload'
+            dir_name = option
+          else
+            dir_name = Time.now.strftime('%Y-%m-%d-%H%M%S')
+          end
+          result = File.join(pvcglue_tmp_dir, dir_name)
+          `mkdir -p '#{result}'`
+          raise $?.inspect unless $?.exitstatus == 0
+          result
+        end
+      end
+
+      def build_log_extra_filename(minion, user, remote_filename)
+        # local_filename = File.basename(remote_filename)
+        relative = remote_filename.sub(Pvcglue.cloud.web_app_base_dir, '/project')
+        local_filename = relative.sub(/\A\//, '').gsub(/\//, '__')
+        # local_filename = File.basename(remote_filename)
+        versioned_filename(File.join(build_log_extra_dir, "#{minion.machine_name}--#{user}--#{local_filename}"))
+      end
+
+      def versioned_filename(base, first_suffix='.00')
+        suffix = nil
+        filename = base
+        while File.exists?(filename)
+          suffix = (suffix ? suffix.succ : first_suffix)
+          filename = base + suffix
+        end
+        return filename
+      end
     end
 
   end
 
-  # --------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------------
 
   def self.configuration
     @configuration ||= Configuration.new

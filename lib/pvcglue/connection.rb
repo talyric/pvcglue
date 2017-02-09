@@ -126,7 +126,7 @@ module Pvcglue
     def write_to_file_from_template(user, template_file_name, file, owner = nil, group = nil, permissions = nil)
       Pvcglue.logger.debug { "Writing to #{file} from template '#{template_file_name}'" }
       template = Tilt.new(Pvcglue.template_file_name(template_file_name))
-      data = template.render
+      data = template.render(self, minion: minion)
 
       write_to_file(user, data, file, owner, group, permissions)
     end
@@ -149,6 +149,9 @@ module Pvcglue
     end
 
     def upload_file(user, local_file, remote_file, owner = nil, group = nil, permissions = nil)
+      if Pvcglue.command_line_options[:save_before_upload] && file_exists?(user, remote_file)
+        download_file(user, remote_file, Pvcglue.configuration.build_log_extra_filename(minion, user, remote_file))
+      end
       system_command!(%{scp #{local_file} #{user}@#{minion.public_ip}:#{remote_file}})
       chown_chmod(user, remote_file, owner, group, permissions)
     end

@@ -20,7 +20,7 @@ package 'env-set-stage' do
 
 end
 
-package 'deploy-to-base' do
+package 'deploy-to-base' do # DONE
   validate do
     stat = run("stat --format=%U:%G:%a #{Pvcglue.cloud.deploy_to_app_shared_dir}").strip
     stat == 'deploy:deploy:2775'
@@ -35,7 +35,7 @@ package 'deploy-to-base' do
 end
 
 package 'app-env' do
-  depends_on 'deploy-to-base'
+  depends_on 'deploy-to-base' # DONE
   depends_on 'app-env-file'
 end
 
