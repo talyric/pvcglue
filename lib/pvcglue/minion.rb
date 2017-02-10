@@ -116,6 +116,14 @@ module Pvcglue
       get_users_from_group(users)
     end
 
+    def get_root_authorized_keys_data
+      get_authorized_keys_data(get_root_users)
+    end
+
+    def get_users_authorized_keys_data
+      get_authorized_keys_data(get_users)
+    end
+
     def get_root_authorized_keys
       get_authorized_keys(get_root_users)
     end
@@ -132,6 +140,17 @@ module Pvcglue
         end
       end
       keys
+    end
+    def get_authorized_keys_data(users)
+      data = []
+      users.each do |user|
+        user.public_keys.each do |id, public_key|
+          line = %Q(environment="PVCGLUE_USER=#{user.name}" #{public_key})
+          # line = %Q(command="export PVCGLUE_USER=#{id}" #{public_key})
+          data << line
+        end
+      end
+      data
     end
   end
 end
