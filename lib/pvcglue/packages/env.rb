@@ -2,6 +2,7 @@ module Pvcglue
   class Packages
     class Env < Pvcglue::Packages
       def installed?
+        # Resume here
         result = connection.run_get_stdout(user_name, '', "stat --format=%U:%G:%a #{Pvcglue.cloud.web_app_base_dir}").strip
         result == "#{user_name}:#{user_name}:2755"
       end

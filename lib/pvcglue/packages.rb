@@ -12,7 +12,7 @@ module Pvcglue
     attr_accessor :errors
     attr_accessor :options
 
-    def initialize(minion, options)
+    def initialize(minion, options = {})
       @minion = minion
       @options = options
       @errors = []
@@ -31,7 +31,7 @@ module Pvcglue
     end
 
     def user_name
-      @minion.cloud.minion_user_name
+      @minion.remote_user_name
     end
 
     def run

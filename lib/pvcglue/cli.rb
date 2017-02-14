@@ -51,7 +51,7 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def build(roles = 'all')
-      Pvcglue::Stack.build(roles)
+      Pvcglue::Stack.build(Pvcglue.cloud.minions, roles)
     end
 
     desc "console", "open rails console"

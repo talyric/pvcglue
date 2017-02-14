@@ -1,7 +1,7 @@
 module Pvcglue
   class Stack
-    def self.build(roles_filter)
-      Pvcglue::Stack.new(roles_filter).run
+    def self.build(minions, roles_filter)
+      Pvcglue::Stack.new(roles_filter).run(minions)
     end
 
     def initialize(roles_filter)
@@ -12,7 +12,7 @@ module Pvcglue
       @roles_filter == 'all' || role == @roles_filter
     end
 
-    def run
+    def run(minions)
       # puts "Configuring nodes for #{@roles_filter}."
 
       # ap Pvcglue.configuration
@@ -27,7 +27,7 @@ module Pvcglue
       # ap Pvcglue.cloud.minions.map { |key, value| value.roles }
 
       new_minions = []
-      Pvcglue.cloud.minions.each do |minion_name, minion|
+      minions.each do |minion_name, minion|
         Pvcglue.logger_current_minion = minion
         # droplet = Pvcglue::DigitalOcean.client.droplets.find(id: 38371925)
         # minion.droplet = droplet
@@ -46,7 +46,7 @@ module Pvcglue
         Pvcglue.logger.info("Checking status of new minions (#{new_minions.size})...")
         time = Benchmark.realtime do
           begin
-            lazy_minions = get_lazy_minions
+            lazy_minions = get_lazy_minions(minions)
             unless lazy_minions.size == 0
               # puts '*'*175
               # ap waiting_for
@@ -57,10 +57,10 @@ module Pvcglue
           write_config(new_minions)
         end
         Pvcglue.logger.info("Minions (finally) ready after #{time.round(2)} seconds!")
-        Pvcglue.cloud.reload_minions!
+        # Pvcglue.cloud.reload_minions!
       end
 
-      Pvcglue.cloud.minions.each do |minion_name, minion|
+      minions.each do |minion_name, minion|
         next unless minion.has_role?(@roles_filter)
         Pvcglue.logger_current_minion = minion
         minion.build!
@@ -112,6 +112,10 @@ module Pvcglue
       # end
       # puts new_data
 
+      minion.public_ip_address = ip_addresses.public
+      minion.private_id_address = ip_addresses.private
+      minion.cloud_id = cloud_id
+
       Pvcglue.logger.debug("Updated configuration for machine named #{minion.machine_name}.")
       File.write(minion.cloud.local_file_name, new_data)
     end
@@ -120,10 +124,10 @@ module Pvcglue
       @droplets ||= Pvcglue::DigitalOcean.client.droplets.all
     end
 
-    def get_lazy_minions
+    def get_lazy_minions(minions)
       droplets = Pvcglue::DigitalOcean.client.droplets.all
 
-      minions = Pvcglue.cloud.minions.select do |minion_name, minion|
+      minions.select do |minion_name, minion|
         Pvcglue.logger_current_minion = minion
         # next unless minion.machine_name == 'staging-lb'
         # ap minion_name

@@ -380,7 +380,51 @@ module Pvcglue
       stage[:monit_disk_usage_threshold] || project[:monit_disk_usage_threshold] || "80%"
     end
 
+    def minion_manager_user_name
+      'manager'
+    end
+
+
     # ==============================================================================================
+
+    def manager_minion
+      @manager_minion ||= get_manager_minion
+    end
+
+    def get_manager_minion
+      minion = Pvcglue::Minion.new
+      minion.machine_name = 'pvcglue-manager'
+      minion.roles = ['manager']
+      minion.public_ip = Pvcglue.configuration.cloud_manager
+      minion.connection = Pvcglue::Connection.new(minion)
+      # minion.root_users = machine.root_users
+      # minion.users = machine.users
+      # minion.cloud_id = machine.cloud_id
+      minion.remote_user_name = minion_manager_user_name
+      # minion.all_data = data
+      # minion.project = project
+      # minion.stage = stage
+      # minion.cloud_provider = data.cloud_provider
+      # minion.cloud = ::Pvcglue.cloud
+      # minion.cloud_provider.name == 'not-supported'
+      minion
+
+    end
+
+    # def set_manager_as_project
+    #
+    #   # raise('project already initialized') if @project
+    #   # @project = find_or_raise(data.projects, 'pvcglue_manager')
+    #   @app_name_override = 'pvcglue_manager'
+    #   set_stage('manager')
+    # end
+
+    def reload_minions!
+      @data = nil
+      @project = nil
+      @stage = nil
+      @minions = nil
+    end
 
     def web_app_base_dir
       # '/sites'
@@ -418,12 +462,6 @@ module Pvcglue
       find_or_raise(data.projects, @app_name_override || app_name)
     end
 
-    def set_manager_as_project
-      # raise('project already initialized') if @project
-      # @project = find_or_raise(data.projects, 'pvcglue_manager')
-      @app_name_override = 'pvcglue_manager'
-    end
-
     def stage
       @stage ||= begin
         find_or_raise(project.stages, stage_name)
@@ -432,13 +470,6 @@ module Pvcglue
 
     def minions
       @minions ||= get_minions
-    end
-
-    def reload_minions!
-      @data = nil
-      @project = nil
-      @stage = nil
-      @minions = nil
     end
 
     def find_machine(name)
@@ -455,7 +486,7 @@ module Pvcglue
         minion = minions[machine.name]
         # ap minion
         unless minion
-          # check for duplicate roles:  ie. 2 web servers with the same id
+          # TODO:  check for duplicate roles:  ie. 2 web servers with the same id
           minion = Pvcglue::Minion.new
           minion.machine_name = item.machine_name
           minion.roles = []
@@ -465,7 +496,8 @@ module Pvcglue
           minion.root_users = machine.root_users
           minion.users = machine.users
           minion.cloud_id = machine.cloud_id
-          # TODO:  sync machine options here
+          minion.remote_user_name = minion_user_name
+          # TODO:  sync all machine options here, automatically
         end
         # ap minion
         # puts "*"*175

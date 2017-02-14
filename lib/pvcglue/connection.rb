@@ -19,8 +19,8 @@ module Pvcglue
     attr_accessor :minion_state_data
 
     def file_exists?(user, file)
-      # ssh?(user, '-t', "test -e #{file}").exitstatus == 0
-      ssh?(user, '', "test -e #{file}").exitstatus == 0
+      result = ssh?(user, '', "test -e #{file}")
+      result.exitstatus == 0
     end
 
     def mkdir_p(user, remote_dir, owner = nil, group = nil, permissions = nil)

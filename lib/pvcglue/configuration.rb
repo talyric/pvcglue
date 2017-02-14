@@ -38,7 +38,10 @@ module Pvcglue
           init(:local_cloud_manager)
           @cloud_manager = @local_cloud_manager
         else
-          init(:cloud_manager) || configure_manager
+          unless init(:cloud_manager)
+            say('The manager has not been configured.')
+            configure_manager
+          end
         end
 
         # raise(Thor::Error, "The manager has not been configured.  :(") if cloud_manager.nil?
@@ -57,7 +60,6 @@ module Pvcglue
       end
 
       def configure_manager
-        say('The manager has not been configured.')
         manager = ask('What is the IP address or host name of the manager?')
         default = !no?('Will this be the default manager? (Y/n)')
         file_name = default ? user_file_name : project_file_name
@@ -217,6 +219,7 @@ module Pvcglue
         versioned_filename(File.join(build_log_extra_dir, "#{minion.machine_name}--#{user}--#{local_filename}"))
       end
 
+      # TODO:  Refactor to a utilities module or something
       def versioned_filename(base, first_suffix='.00')
         suffix = nil
         filename = base

@@ -17,8 +17,6 @@ module Pvcglue
       Pvcglue::Packages::UnattendedUpgrades.apply(minion)
       Pvcglue::Packages::Users.apply(minion)
       Pvcglue::Packages::AuthorizedKeys.apply(minion)
-      Pvcglue::Packages::DirBase.apply(minion)
-      Pvcglue::Packages::DirShared.apply(minion)
       Pvcglue::Packages::Roles.apply(minion)
 
 
@@ -36,7 +34,7 @@ module Pvcglue
     end
 
     def provisioned?
-      !!public_ip
+      public_ip.present?
     end
 
     def create!

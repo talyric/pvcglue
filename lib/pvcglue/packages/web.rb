@@ -21,6 +21,8 @@ module Pvcglue
       end
 
       def install!
+        Pvcglue::Packages::DirBase.apply(minion)
+        Pvcglue::Packages::DirShared.apply(minion)
         Pvcglue::Packages::Rvm.apply(minion)
         Pvcglue::Packages::Ruby.apply(minion)
         Pvcglue::Packages::Env.apply(minion)
