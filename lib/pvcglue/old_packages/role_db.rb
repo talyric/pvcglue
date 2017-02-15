@@ -1,12 +1,12 @@
 package 'db' do
-  depends_on 'env-initialized'
-  depends_on 'postgresql'
-  depends_on 'postgresql-conf'
+  depends_on 'env-initialized' # DONE
+  depends_on 'postgresql' # DONE
+  depends_on 'postgresql-conf' # DONE
   depends_on 'postgresql-app-stage-conf'
   depends_on 'monit-bootstrap'
 end
 
-package 'postgresql-conf' do
+package 'postgresql-conf' do # DONE
   file({
            :template => Pvcglue.template_file_name('postgresql.conf.erb'),
            :destination => '/etc/postgresql/9.1/main/postgresql.conf',

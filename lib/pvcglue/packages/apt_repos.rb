@@ -12,6 +12,10 @@ module Pvcglue
         has_roles? %w(web worker)
       end
 
+      def postgresql_needed?
+        has_roles? %w(pg)
+      end
+
       def installed?
         get_minion_state(:apt_repos_updated_at)
       end
@@ -30,6 +34,11 @@ module Pvcglue
           # Reference:  http://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/
           connection.run!(:root, '', 'apt-get install -y apt-transport-https ca-certificates python-software-properties lsb-release')
           connection.run!(:root, '', 'curl -sL https://deb.nodesource.com/setup_7.x | bash -')
+        end
+
+        if postgresql_needed?
+          connection.run!(:root, '', 'add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main"')
+          connection.run!(:root, '', 'wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -')
         end
 
         set_minion_state(:apt_repos_updated_at, Time.now.utc)

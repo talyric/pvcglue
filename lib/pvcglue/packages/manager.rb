@@ -2,10 +2,13 @@ module Pvcglue
   class Packages
     class Manager < Pvcglue::Packages
 
+      def initialize(minion = nil, options = {})
+        minion = Pvcglue.cloud.manager_minion if minion.nil?
+        super
+      end
+
       def installed?
-        return false unless connection.file_exists?(user_name, manager_dir)
-        return false unless working_directory_clean?
-        connection.file_exists?(user_name, manager_test_filename)
+        get_minion_state(:manager_installed_at)
       end
 
       def install!
@@ -20,9 +23,17 @@ module Pvcglue
         connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git status))
         git_commit!
         connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git status))
+
         # https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History
         connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git log --pretty=format:"%h - %an, %ar : %s" && echo))
 
+        set_minion_state(:manager_installed_at, Time.now.utc)
+      end
+
+      def post_install_check?
+        return false unless connection.file_exists?(user_name, manager_dir)
+        return false unless working_directory_clean?
+        connection.file_exists?(user_name, manager_test_filename)
       end
 
       def manager_dir
@@ -34,7 +45,7 @@ module Pvcglue
       end
 
       def self.get_configuration
-        new(Pvcglue.cloud.manager_minion).get_configuration
+        new.get_configuration
       end
 
       def get_configuration
@@ -44,12 +55,15 @@ module Pvcglue
         #   # raise(Thor::Error, "Remote manager file not found:  #{::Pvcglue::Manager.manager_file_name}")
         #   raise("Remote manager file not found:  #{::Pvcglue::Manager.manager_file_name}")
         # end
-        data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)
+        data = '' # to use `data` in block
+        Pvcglue.filter_verbose do
+          data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)
+        end
         ::Pvcglue.cloud.data = TOML.parse(data)
       end
 
       def self.push_configuration
-        new(Pvcglue.cloud.manager_minion).push_configuration
+        new.push_configuration
       end
 
       def push_configuration
@@ -60,7 +74,7 @@ module Pvcglue
       end
 
       def git_commit!
-        connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --author="pvc_$PVCGLUE_USER <>" -m "Change configuration"))
+        connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-$PVCGLUE_USER <>" -m "Change configuration"))
       end
 
       def working_directory_clean?
@@ -68,7 +82,8 @@ module Pvcglue
       end
 
       def self.pull_configuration
-        new(Pvcglue.cloud.manager_minion).pull_configuration
+        new.pull_configuration
+        # new(Pvcglue.cloud.manager_minion).pull_configuration
       end
 
       def pull_configuration
@@ -87,6 +102,16 @@ module Pvcglue
         File.write(file_name, data)
         puts "Configuration saved to #{file_name}.  Now edit it and push it back up."
       end
+
+      def load_secrets
+        connection.read_from_file_if_exists?(user_name, ::Pvcglue::Env.stage_env_file_name)
+      end
+
+      def save_secrets(data)
+        connection.write_to_file(user_name, data, ::Pvcglue::Env.stage_env_file_name, nil, nil, 600)
+        git_commit!
+      end
+
     end
   end
 end

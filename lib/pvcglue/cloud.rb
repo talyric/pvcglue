@@ -11,6 +11,7 @@ module Pvcglue
     attr_accessor :stage_env
     attr_accessor :passenger_ruby
     attr_accessor :port_in_node_context
+    # attr_accessor :stage_secrets
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -85,19 +86,30 @@ module Pvcglue
     end
 
     # find node by full node_name or by matching prefix of node_name
-    def find_node(node_name, raise_error = true)
-      puts "*"*80
-      raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
-      return {node_name => nodes_in_stage[node_name]} if nodes_in_stage[node_name]
-      puts "-"*80
-      nodes_in_stage.each do |key, value|
-        puts key
-        return {key => value} if key.start_with?(node_name)
+    def find_minion_by_name(minion_name, raise_error = true)
+      # raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
+      raise('Minion not specified.') if minion_name.nil? || minion_name.empty?
+      return {minion_name => nodes_in_stage[minion_name]} if minions[minion_name]
+      minions.each do |key, value|
+        return {key => value} if key.start_with?(minion_name)
       end
-      raise("Not found:  #{node_name} in #{stage_name}.") if raise_error
+      raise("Not found:  #{minion_name} in #{stage_name}.") if raise_error
       # raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
+      nil
     end
 
+    # # find node by full node_name or by matching prefix of node_name
+    # def find_node(node_name, raise_error = true)
+    #   # raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
+    #   raise('Node not specified.') if node_name.nil? || node_name.empty?
+    #   return {node_name => nodes_in_stage[node_name]} if nodes_in_stage[node_name]
+    #   nodes_in_stage.each do |key, value|
+    #     return {key => value} if key.start_with?(node_name)
+    #   end
+    #   raise("Not found:  #{node_name} in #{stage_name}.") if raise_error
+    #   # raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
+    # end
+    #
     def nodes_in_stage(role_filter = 'all')
       # # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
       # # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
@@ -115,8 +127,11 @@ module Pvcglue
       if role_filter == 'all'
         minions
       else
+        binding.pry
+
         minions.select { |minion_name, minion| minion.has_role?(role_filter) }
       end
+
     end
 
     # ENV['PVC_DEPLOY_TO_BASE'] = stage_data[:deploy_to] || '/sites'
@@ -456,6 +471,10 @@ module Pvcglue
       @project ||= begin
         get_project
       end
+    end
+
+    def project_name
+      project.name
     end
 
     def get_project

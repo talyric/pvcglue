@@ -150,5 +150,11 @@ module Pvcglue
       end
       data
     end
+
+    # def update_from(another_minion)
+    #   self.private_ip = another_minion.private_ip
+    #   self.public_ip = another_minion.public_ip
+    #   self.cloud_id = another_minion.cloud_id
+    # end
   end
 end

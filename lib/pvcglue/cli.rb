@@ -58,7 +58,7 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def console(server='web')
-      node = Pvcglue.cloud.find_node(server)
+      node = Pvcglue.cloud.find_minion_by_name(server)
       node_name = node.keys.first
       node_data = node.values.first
       # puts "*"*80
@@ -141,7 +141,7 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def sh(server='web') # `shell` is a Thor reserved word
-      node = Pvcglue.cloud.find_node(server)
+      node = Pvcglue.cloud.find_minion_by_name(server)
       node_name = node.keys.first
       node_data = node.values.first
       # puts "*"*80

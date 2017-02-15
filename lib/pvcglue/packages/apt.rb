@@ -33,6 +33,9 @@ module Pvcglue
           web: WEB_WORKER_PACKAGES,
           worker: WEB_WORKER_PACKAGES,
           pg: %w[
+            postgresql-9.6
+            postgresql-contrib-9.6
+            libpq-dev
           ],
           mc: %w[
           ],
@@ -46,12 +49,12 @@ module Pvcglue
         connection.run!(:root, '', "DEBIAN_FRONTEND=noninteractive apt install -y #{get_package_list}")
       end
 
-      def get_package_list
-        get_packages.join(' ')
-      end
-
       def post_install_check?
         true
+      end
+
+      def get_package_list
+        get_packages.join(' ')
       end
 
       def all_packages

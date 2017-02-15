@@ -96,7 +96,7 @@ module Pvcglue
     end
 
     def self.db_host_public
-      node = Pvcglue.cloud.find_node('db')
+      node = Pvcglue.cloud.find_minion_by_name('db')
       node['db']['public_ip']
     end
 

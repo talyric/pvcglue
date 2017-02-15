@@ -27,6 +27,7 @@ require 'pvcglue/digital_ocean'
 require 'logger'
 require 'pvcglue/connection'
 require 'paint'
+require 'pry'
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 # pvc manager bootstrap --cloud_manager_override=local_cloud.pvcglue.toml --save_before_upload=save --verbose
@@ -89,8 +90,18 @@ module Pvcglue
   mattr_accessor :logger_current_minion
 
   def self.verbose?
+    return if @filtering_verbose
     if Pvcglue.command_line_options[:verbose]
       puts yield
+    end
+  end
+
+  def self.filter_verbose
+    @filtering_verbose = true
+    begin
+      yield
+    ensure
+      @filtering_verbose = false
     end
   end
 

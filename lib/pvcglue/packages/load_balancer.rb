@@ -5,6 +5,12 @@ module Pvcglue
         false
       end
 
+      def install!
+        connection.write_to_file_from_template(:root, 'lb.nginx.conf.erb', '/etc/nginx/nginx.conf')
+        connection.write_to_file_from_template(:root, 'lb.sites-enabled.erb', "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}")
+        sync_maintenance_files
+      end
+
       def post_install_check?
         result = connection.run_get_stdout(:root, '', 'service nginx restart')
         if $?.exitstatus == 0
@@ -17,12 +23,6 @@ module Pvcglue
           false
         end
         # TODO:  Ping the server as a double check.
-      end
-
-      def install!
-        connection.write_to_file_from_template(:root, 'lb.nginx.conf.erb', '/etc/nginx/nginx.conf')
-        connection.write_to_file_from_template(:root, 'lb.sites-enabled.erb', "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}")
-        sync_maintenance_files
       end
 
       def sync_maintenance_files

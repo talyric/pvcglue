@@ -2,7 +2,7 @@ require 'toml'
 apt_package 'htop' # DONE
 apt_package 'ufw' # DONE
 
-package 'bootstrap-manager' do
+package 'bootstrap-manager' do # DONE
   # TODO: firewall and ssh port config
   depends_on 'authenticate-host' # DONE
   depends_on 'htop' # DONE
@@ -14,7 +14,7 @@ package 'bootstrap-manager' do
   depends_on 'manager-copy-id' # DONE
 end
 
-package 'authenticate-host' do
+package 'authenticate-host' do # DONE
   apply do
     sudo "ls" # side-effect will add host to known_hosts
   end
@@ -50,7 +50,7 @@ package 'pvcglue-user' do # DONE
   end
 end
 
-package 'manager-copy-id' do
+package 'manager-copy-id' do # DONE
   validate do
     authorized_keys_file_name = Pvcglue::Manager.authorized_keys_file_name
     user_key = `cat ~/.ssh/id_rsa.pub`.strip
@@ -68,7 +68,7 @@ package 'manager-copy-id' do
   end
 end
 
-package 'manager-push' do
+package 'manager-push' do # DONE
   apply do
     if File.exists?(::Pvcglue.cloud.local_file_name)
       # scp foobar.txt your_username@remotehost.edu:/some/remote/directory
@@ -86,7 +86,7 @@ package 'manager-push' do
   end
 end
 
-package 'manager-pull' do
+package 'manager-pull' do # DONE
   apply do
     # scp your_username@remotehost.edu:foobar.txt /some/local/directory
     cmd = %{scp #{node.get(:user)}@#{node.host}:#{::Pvcglue::Manager.manager_file_name} #{::Pvcglue.cloud.local_file_name}}
@@ -100,7 +100,7 @@ package 'manager-pull' do
   end
 end
 
-package 'manager-get-config' do
+package 'manager-get-config' do # DONE
   apply do
     data = run("cat #{::Pvcglue::Manager.manager_file_name}")
     #puts "*"*80

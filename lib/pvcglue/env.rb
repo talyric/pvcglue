@@ -6,16 +6,18 @@ module Pvcglue
     desc "push", "push"
 
     def push
-      Pvcglue::Packages.apply('env-push'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
-      self.class.clear_stage_env_cache
-      Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
+      raise('Not implemented')
+      # Pvcglue::Packages.apply('env-push'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
+      # self.class.clear_stage_env_cache
+      # Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
     end
 
     desc "pull", "pull"
 
     def pull
-      Pvcglue::Packages.apply('env-pull'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
-      self.class.clear_stage_env_cache
+      raise('Not implemented')
+      # Pvcglue::Packages.apply('env-pull'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
+      # self.class.clear_stage_env_cache
     end
 
     desc "list", "list"
@@ -38,10 +40,12 @@ module Pvcglue
 
     def set(*args)
       self.class.initialize_stage_env
+      Pvcglue.logger.debug { args.each { |arg| arg.inspect } }
       options = Hash[args.each.map { |l| l.chomp.split('=') }]
+      Pvcglue.logger.debug { options.inspect }
       Pvcglue.cloud.stage_env.merge!(options)
       self.class.save_stage_env
-      Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
+      self.class.apply_changes
     end
 
     desc "unset", "remove environment variable(s) for the stage XYZ [ZZZ]"
@@ -50,7 +54,7 @@ module Pvcglue
       self.class.initialize_stage_env
       args.each { |arg| puts "WARNING:  Key '#{arg}' not found." unless Pvcglue.cloud.stage_env.delete(arg) }
       self.class.save_stage_env
-      Pvcglue::Packages.apply('app-env-file'.to_sym, :env, Pvcglue.cloud.nodes_in_stage('web'))
+      self.class.apply_changes
     end
 
     desc "rm", "alternative to unset"
@@ -63,10 +67,11 @@ module Pvcglue
     # ------------------------------------------------------------------------------------------------------------------
 
     def self.initialize_stage_env
-      unless read_cached_stage_env
-        Pvcglue::Packages.apply('env-get-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
-        write_stage_env_cache
-      end
+      Pvcglue::Packages::Secrets.load_for_stage
+      # unless read_cached_stage_env
+      #   Pvcglue::Packages.apply('env-get-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
+      #   write_stage_env_cache
+      # end
       merged = stage_env_defaults.merge(Pvcglue.cloud.stage_env)
       if merged != Pvcglue.cloud.stage_env
         Pvcglue.cloud.stage_env = merged
@@ -75,35 +80,46 @@ module Pvcglue
     end
 
     def self.save_stage_env
-      Pvcglue::Packages.apply('env-set-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
-      write_stage_env_cache
+      Pvcglue::Packages::Secrets.save_for_stage
+      # Pvcglue::Packages.apply('env-set-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
+      # write_stage_env_cache
     end
 
     def self.stage_env_defaults
-      {
-          'RAILS_SECRET_TOKEN' => SecureRandom.hex(64),
-          'DB_USER_POSTGRES_HOST' => db_host,
-          'DB_USER_POSTGRES_PORT' => "5432",
-          'DB_USER_POSTGRES_USERNAME' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
-          'DB_USER_POSTGRES_DATABASE' => "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}",
-          'DB_USER_POSTGRES_PASSWORD' => new_password,
-          'MEMCACHE_SERVERS' => memcached_host,
-          'REDIS_SERVER' => redis_host
-      }
+      defaults = {}
+
+      defaults['RAILS_SECRET_TOKEN'] = SecureRandom.hex(64) # From rails/railties/lib/rails/tasks/misc.rake
+
+      if Pvcglue.cloud.nodes_in_stage('pg').any?
+        defaults['DB_USER_POSTGRES_HOST'] = db_host
+        defaults['DB_USER_POSTGRES_PORT'] = "5432"
+        defaults['DB_USER_POSTGRES_USERNAME'] = "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}"
+        defaults['DB_USER_POSTGRES_DATABASE'] = "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}"
+        defaults['DB_USER_POSTGRES_PASSWORD'] = new_password
+      end
+
+      if Pvcglue.cloud.nodes_in_stage('memcached').any?
+        defaults['MEMCACHE_SERVERS'] = memcached_host
+      end
+
+      if Pvcglue.cloud.nodes_in_stage('redis').any?
+        defaults['REDIS_SERVER'] = redis_host
+      end
+
+      defaults
     end
 
     def self.db_host
-      node = Pvcglue.cloud.find_node('db')
-      node['db']['private_ip']
+      Pvcglue.cloud.nodes_in_stage('pg').first.private_ip
     end
 
     def self.memcached_host
-      node = Pvcglue.cloud.find_node('memcached', false)
+      node = Pvcglue.cloud.find_minion_by_name('memcached', false)
       node ? "#{node['memcached']['private_ip']}:11211" : ""
     end
 
     def self.redis_host
-      node = Pvcglue.cloud.find_node('redis', false)
+      node = Pvcglue.cloud.find_minion_by_name('redis', false)
       node ? "#{node['redis']['private_ip']}:6379" : ""
     end
 
@@ -143,7 +159,13 @@ module Pvcglue
       File.delete(stage_env_cache_file_name) if File.exists?(stage_env_cache_file_name)
     end
 
-
+    def self.apply_changes
+      Pvcglue.cloud.minions.each do |minion_name, minion|
+        if minion.has_roles? %w(web worker)
+          Pvcglue::Packages::Secrets.apply(minion)
+        end
+      end
+    end
   end
 
 end

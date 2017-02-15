@@ -25,7 +25,13 @@ module Pvcglue
       # ap Pvcglue.cloud.stage
       # ap Pvcglue.cloud.minions
       # ap Pvcglue.cloud.minions.map { |key, value| value.roles }
-
+      # minions.each do |minion_name, minion|
+      #   ap minion_name
+      #   ap minion.first
+      # end
+      # ap minions['staging-pg'].private_ip
+      # minions['staging-pg'].private_ip = '127.0.0.1'
+      # ap minions['staging-pg'].private_ip
       new_minions = []
       minions.each do |minion_name, minion|
         Pvcglue.logger_current_minion = minion
@@ -40,6 +46,7 @@ module Pvcglue
           new_minions << minion
         end
       end
+      Pvcglue.logger_current_minion = nil
 
       if new_minions.size > 0
         # ap new_minions
@@ -54,7 +61,13 @@ module Pvcglue
               sleep(1.5)
             end
           end until lazy_minions.size == 0
-          write_config(new_minions)
+          updated_minions = write_config(new_minions)
+          updated_minions.each do |updated_minion|
+            minions[updated_minion.machine_name].private_ip = updated_minion.private_ip
+            minions[updated_minion.machine_name].public_ip = updated_minion.public_ip
+            minions[updated_minion.machine_name].cloud_id = updated_minion.cloud_id
+            minions[updated_minion.machine_name].connection = Pvcglue::Connection.new(minions[updated_minion.machine_name])
+          end
         end
         Pvcglue.logger.info("Minions (finally) ready after #{time.round(2)} seconds!")
         # Pvcglue.cloud.reload_minions!
@@ -80,7 +93,10 @@ module Pvcglue
     end
 
     def write_config(minions)
-      minions.each do |minion|
+      # TODO:  Just read and write the configuration from manager without writing to `minion.cloud.local_file_name`
+      Pvcglue::Manager.pull_configuration
+      data = File.read(Pvcglue.cloud.local_file_name)
+      updated_minions = minions.map do |minion|
         # puts '-'*175
         # ap minion.droplet
         # Refresh droplet (didn't find a reload method)
@@ -89,18 +105,26 @@ module Pvcglue
         minion.droplet = Pvcglue::DigitalOcean.client.droplets.find(id: droplet_id)
         # puts '='*175
         # ap minion.droplet
-        update_minion_data(minion, Pvcglue::DigitalOcean.get_ip_addresses(minion.droplet), droplet_id)
+        ip_addresses = Pvcglue::DigitalOcean.get_ip_addresses(minion.droplet)
+        data = update_minion_data(minion, ip_addresses, droplet_id, data)
+        minion.public_ip = ip_addresses.public
+        minion.private_ip = ip_addresses.private
+        minion.cloud_id = droplet_id
+        minion
       end
+      File.write(Pvcglue.cloud.local_file_name, data)
+      Pvcglue::Manager.push_configuration
+      updated_minions
     end
 
-    def update_minion_data(minion, ip_addresses, cloud_id)
+    def update_minion_data(minion, ip_addresses, cloud_id, data)
       unless minion.public_ip_address.nil? && minion.private_id_address.nil? && minion.cloud_id.nil?
         raise(Thor::Error, "#{minion.machine_name} has previously defined ip address(es) or cloud_id, can not change.")
       end
       if ip_addresses.public.nil? || ip_addresses.private.nil? || cloud_id.nil?
         raise(Thor::Error, "New IP addresses (#{ip_addresses}) or cloud_id (#{cloud_id}) are not valid.")
       end
-      data = File.read(minion.cloud.local_file_name)
+
 
       replacement = "\\1\\2\n\\1public_ip = '#{ip_addresses.public}'\n\\1private_ip = '#{ip_addresses.private}'\n\\1cloud_id = '#{cloud_id}'"
       new_data = data.sub(/( *)(name\s*=\s*['"]#{Regexp.quote(minion.machine_name)}['"])/, replacement)
@@ -112,12 +136,9 @@ module Pvcglue
       # end
       # puts new_data
 
-      minion.public_ip_address = ip_addresses.public
-      minion.private_id_address = ip_addresses.private
-      minion.cloud_id = cloud_id
 
       Pvcglue.logger.debug("Updated configuration for machine named #{minion.machine_name}.")
-      File.write(minion.cloud.local_file_name, new_data)
+      new_data
     end
 
     def droplets

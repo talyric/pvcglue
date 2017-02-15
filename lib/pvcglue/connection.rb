@@ -123,6 +123,26 @@ module Pvcglue
       data
     end
 
+    def read_from_file_if_exists?(user, file)
+      tmp_file = Tempfile.new('pvc')
+      begin
+        result = download_file(user, file, tmp_file.path, false)
+        if result.exitstatus == 0
+          data = tmp_file.read
+        elsif result.exitstatus == 1
+          data = nil
+        else
+          raise $?.inspect
+        end
+        Pvcglue.verbose? { data }
+      ensure
+        tmp_file.close
+        tmp_file.unlink # deletes the temp file
+      end
+      data
+
+    end
+
     def write_to_file_from_template(user, template_file_name, file, owner = nil, group = nil, permissions = nil)
       Pvcglue.logger.debug { "Writing to #{file} from template '#{template_file_name}'" }
       template = Tilt.new(Pvcglue.template_file_name(template_file_name))
@@ -144,8 +164,13 @@ module Pvcglue
       end
     end
 
-    def download_file(user, remote_file, local_file)
-      system_command!(%{scp #{user}@#{minion.public_ip}:#{remote_file} #{local_file}})
+    def download_file(user, remote_file, local_file, raise_error = true)
+      cmd = %{scp #{user}@#{minion.public_ip}:#{remote_file} #{local_file}}
+      if raise_error
+        system_command!(cmd)
+      else
+        system_command?(cmd)
+      end
     end
 
     def upload_file(user, local_file, remote_file, owner = nil, group = nil, permissions = nil)

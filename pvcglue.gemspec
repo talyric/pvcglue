@@ -33,5 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'hashie'
   spec.add_dependency 'droplet_kit'
   spec.add_dependency 'paint'
+  spec.add_dependency 'pry'
 
 end
