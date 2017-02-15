@@ -89,7 +89,7 @@ module Pvcglue
     def find_minion_by_name(minion_name, raise_error = true)
       # raise(Thor::Error, "Node not specified.") if node_name.nil? || node_name.empty?
       raise('Minion not specified.') if minion_name.nil? || minion_name.empty?
-      return {minion_name => nodes_in_stage[minion_name]} if minions[minion_name]
+      return {minion_name => minions_filtered[minion_name]} if minions[minion_name]
       minions.each do |key, value|
         return {key => value} if key.start_with?(minion_name)
       end
@@ -110,7 +110,7 @@ module Pvcglue
     #   # raise(Thor::Error, "Not found:  #{node_name} in #{stage_name}.")
     # end
     #
-    def nodes_in_stage(role_filter = 'all')
+    def minions_filtered(role_filter = 'all')
       # # puts (stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }).inspect
       # # stage_roles.values.each_with_object({}) { |node, nodes| nodes.merge!(node) }
       # nodes = stage_roles.each_with_object({}) do |(role, node), nodes|
@@ -127,8 +127,6 @@ module Pvcglue
       if role_filter == 'all'
         minions
       else
-        binding.pry
-
         minions.select { |minion_name, minion| minion.has_role?(role_filter) }
       end
 
@@ -243,7 +241,7 @@ module Pvcglue
     end
 
     def stage_internal_addresses
-      nodes_in_stage.values.each_with_object([]) do |value, addresses|
+      minions_filtered.values.each_with_object([]) do |value, addresses|
         addresses << value[:public_ip]
         addresses << value[:private_ip] if value[:private_ip]
       end

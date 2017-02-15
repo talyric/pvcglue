@@ -2,8 +2,8 @@ package 'db' do
   depends_on 'env-initialized' # DONE
   depends_on 'postgresql' # DONE
   depends_on 'postgresql-conf' # DONE
-  depends_on 'postgresql-app-stage-conf'
-  depends_on 'monit-bootstrap'
+  depends_on 'postgresql-app-stage-conf' # DONE
+  depends_on 'monit-bootstrap' # LATER
 end
 
 package 'postgresql-conf' do # DONE
@@ -26,7 +26,7 @@ package 'postgresql-conf' do # DONE
        }) { trigger 'postgresql:restart' }
 end
 
-package 'postgresql-app-stage-conf' do
+package 'postgresql-app-stage-conf' do # DONE
   # TODO: Add `verify` method so it will be faster, and won't display errors
   apply do
     username = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_USERNAME']
@@ -39,7 +39,7 @@ package 'postgresql-app-stage-conf' do
   end
 end
 
-package 'postgresql-app-stage-db-drop' do
+package 'postgresql-app-stage-db-drop' do # LATER
   apply do
     username = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_USERNAME']
     db_name = username # just for clarity in later statements.  This also must match database.yml.
@@ -78,7 +78,7 @@ package 'postgresql-app-stage-db-drop' do
   end
 end
 
-package 'postgresql-root-password' do
+package 'postgresql-root-password' do # LATER
   apply do
     # TODO: Use this to implement setting of the root password
     # sudo(%q[sudo -u postgres psql -c "ALTER ROLE postgres WITH PASSWORD 'zzz';"])

@@ -80,13 +80,13 @@ module Pvcglue
       end
       Pvcglue.logger_current_minion = nil
 
-      raise(Thor::Error, 'STOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-
-      %w(lb db web caching redis).each do |role|
-        if apply_role?(role)
-          Pvcglue::Packages.apply(role.to_sym, :build, Pvcglue.cloud.nodes_in_stage(role))
-        end
-      end
+      # raise(Thor::Error, 'STOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+      #
+      # %w(lb db web caching redis).each do |role|
+      #   if apply_role?(role)
+      #     Pvcglue::Packages.apply(role.to_sym, :build, Pvcglue.cloud.minions_filtered(role))
+      #   end
+      # end
 
       Pvcglue::Pvcify.run
 

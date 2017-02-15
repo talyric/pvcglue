@@ -131,7 +131,7 @@ module Pvcglue
         file_name = self.class.file_helper(file_name)
 
         if db.kind == :remote
-          host = Pvcglue.cloud.nodes_in_stage('db')['db']['public_ip']
+          host = Pvcglue.cloud.minions_filtered('db')['db']['public_ip']
           port = Pvcglue.cloud.port_in_context(:shell)
           user = 'deploy'
         end
@@ -176,7 +176,7 @@ module Pvcglue
         file_name = self.class.file_helper(file_name)
 
         if db.kind == :remote
-          host = Pvcglue.cloud.nodes_in_stage('db')['db']['public_ip']
+          host = Pvcglue.cloud.minions_filtered('db')['db']['public_ip']
           port = Pvcglue.cloud.port_in_context(:shell)
           user = 'deploy'
 
@@ -188,8 +188,8 @@ module Pvcglue
 
           unless fast
             # Drop and recreate DB
-            Pvcglue::Packages.apply('postgresql-app-stage-db-drop'.to_sym, :build, Pvcglue.cloud.nodes_in_stage('db'))
-            Pvcglue::Packages.apply('postgresql-app-stage-conf'.to_sym, :build, Pvcglue.cloud.nodes_in_stage('db'))
+            Pvcglue::Packages.apply('postgresql-app-stage-db-drop'.to_sym, :build, Pvcglue.cloud.minions_filtered('db'))
+            Pvcglue::Packages.apply('postgresql-app-stage-conf'.to_sym, :build, Pvcglue.cloud.minions_filtered('db'))
           end
         end
 

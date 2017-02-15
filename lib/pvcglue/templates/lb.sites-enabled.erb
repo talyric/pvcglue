@@ -2,7 +2,7 @@ upstream <%= Pvcglue.cloud.app_and_stage_name %>_application  {
   <% if Pvcglue.cloud.lb_nginx_load_balancing_method.present? %>
   <%= Pvcglue.cloud.lb_nginx_load_balancing_method %>;
   <% end %>
-<% Pvcglue.cloud.nodes_in_stage(:web).each do |_, node_config| %>
+<% Pvcglue.cloud.minions_filtered(:web).each do |_, node_config| %>
   server <%= node_config[:private_ip] %> <%= node_config[:lb_nginx_upstream_server]%>;
   <% end %>
 }

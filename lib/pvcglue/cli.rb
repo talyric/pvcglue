@@ -58,15 +58,16 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def console(server='web')
-      node = Pvcglue.cloud.find_minion_by_name(server)
-      node_name = node.keys.first
-      node_data = node.values.first
-      # puts "*"*80
-      # puts node.inspect
-      puts "Connection to #{node_name} (#{node_data[:public_ip]}) as user 'deploy'..."
+      data = Pvcglue.cloud.minions_filtered(server)
+      minion_name = data.keys.first
+      minion = data.values.first
       working_dir = Pvcglue.cloud.deploy_to_app_current_dir
-      system(%(ssh -t deploy@#{node_data[:public_ip]} "cd #{working_dir} && echo 'Starting #{options[:stage].upcase} Rails console in #{working_dir}' && bundle exec rails c #{options[:stage].downcase}"))
+      Pvcglue.logger.warn("Opening Rails console on #{minion_name} (#{minion.public_ip}) as user '#{minion.remote_user_name}'...")
+      Pvcglue.logger.debug("Project root:  #{working_dir}")
 
+      cmd = "cd #{working_dir} && bundle exec rails c #{options[:stage].downcase}"
+      # system(%(ssh -t deploy@#{node_data[:public_ip]} "cd #{working_dir} && echo 'Starting #{options[:stage].upcase} Rails console in #{working_dir}' && bundle exec rails c #{options[:stage].downcase}"))
+      minion.connection.ssh!(minion.remote_user_name, '-t', cmd)
     end
 
     desc "c", "shortcut for console"
@@ -101,7 +102,7 @@ module Pvcglue
       raise(Thor::Error, "invalid maintenance mode :(  (Hint:  try on or off.)") unless mode.in?(%w(on off))
       # Pvcglue.cloud.maintenance_mode = mode
       # Pvcglue::Packages.apply(:maintenance_mode, :maintenance, Pvcglue.cloud.nodes_in_stage('lb'))
-      Pvcglue.cloud.nodes_in_stage('lb').each do |minioin_name, minion|
+      Pvcglue.cloud.minions_filtered('lb').each do |minioin_name, minion|
         Pvcglue::Packages::MaintenanceMode.apply(minion, {maintenance_mode: mode})
       end
     end
@@ -126,7 +127,7 @@ module Pvcglue
     def bypass(mode)
       raise(Thor::Error, "invalid maintenance bypass mode :(  (Hint:  try on or off.)") unless mode.in?(%w(on off))
       Pvcglue.cloud.bypass_mode = mode
-      Pvcglue::Packages.apply(:bypass_mode, :maintenance, Pvcglue.cloud.nodes_in_stage('lb'))
+      Pvcglue::Packages.apply(:bypass_mode, :maintenance, Pvcglue.cloud.minions_filtered('lb'))
     end
 
     desc "b", "enable or disable maintenance mode bypass for developers"
@@ -141,13 +142,15 @@ module Pvcglue
     method_option :stage, :required => true, :aliases => "-s"
 
     def sh(server='web') # `shell` is a Thor reserved word
-      node = Pvcglue.cloud.find_minion_by_name(server)
-      node_name = node.keys.first
-      node_data = node.values.first
+      data = Pvcglue.cloud.minions_filtered(server)
+      minion_name = data.keys.first
+      minion = data.values.first
       # puts "*"*80
       # puts node.inspect
-      puts "Connection to #{node_name} (#{node_data[:public_ip]}) as user 'deploy'..."
-      system("ssh -p #{Pvcglue.cloud.port_in_context(:shell)} deploy@#{node_data[:public_ip]}")
+      Pvcglue.logger.warn("Connecting to #{minion_name} (#{minion.public_ip}) as user '#{minion.remote_user_name}'...")
+      # puts "Connection to #{minion_name} (#{minion.public_ip}) as user '#{minion.remote_user_name}'..."
+      # system("ssh -p #{Pvcglue.cloud.port_in_context(:shell)} #{minion.remote_user_name}@#{minion[:public_ip]}")
+      minion.connection.ssh!(minion.remote_user_name, '', '')
     end
 
     desc "s", "shell"

@@ -50,8 +50,8 @@ namespace :deploy do
     end
   end
 
-  after :started, :stop_workers
-  after :publishing, :start_workers
+  # after :started, :stop_workers
+  # after :publishing, :start_workers
 
   # def args
   #   fetch(:delayed_job_args, "")

@@ -41,13 +41,29 @@ module Pvcglue
       end until result.exitstatus == 0
     end
 
+    def escape_ssh_command(cmd)
+      # cmd.gsub(/'/, "\\'")
+      # cmd.gsub(/'/) { |match| "\\#{match}" }
+      # cmd.gsub(/'/) { |match| '\\' + match } # "CREATEDB PASSWORD 'monkey'" #=> "CREATEDB PASSWORD \'monkey\'"
+      # if cmd.include?("'") || cmd.include?('"')
+      # # if cmd.include?('"')
+      #   # "<<'EOF'\n#{cmd}\nEOF"
+      #   # cmd.gsub(/'/) { |match| %Q('"'"') }
+      #   # "$'" + cmd.gsub(/'/) { |match| '\\' + match } + "'"
+      #   '"' + cmd.gsub(/"/) { |match| '\\' + match } + '"'
+      # else
+      #   "'#{cmd}'"
+      # end
+      '"' + cmd.gsub(/"/) { |match| '\\' + match } + '"'
+    end
+
     def ssh?(user, options, cmd)
-      # TODO:  Refactor ssh? & ssh
-      if cmd.include?("'") # TODO:  Quick fix, should be refactored to do proper escaping
-        system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} "#{cmd}"))
-      else
-        system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'))
-      end
+      # if cmd.include?("'") # DONE:  Quick fix, should be refactored to do proper escaping
+      #   system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} "#{cmd}"))
+      # else
+      #   system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'))
+      # end
+      system_command?(%Q(ssh #{user}@#{minion.public_ip} #{options} #{escape_ssh_command(cmd)}))
     end
 
     def ssh!(user, options, cmd)
@@ -68,7 +84,7 @@ module Pvcglue
     end
 
     def run_get_stdout(user, options, cmd)
-      full_cmd = "ssh #{user}@#{minion.public_ip} #{options} '#{cmd}'"
+      full_cmd = "ssh #{user}@#{minion.public_ip} #{options} #{escape_ssh_command(cmd)}"
       Pvcglue.logger.debug { full_cmd }
       result = `#{full_cmd}`
       Pvcglue.verbose? { result }

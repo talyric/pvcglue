@@ -90,7 +90,7 @@ module Pvcglue
 
       defaults['RAILS_SECRET_TOKEN'] = SecureRandom.hex(64) # From rails/railties/lib/rails/tasks/misc.rake
 
-      if Pvcglue.cloud.nodes_in_stage('pg').any?
+      if Pvcglue.cloud.minions_filtered('pg').any?
         defaults['DB_USER_POSTGRES_HOST'] = db_host
         defaults['DB_USER_POSTGRES_PORT'] = "5432"
         defaults['DB_USER_POSTGRES_USERNAME'] = "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}"
@@ -98,11 +98,11 @@ module Pvcglue
         defaults['DB_USER_POSTGRES_PASSWORD'] = new_password
       end
 
-      if Pvcglue.cloud.nodes_in_stage('memcached').any?
+      if Pvcglue.cloud.minions_filtered('memcached').any?
         defaults['MEMCACHE_SERVERS'] = memcached_host
       end
 
-      if Pvcglue.cloud.nodes_in_stage('redis').any?
+      if Pvcglue.cloud.minions_filtered('redis').any?
         defaults['REDIS_SERVER'] = redis_host
       end
 
@@ -110,7 +110,8 @@ module Pvcglue
     end
 
     def self.db_host
-      Pvcglue.cloud.nodes_in_stage('pg').first.private_ip
+      # Assume 1 pg server
+      Pvcglue.cloud.minions_filtered('pg').values.first.private_ip
     end
 
     def self.memcached_host

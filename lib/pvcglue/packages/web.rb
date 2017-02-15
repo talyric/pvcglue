@@ -11,7 +11,7 @@ module Pvcglue
         Pvcglue::Packages::DirShared.apply(minion)
         Pvcglue::Packages::Rvm.apply(minion)
         Pvcglue::Packages::Ruby.apply(minion)
-        # Pvcglue::Packages::Secrets.apply(minion)  # TODO:  Apply secrets after all servers are built
+        Pvcglue::Packages::Secrets.apply(minion)
         connection.write_to_file_from_template(:root, 'web.nginx.conf.erb', '/etc/nginx/nginx.conf')
 
         set_passenger_ruby # needs to be set before rendering 'web.sites-enabled.erb'
