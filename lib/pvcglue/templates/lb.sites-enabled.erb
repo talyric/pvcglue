@@ -19,6 +19,10 @@ server {
   <%= Pvcglue.render_template('denial_of_service.erb') %>
   <%= Pvcglue.render_template('maintenance_mode.erb') %>
 
+<% unless Pvcglue.cloud.ssl_mode == :none %>
+  include includes/letsencrypt-webroot;
+<% end %>
+
   <% case Pvcglue.cloud.ssl_mode
     when :none %>
       location / {
@@ -29,7 +33,7 @@ server {
 
         proxy_pass  http://<%= Pvcglue.cloud.app_and_stage_name %>_application;
       }
-    <% when :load_balancer_force_ssl %>
+    <% when :load_balancer_force_ssl, :acme %>
       location / {
         # According to http://serverfault.com/a/401632/156820 this is the correct way to redirect all http to https
         return 301 https://$host$request_uri;
@@ -54,13 +58,17 @@ server {
 
   <% case Pvcglue.cloud.ssl_mode
      when :none %>
-       # ssl_mode: none
-  <% when :load_balancer_force_ssl %>
+    # ssl_mode: none
+  <% when :acme, :load_balancer_force_ssl %>
     ssl on;
     ssl_certificate <%= Pvcglue.cloud.nginx_ssl_crt_file_name %>;
     ssl_certificate_key <%= Pvcglue.cloud.nginx_ssl_key_file_name %>;
   <% else
      raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode}'" %>
+  <% end %>
+
+  <% unless Pvcglue.cloud.ssl_mode == :none %>
+    include includes/letsencrypt-webroot;
   <% end %>
 
   location / {

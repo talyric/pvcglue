@@ -70,7 +70,8 @@ module Pvcglue
         connection.upload_file(user_name, ::Pvcglue.cloud.local_file_name, ::Pvcglue::Manager.manager_file_name, nil, nil, '600')
         git_commit!
         raise('Error saving configuration') unless working_directory_clean?
-        File.delete(::Pvcglue.cloud.local_file_name)
+        # TODO:  Turn delete back on
+        # File.delete(::Pvcglue.cloud.local_file_name)
       end
 
       def git_commit!

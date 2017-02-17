@@ -6,6 +6,7 @@ module Pvcglue
       end
 
       def install!
+        Pvcglue::Packages::Ssl.apply(minion)
         connection.write_to_file_from_template(:root, 'lb.nginx.conf.erb', '/etc/nginx/nginx.conf')
         connection.write_to_file_from_template(:root, 'lb.sites-enabled.erb', "/etc/nginx/sites-enabled/#{Pvcglue.cloud.app_and_stage_name}")
         sync_maintenance_files

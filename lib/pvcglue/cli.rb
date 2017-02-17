@@ -9,6 +9,8 @@ module Pvcglue
     class_option :verbose
     class_option :reset_minion_state
     class_option :save_before_upload
+    class_option :create_test_cert
+    class_option :force_cert
 
     def initialize(args = [], local_options = {}, config = {})
       super
@@ -47,7 +49,7 @@ module Pvcglue
       Pvcglue::Bootstrap.run(roles)
     end
 
-    desc "build", "build...zzz"
+    desc "build", "build..."
     method_option :stage, :required => true, :aliases => "-s"
 
     def build(roles = 'all')

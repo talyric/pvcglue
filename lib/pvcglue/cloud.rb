@@ -333,7 +333,7 @@ module Pvcglue
     end
 
     def nginx_config_ssl_path
-      File.join(nginx_config_path, 'ssl')
+      File.join(nginx_config_path, 'ssl', "#{app_and_stage_name}")
     end
 
     def nginx_ssl_crt_file_name
@@ -395,6 +395,14 @@ module Pvcglue
 
     def minion_manager_user_name
       'manager'
+    end
+
+    def letsencrypt_full
+      '/var/www/letsencrypt_root/.well-known/acme-challenge'
+    end
+
+    def letsencrypt_root
+      '/var/www/letsencrypt_root'
     end
 
 

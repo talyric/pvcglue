@@ -1,6 +1,7 @@
 module Pvcglue
   # TODO:  Check ssh config
   ## https://puppet.com/blog/speed-up-ssh-by-reusing-connections
+  # ~/.ssh/config
   #Host *
   #ControlMaster auto
   ##ControlPath ~/.ssh/sockets/%r@%h-%p
@@ -54,6 +55,7 @@ module Pvcglue
       # else
       #   "'#{cmd}'"
       # end
+      # Another possible solution:  http://stackoverflow.com/a/21761956/444774
       '"' + cmd.gsub(/"/) { |match| '\\' + match } + '"'
     end
 
@@ -200,11 +202,19 @@ module Pvcglue
     def chown_chmod(user, remote, owner, group, permissions = nil)
       unless owner.nil? && group.nil?
         raise('Invalid owner or group for chown') if owner.nil? || group.nil?
-        ssh!(user, '', "chown #{owner}:#{group} #{remote}")
+        chown(user, remote, owner, group)
       end
       unless permissions.nil?
-        ssh!(user, '', "chmod #{permissions} #{remote}")
+        chmod(user, remote, permissions)
       end
+    end
+
+    def chown(user, remote, owner, group, options = nil)
+      ssh!(user, '', "chown #{options} #{owner}:#{group} #{remote}")
+    end
+
+    def chmod(user, remote, permissions, options = nil)
+      ssh!(user, '', "chmod #{options} #{permissions} #{remote}")
     end
 
     def file_matches?(user, data, remote_file)
