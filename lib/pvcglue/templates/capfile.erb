@@ -10,10 +10,13 @@ require 'capistrano/rvm'
 set :rvm_type, :user
 
 require 'capistrano/bundler'
+
+<% if Pvcglue.cloud.gems[:sprockets] %>
 require 'capistrano/rails/assets'
+<% end %>
+
 require 'capistrano/rails/migrations'
 <% if Pvcglue.cloud.gems[:whenever] %>
-
 set :whenever_identifier, ->{ "#{fetch(:application)}_#{fetch(:stage)}" }
 require 'whenever/capistrano'
 <% end %>

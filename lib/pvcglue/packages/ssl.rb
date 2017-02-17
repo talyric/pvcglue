@@ -17,8 +17,11 @@ module Pvcglue
         domain_options = domains.join(' ')
         staging_option = Pvcglue.command_line_options[:create_test_cert] ? '--staging ' : ''
         force_option = Pvcglue.command_line_options[:force_cert] ? '--force ' : ''
-        result = connection.ssh?(:root, '', "/root/.acme.sh/acme.sh #{staging_option}#{force_option}--issue #{domain_options} -w #{Pvcglue.cloud.letsencrypt_root}")
+        debug_option = Pvcglue.logger.level == 0 ? '--debug ' : ''
+
+        result = connection.ssh?(:root, '', "/root/.acme.sh/acme.sh #{debug_option}#{staging_option}#{force_option}--issue #{domain_options} -w #{Pvcglue.cloud.letsencrypt_root}")
         raise result.inspect unless result.exitstatus == 0 || result.exitstatus == 2
+
         # Install Certificate
         connection.mkdir_p(:root, Pvcglue.cloud.nginx_config_ssl_path)
         # acme.sh --installcert -d theos.in --keypath /etc/nginx/ssl/theos.in/theos.in.key --fullchainpath /etc/nginx/ssl/theos.in/theos.in.cer --reloadcmd 'systemctl reload nginx'
@@ -39,9 +42,6 @@ module Pvcglue
 
         # Test with http://www.example.com/.well-known/acme-challenge/test.html
         connection.write_to_file(:root, "Everything's shiny, Cap'n. Not to fret.", File.join(Pvcglue.cloud.letsencrypt_full, 'test.html'), 'root', 'www-data', '660')
-
-        connection.mkdir_p(:root, '/etc/nginx/includes')
-        connection.write_to_file_from_template(:root, 'letsencrypt-webroot.erb', '/etc/nginx/includes/letsencrypt-webroot')
 
         connection.ssh!(:root, '', 'systemctl reload nginx.service')
 

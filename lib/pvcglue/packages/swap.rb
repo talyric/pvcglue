@@ -2,7 +2,8 @@ module Pvcglue
   class Packages
     class Swap < Pvcglue::Packages
       def installed?
-        # TODO:  Add swap configuration
+
+        # sudo("cat /etc/fstab") =~ /\/swapfile/
         true
       end
 

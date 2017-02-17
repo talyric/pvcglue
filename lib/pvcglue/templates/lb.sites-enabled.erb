@@ -19,11 +19,9 @@ server {
   <%= Pvcglue.render_template('denial_of_service.erb') %>
   <%= Pvcglue.render_template('maintenance_mode.erb') %>
 
-<% unless Pvcglue.cloud.ssl_mode == :none %>
   include includes/letsencrypt-webroot;
-<% end %>
 
-  <% case Pvcglue.cloud.ssl_mode
+  <% case Pvcglue.cloud.ssl_mode_override
     when :none %>
       location / {
         proxy_set_header Host $host;
@@ -39,11 +37,11 @@ server {
         return 301 https://$host$request_uri;
       }
     <% else
-         raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode}'" %>
+         raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode_override}'" %>
   <% end %>
 }
 
-<% unless Pvcglue.cloud.ssl_mode == :none %>
+<% unless Pvcglue.cloud.ssl_mode_override == :none %>
 server {
   listen 443 ssl;
   server_name <%= Pvcglue.cloud.domains.join(' ') %>;
@@ -56,18 +54,18 @@ server {
   <%= Pvcglue.render_template('denial_of_service.erb') %>
   <%= Pvcglue.render_template('maintenance_mode.erb') %>
 
-  <% case Pvcglue.cloud.ssl_mode
+  <% case Pvcglue.cloud.ssl_mode_override
      when :none %>
-    # ssl_mode: none
+    # ssl_mode_override: none
   <% when :acme, :load_balancer_force_ssl %>
     ssl on;
     ssl_certificate <%= Pvcglue.cloud.nginx_ssl_crt_file_name %>;
     ssl_certificate_key <%= Pvcglue.cloud.nginx_ssl_key_file_name %>;
   <% else
-     raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode}'" %>
+     raise "Unsupported SSL option '#{Pvcglue.cloud.ssl_mode_override}'" %>
   <% end %>
 
-  <% unless Pvcglue.cloud.ssl_mode == :none %>
+  <% unless Pvcglue.cloud.ssl_mode_override == :none %>
     include includes/letsencrypt-webroot;
   <% end %>
 

@@ -14,14 +14,23 @@ An opinionated cloud application manager for Rails applications using your own s
 
 Currently supported stack:
 
-  * Ubuntu 12.04 (with plans for supporting 14.04)
+  * SSL support:  none, manual and automatic with Let's Encrypt
+  * Ubuntu 16.04 LTS
+  * Provision servers automatically on Digital Ocean (and Linode)
+  * No need to install anything on servers first (you just need SSH access)
   * Ruby >= 1.9 (multiple versions supported on same server)
   * Rails >= 3.2
   * RVM
-  * Postgresql 9.1
+  * Postgresql 9.6
   * Nginx
-  * Passenger > 4.0
+  * Passenger > 5.0
   * Memcached
+  * Redis
+
+Workers:
+
+  * Delayed Job
+  * Rescue
 
 # This is a work in progress
 

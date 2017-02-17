@@ -268,6 +268,14 @@ module Pvcglue
       stage[:ssl].to_sym || :none
     end
 
+    def ssl_mode_override
+      @ssl_mode_override || ssl_mode
+    end
+
+    def set_ssl_mode_override(mode)
+      @ssl_mode_override = mode
+    end
+
     def lb_nginx_load_balancing_method
       stage[:lb_nginx_load_balancing_method]
     end

@@ -89,6 +89,7 @@ module Pvcglue
       defaults = {}
 
       defaults['RAILS_SECRET_TOKEN'] = SecureRandom.hex(64) # From rails/railties/lib/rails/tasks/misc.rake
+      defaults['SECRET_KEY_BASE'] = SecureRandom.hex(64) # From rails/railties/lib/rails/tasks/misc.rake
 
       if Pvcglue.cloud.minions_filtered('pg').any?
         defaults['DB_USER_POSTGRES_HOST'] = db_host
