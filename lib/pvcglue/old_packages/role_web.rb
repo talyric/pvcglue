@@ -1,16 +1,16 @@
 package 'web' do
   # rvm/ruby install based on http://ryanbigg.com/2010/12/ubuntu-ruby-rvm-rails-and-you/
-  depends_on 'swap' # needed for deployment/asset building on < 1GB machines
-  depends_on 'build-essential'
-  depends_on 'git'
-  depends_on 'rvm'
-  depends_on 'no-rdoc'
+  depends_on 'swap' # LATER # needed for deployment/asset building on < 1GB machines
+  depends_on 'build-essential' # DONE
+  depends_on 'git' # DONE
+  depends_on 'rvm' # DONE
+  depends_on 'no-rdoc' # DONE
 
 
-  depends_on 'rvm-ruby'
-  depends_on 'bundler'
-  depends_on 'nginx'
-  depends_on 'phusion-passenger'
+  depends_on 'rvm-ruby' # DONE
+  depends_on 'bundler' # DONE
+  depends_on 'nginx' # DONE
+  depends_on 'phusion-passenger' # DONE
   depends_on 'app-env'
   depends_on 'web-site-config'
 

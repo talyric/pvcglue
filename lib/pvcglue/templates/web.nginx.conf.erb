@@ -78,7 +78,7 @@ http {
       return      444;
   }
 
-<% Pvcglue.cloud.web_nginx_http.each do |option| %>
+<% (minion.web_nginx_http || []).each do |option| %>
   <%= "  #{option};\n" %>
 <% end %>
 

@@ -9,6 +9,8 @@ if ARGV.count >= 2 && %w[local vmtest test alpha beta gamma delta preview produc
   ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
 end
 
-# puts ARGV.inspect
+Pvcglue.logger.info('Starting up...')
+Pvcglue.logger.debug { ARGV.inspect }
 # puts Benchmark.measure { Pvcglue::CLI.start }
-puts "----- Done #{Benchmark.measure { Pvcglue::CLI.start }}"
+# pvc_puts.warn("----- Done #{Benchmark.measure { Pvcglue::CLI.start }}")
+Pvcglue.logger.info("----- Done #{Benchmark.measure { Pvcglue::CLI.start }}")

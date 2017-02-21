@@ -7,7 +7,9 @@ module Pvcglue
     desc "bootstrap", "bootstrap"
 
     def bootstrap
-      Pvcglue::Packages.apply('bootstrap-manager'.to_sym, :manager, self.class.manager_node, 'root', 'manager')
+      # Pvcglue.cloud.set_manager_as_project
+      Pvcglue::Stack.build({'pvcglue-manager' => Pvcglue.cloud.manager_minion}, 'manager')
+      # Pvcglue::Packages.apply('bootstrap-manager'.to_sym, :manager, self.class.manager_node, 'root', 'manager')
     end
 
     desc "push", "push"
@@ -19,15 +21,16 @@ module Pvcglue
     desc "pull", "pull"
 
     def pull
-      Pvcglue::Packages.apply('manager-pull'.to_sym, :manager, self.class.manager_node, 'pvcglue', 'manager')
-      self.class.clear_cloud_data_cache
+      Pvcglue::Manager.pull_configuration
+      # Pvcglue::Packages.apply('manager-pull'.to_sym, :manager, self.class.manager_node, 'pvcglue', 'manager')
+      # self.class.clear_cloud_data_cache
     end
 
     desc "show", "show manager data"
 
     def show
       self.class.initialize_cloud_data
-      pp Pvcglue.cloud.data
+      ap Pvcglue.cloud.data
     end
 
     desc "info", "show manager data"
@@ -100,21 +103,23 @@ module Pvcglue
     end
 
     def self.initialize_cloud_data
-      # return if get_local_cloud_data
-      unless read_cached_cloud_data
-        Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
-        # Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue') # Can not use package as it causes infinite recursion, we'll just do it manually
-        data = `ssh pvcglue@#{manager_node[:manager][:public_ip]} "cat #{Pvcglue::Manager.manager_file_name}"`
-        # puts "*"*80
-        # puts data
-        # puts "*"*80
-        if data.empty?
-          raise(Thor::Error, "Remote manager file not found (or empty):  #{::Pvcglue::Manager.manager_file_name}")
-        else
-          ::Pvcglue.cloud.data = TOML.parse(data)
-        end
-        write_cloud_data_cache
-      end
+      Pvcglue::Packages::Manager.get_configuration
+
+      # # return if get_local_cloud_data
+      # unless read_cached_cloud_data
+      #   Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
+      #   # Pvcglue::Packages.apply('manager-get-config'.to_sym, :manager, manager_node, 'pvcglue') # Can not use package as it causes infinite recursion, we'll just do it manually
+      #   data = `ssh pvcglue@#{manager_node[:manager][:public_ip]} "cat #{Pvcglue::Manager.manager_file_name}"`
+      #   # puts "*"*80
+      #   # puts data
+      #   # puts "*"*80
+      #   if data.empty?
+      #     raise(Thor::Error, "Remote manager file not found (or empty):  #{::Pvcglue::Manager.manager_file_name}")
+      #   else
+      #     ::Pvcglue.cloud.data = TOML.parse(data)
+      #   end
+      #   write_cloud_data_cache
+      # end
     end
 
     # def self.get_local_cloud_data
@@ -127,7 +132,7 @@ module Pvcglue
     # end
 
     def self.write_cloud_data_cache
-      File.write(Pvcglue.configuration.cloud_cache_file_name, TOML.dump(Pvcglue.cloud.data))
+      # File.write(Pvcglue.configuration.cloud_cache_file_name, TOML.dump(Pvcglue.cloud.data))
     end
 
     def self.read_cached_cloud_data
@@ -163,11 +168,13 @@ module Pvcglue
     end
 
     def self.user_name
-      'pvcglue'
+      raise('Old username should not be used')
+      # 'pvcglue'
     end
 
     def self.home_dir
-      File.join('/home', user_name)
+      # File.join('/home', user_name)
+      '~'
     end
 
     def self.authorized_keys_file_name
@@ -179,12 +186,18 @@ module Pvcglue
     end
 
     def self.manager_dir
-      File.join(home_dir, '.pvc_manager')
+      File.join(home_dir, 'manager')
     end
 
     def self.push_configuration
-      Pvcglue::Packages.apply('manager-push'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
-      clear_cloud_data_cache
+      Pvcglue::Packages::Manager.push_configuration
+      # Pvcglue::Packages.apply('manager-push'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
+      # clear_cloud_data_cache
+    end
+
+    def self.pull_configuration
+      Pvcglue::Packages::Manager.pull_configuration
+      # clear_cloud_data_cache
     end
 
     def self.local_mode?

@@ -1,3 +1,3 @@
 module Pvcglue
-  VERSION = "0.1.39"
+  VERSION = '0.9.00'
 end

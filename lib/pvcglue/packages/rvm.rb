@@ -1,78 +1,25 @@
-package 'rvm' do
-  depends_on 'curl'
-  depends_on 'rvm-bashrc'
+module Pvcglue
+  class Packages
+    class Rvm < Pvcglue::Packages
+      def installed?
+        connection.run_get_stdout!(user_name, '', 'type rvm | head -n 1') =~ /rvm is a function/
+      end
 
-  validate do
-    run('type rvm | head -n 1') =~ /rvm is a function/
-  end
+      def install!
+        connection.write_to_file_from_template(user_name, 'gemrc.erb', "/home/#{user_name}/.gemrc") # sets:  gem: --no-ri --no-rdoc
+        connection.write_to_file_from_template(user_name, 'web.bashrc.erb', "/home/#{user_name}/.bashrc")
 
-  apply do
-    run 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3'
-    run 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3' # Do it again, the first time only sets things up, and does not import the keys
-    # run 'curl -sSL https://rvm.io/mpapis.asc | gpg --import -'
-    run '\curl -sSL https://get.rvm.io | bash -s stable --with-default-gems="bundler"'
-    run "rvm requirements"
-  end
+        connection.run_get_stdout!(user_name, '', 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3')
+        # Do it again, the first time only sets things up, and does not import the keys
+        connection.run!(user_name, '', '\curl -sSL https://get.rvm.io | bash -s stable --with-default-gems=bundler')
 
-  remove do
-    run 'yes "yes" | rvm implode'
-  end
-end
+        # TODO: set autolibs mode so there are not installed automatically, as the user won't have sudo permissions later.
+        # OR create a 'install' user that can sudo...might be easier...
+        # Installing required packages: libreadline6-dev, libyaml-dev, libsqlite3-dev, sqlite3, autoconf, libgmp-dev, libgdbm-dev, libncurses5-dev, automake, libtool, bison, pkg-config, libffi-dev...............
 
-package 'rvm-bashrc' do
-  file({
-           :template => Pvcglue.template_file_name('web.bashrc.erb'),
-           :destination => '/home/deploy/.bashrc',
-           :create_dirs => false,
-           :permissions => 0644,
-           :user => 'deploy',
-           :group => 'deploy'
-       })
-end
+        connection.run_get_stdout!(user_name, '', 'rvm requirements')
 
-package 'gem' do
-  depends_on 'rvm-ruby'
-  action 'exists' do |gem_name|
-    run("gem list -i #{gem_name}") =~ /true/
-  end
-  action 'install' do |gem_name|
-    sudo "gem install #{gem_name} --no-ri --no-rdoc"
-  end
-  action 'uninstall' do |gem_name|
-    sudo "gem uninstall #{gem_name} -x -a"
+      end
+    end
   end
 end
-
-package 'bundler' do
-  depends_on 'gem'
-  apply { trigger 'gem:install', 'bundler' }
-  remove { trigger 'gem:remove', 'bundler' }
-  validate { trigger 'gem:exists', 'bundler' }
-end
-
-package 'rvm-ruby' do
-  depends_on 'rvm'
-
-  validate do
-    run('rvm list strings') =~ /#{Pvcglue.configuration.ruby_version.gsub('.', '\.')}/
-  end
-
-  apply do
-    run "rvm install #{Pvcglue.configuration.ruby_version}"
-    # run "rvm --default use 2.0.0"
-  end
-
-  remove do
-    run "rvm remove --archive --gems #{Pvcglue.configuration.ruby_version}"
-  end
-
-end
-
-package 'no-rdoc' do
-  file({
-           :template => Pvcglue.template_file_name('gemrc.erb'),
-           :destination => '/home/deploy/.gemrc',
-           :create_dirs => false
-       })
-end
-

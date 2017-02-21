@@ -1,10 +1,10 @@
-package 'env-initialized' do
+package 'env-initialized' do # DONE
   apply do
     ::Pvcglue::Env.initialize_stage_env
   end
 end
 
-package 'env-get-stage' do
+package 'env-get-stage' do # DONE
   apply do
     data = run("cat #{::Pvcglue::Env.stage_env_file_name}")
     ::Pvcglue.cloud.stage_env = TOML.parse(data)
@@ -12,7 +12,7 @@ package 'env-get-stage' do
 
 end
 
-package 'env-set-stage' do
+package 'env-set-stage' do # DONE
   apply do
     data = TOML.dump(Pvcglue.cloud.stage_env)
     run(%Q[echo '#{data}' | tee #{::Pvcglue::Env.stage_env_file_name} && chmod 600 #{::Pvcglue::Env.stage_env_file_name}])
@@ -20,7 +20,7 @@ package 'env-set-stage' do
 
 end
 
-package 'deploy-to-base' do
+package 'deploy-to-base' do # DONE
   validate do
     stat = run("stat --format=%U:%G:%a #{Pvcglue.cloud.deploy_to_app_shared_dir}").strip
     stat == 'deploy:deploy:2775'
@@ -35,11 +35,11 @@ package 'deploy-to-base' do
 end
 
 package 'app-env' do
-  depends_on 'deploy-to-base'
+  depends_on 'deploy-to-base' # DONE
   depends_on 'app-env-file'
 end
 
-package 'app-env-file' do
+package 'app-env-file' do # DONE
   depends_on 'env-initialized'
 
   file({
@@ -54,7 +54,7 @@ package 'app-env-file' do
 end
 
 
-package 'env-push' do
+package 'env-push' do # LATER
   apply do
     if File.exists?(::Pvcglue.cloud.env_local_file_name)
       data = File.read(::Pvcglue.cloud.env_local_file_name)
@@ -66,7 +66,7 @@ package 'env-push' do
   end
 end
 
-package 'env-pull' do
+package 'env-pull' do # LATER
   apply do
     data = run("cat #{::Pvcglue::Env.stage_env_file_name}")
     if data.empty?
