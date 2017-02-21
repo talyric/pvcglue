@@ -13,6 +13,7 @@ module Pvcglue
         # TODO:  Safety check to see if user is locking himself out.  :)
         data = minion.get_root_authorized_keys_data
         if data.count == 0
+          raise('No authorized keys found for root users!')
           # TODO:  work out system for pvc-manager access
           data = [`cat ~/.ssh/id_rsa.pub`.strip]
         end
@@ -21,6 +22,7 @@ module Pvcglue
         connection.mkdir_p(:root, "/home/#{user_name}/.ssh", user_name, user_name, '0700')
         data = minion.get_users_authorized_keys_data
         if data.count == 0
+          raise('No authorized keys found for users!')
           # TODO:  work out system for pvc-manager access
           data = [`cat ~/.ssh/id_rsa.pub`.strip]
         end

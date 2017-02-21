@@ -96,8 +96,8 @@ module Pvcglue
     end
 
     def self.db_host_public
-      node = Pvcglue.cloud.find_minion_by_name('db')
-      node['db']['public_ip']
+      # Assume 1 pg server
+      Pvcglue.cloud.minions_filtered('pg').values.first.public_ip
     end
 
 
@@ -128,12 +128,15 @@ module Pvcglue
 
 
       def pg_dump(db, file_name, fast)
+        # TODO:  Refactor into the db package
         file_name = self.class.file_helper(file_name)
 
         if db.kind == :remote
-          host = Pvcglue.cloud.minions_filtered('db')['db']['public_ip']
+          minion = Pvcglue.cloud.minions_filtered('pg').values.first
+          # Assume 1 pg server
+          host = minion.public_ip
           port = Pvcglue.cloud.port_in_context(:shell)
-          user = 'deploy'
+          user = minion.remote_user_name
         end
 
         cmd = "pg_dump -Fc --no-acl --no-owner -h #{db.host} -p #{db.port}"
@@ -153,37 +156,40 @@ module Pvcglue
           unless Pvcglue.run_remote(host, port, user, cmd)
             puts "ERROR:"
             puts $?.inspect
-            raise(Thor::Error, "Error:  #{$?}")
+            raise("Error:  #{$?}")
           end
 
           cmd = %{scp -P #{port} #{user}@#{host}:#{file_name} #{file_name}}
           puts "Running `#{cmd}`"
 
           unless system cmd
-            raise(Thor::Error, "Error:  #{$?}")
+            raise("Error:  #{$?}")
           end
         else
           unless system(cmd)
             puts "ERROR:"
             puts $?.inspect
-            raise(Thor::Error, "Error:  #{$?}")
+            raise("Error:  #{$?}")
           end
         end
       end
 
       def pg_restore(db, file_name, fast = false)
+        # TODO:  Refactor into the db package
         Pvcglue.cloud.stage_name == 'production' && destroy_prod?(db)
         file_name = self.class.file_helper(file_name)
 
+
         if db.kind == :remote
-          host = Pvcglue.cloud.minions_filtered('db')['db']['public_ip']
+          minion = Pvcglue.cloud.minions_filtered('pg').values.first
+          host = minion.public_ip
           port = Pvcglue.cloud.port_in_context(:shell)
-          user = 'deploy'
+          user = minion.remote_user_name
 
           # cmd = %{scp -P #{port} #{file_name} #{user}@#{host}:#{file_name}}
           cmd = %{rsync -avhPe "ssh -p #{port}" --progress #{file_name} #{user}@#{host}:#{file_name}}
           unless system cmd
-            raise(Thor::Error, "Error:  #{$?}")
+            raise("Error:  #{$?}")
           end
 
           unless fast
@@ -205,7 +211,7 @@ module Pvcglue
           end
         else
           unless system(" PGPASSWORD=#{db.password} #{cmd}")
-            raise(Thor::Error, "Error:  #{$?}")
+            raise("Error:  #{$?}")
           end
         end
 

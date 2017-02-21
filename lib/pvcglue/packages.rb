@@ -1,6 +1,5 @@
 module Pvcglue
   class Packages
-    MINION_STATE_FILENAME = '.minion_state'
 
     def self.apply(minion, options = {})
       package = new(minion, options)
@@ -84,9 +83,13 @@ module Pvcglue
       @minion.connection
     end
 
+    def minion_state_file_name
+      ".minion_state_#{user_name}.toml"
+    end
+
     def load_state_data
-      if connection.file_exists?(:root, MINION_STATE_FILENAME)
-        data = connection.read_from_file(:root, MINION_STATE_FILENAME)
+      if connection.file_exists?(:root, minion_state_file_name)
+        data = connection.read_from_file(:root, minion_state_file_name)
       else
         data = ''
       end
@@ -114,7 +117,7 @@ module Pvcglue
     def set_minion_state(key, value)
       get_minion_state_data
       connection.minion_state_data[key] = value
-      connection.write_to_file(:root, TOML.dump(connection.minion_state_data), MINION_STATE_FILENAME)
+      connection.write_to_file(:root, TOML.dump(connection.minion_state_data), minion_state_file_name)
     end
 
 

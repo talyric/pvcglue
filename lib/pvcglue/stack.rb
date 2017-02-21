@@ -88,7 +88,7 @@ module Pvcglue
       #   end
       # end
 
-      Pvcglue::Pvcify.run
+      Pvcglue::Pvcify.run unless minions.values.first.minion_manager?
 
     end
 

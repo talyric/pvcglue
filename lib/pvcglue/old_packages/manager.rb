@@ -76,7 +76,7 @@ package 'manager-push' do # DONE
       puts "Running `#{cmd}`"
 
       unless system cmd
-        raise(Thor::Error, "Error:  #{$?}")
+        raise("Error:  #{$?}")
       end
 
       run(%Q[chmod 600 #{::Pvcglue::Manager.manager_file_name}])
@@ -93,7 +93,7 @@ package 'manager-pull' do # DONE
     puts "Running `#{cmd}`"
 
     unless system cmd
-      raise(Thor::Error, "Error:  #{$?}")
+      raise("Error:  #{$?}")
     end
 
     puts "Saved as:  #{::Pvcglue.cloud.local_file_name}"

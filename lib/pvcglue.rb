@@ -106,7 +106,7 @@ module Pvcglue
   end
 
   def self.reset_minion_state?
-    !!Pvcglue.command_line_options[:reset_minion_state]
+    !!Pvcglue.command_line_options[:rebuild]
   end
 
   def self.gem_dir
@@ -132,7 +132,7 @@ module Pvcglue
     # puts "Running `#{cmd}`"
 
     unless system cmd
-      raise(Thor::Error, "Error:  #{$?}")
+      raise("Error:  #{$?}")
     end
     true
   end

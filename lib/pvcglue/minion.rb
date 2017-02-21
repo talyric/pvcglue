@@ -87,8 +87,12 @@ module Pvcglue
       roles.map(&:to_sym)
     end
 
+    def minion_manager?
+      has_role?('manager')
+    end
+
     def get_user(user_name)
-      all_data.users.detect { |user| user.name == user_name }
+      Pvcglue.cloud.data.users.detect { |user| user.name == user_name }
     end
 
     def get_users_from_group(names)
@@ -96,7 +100,7 @@ module Pvcglue
       users = []
       names.each do |name|
         if name =~ /\A==.*==\z/
-          group = all_data.groups[name[2..-3]]
+          group = Pvcglue.cloud.data.groups[name[2..-3]]
           # ap group
           users.concat(get_users_from_group(group))
         else
@@ -107,11 +111,19 @@ module Pvcglue
     end
 
     def get_root_users
-      get_users_from_group(root_users)
+      if minion_manager?
+        get_users_from_group('==manager_root_users==')
+      else
+        get_users_from_group('==lead_developers==')
+      end
     end
 
     def get_users
-      get_users_from_group(users)
+      if minion_manager?
+        get_users_from_group('==manager_users==')
+      else
+        get_users_from_group('==developers==')
+      end
     end
 
     def get_root_authorized_keys_data
@@ -122,27 +134,37 @@ module Pvcglue
       get_authorized_keys_data(get_users)
     end
 
-    def get_root_authorized_keys
-      get_authorized_keys(get_root_users)
+    # def get_root_authorized_keys
+    #   get_authorized_keys(get_root_users)
+    # end
+    #
+    # def get_users_authorized_keys
+    #   get_authorized_keys(get_users)
+    # end
+    #
+    # def get_authorized_keys(users)
+    #   keys = []
+    #   users.each do |user|
+    #     user.public_keys.each do |id, public_key|
+    #       keys << public_key
+    #     end
+    #   end
+    #   keys
+    # end
+
+    def get_github_authorized_keys(user)
+      return [] unless user.github_user_name.present?
+      uri = URI("https://github.com/#{user.github_user_name}.keys")
+      Net::HTTP.get(uri).split("\n")
     end
 
-    def get_users_authorized_keys
-      get_authorized_keys(get_users)
-    end
-
-    def get_authorized_keys(users)
-      keys = []
-      users.each do |user|
-        user.public_keys.each do |id, public_key|
-          keys << public_key
-        end
-      end
-      keys
-    end
     def get_authorized_keys_data(users)
       data = []
       users.each do |user|
-        user.public_keys.each do |id, public_key|
+        keys = []
+        keys += user.public_keys.values if user.public_keys
+        keys += get_github_authorized_keys(user)
+        keys.each do |public_key|
           line = %Q(environment="PVCGLUE_USER=#{user.name}" #{public_key})
           # line = %Q(command="export PVCGLUE_USER=#{id}" #{public_key})
           data << line
