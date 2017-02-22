@@ -182,8 +182,20 @@ module Pvcglue
       end
     end
 
+    def scp_quiet_option
+      case Pvcglue.logger.level
+        when Logger::DEBUG # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
+          ''
+        when Logger::INFO
+          '-q '
+        else
+          '-q '
+      end
+    end
+
     def download_file(user, remote_file, local_file, raise_error = true)
-      cmd = %{scp #{user}@#{minion.public_ip}:#{remote_file} #{local_file}}
+
+      cmd = %{scp #{scp_quiet_option}#{user}@#{minion.public_ip}:#{remote_file} #{local_file}}
       if raise_error
         system_command!(cmd)
       else

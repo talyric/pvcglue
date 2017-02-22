@@ -40,9 +40,17 @@ module Pvcglue
   mattr_accessor :logger do
 
     logger = Logger.new(STDOUT)
-    # logger.level = Logger::INFO # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
-    logger.level = Logger::DEBUG # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
-    # logger.warn('Starting up...')
+    # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
+    if ARGV.detect {|arg| arg.downcase == '--debug' || arg.downcase == '--verbose'}
+      logger.level = Logger::DEBUG 
+    elsif ARGV.detect { |arg| arg.downcase == '--quiet' }
+      logger.level = Logger::WARN 
+    elsif ARGV.detect { |arg| arg.downcase == '--info' }
+      logger.level = Logger::INFO 
+    else
+      logger.level = Logger::INFO 
+    end
+
     logger.formatter = proc do |severity, datetime, progname, msg|
       minion_name = Pvcglue.logger_current_minion.try(:machine_name)
       minion_name = "/#{minion_name}" if minion_name

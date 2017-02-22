@@ -72,6 +72,8 @@ module Pvcglue
       #   Pvcglue::Packages.apply('env-get-stage'.to_sym, :manager, Pvcglue::Manager.manager_node, 'pvcglue')
       #   write_stage_env_cache
       # end
+      # TODO:  Warn DB_USER_POSTGRES_HOST IP address does not exist in the configured machines
+
       merged = stage_env_defaults.merge(Pvcglue.cloud.stage_env)
       if merged != Pvcglue.cloud.stage_env
         Pvcglue.cloud.stage_env = merged

@@ -11,13 +11,13 @@ module Pvcglue
         connection.write_to_file_from_template(:root, 'postgresql.conf.erb', '/etc/postgresql/9.6/main/postgresql.conf', 'postgres', 'postgres', '0644')
         connection.write_to_file_from_template(:root, 'pg_hba.conf.erb', '/etc/postgresql/9.6/main/pg_hba.conf', 'postgres', 'postgres', '0644')
 
-        # connection.run_get_stdout(:root, '', 'service postgresql restart')
-        # unless $?.exitstatus == 0
-        #   Pvcglue.logger.error { 'Unable to (re)start postgresql.  Getting status...' }
-        #   result = connection.run_get_stdout(:root, '', 'systemctl status postgresql.service')
-        #   puts result
-        #   raise('There was a problem restarting PostgreSQL.')
-        # end
+        connection.run_get_stdout(:root, '', 'service postgresql restart')
+        unless $?.exitstatus == 0
+          Pvcglue.logger.error { 'Unable to (re)start postgresql.  Getting status...' }
+          result = connection.run_get_stdout(:root, '', 'systemctl status postgresql.service')
+          puts result
+          raise('There was a problem restarting PostgreSQL.')
+        end
 
         username = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_USERNAME']
         password = Pvcglue.cloud.stage_env['DB_USER_POSTGRES_PASSWORD']

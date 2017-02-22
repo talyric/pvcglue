@@ -34,16 +34,26 @@ module Pvcglue
       # ap minions['staging-pg'].private_ip
       new_minions = []
       minions.each do |minion_name, minion|
+        next unless minion.has_role?(@roles_filter)
         Pvcglue.logger_current_minion = minion
         # droplet = Pvcglue::DigitalOcean.client.droplets.find(id: 38371925)
         # minion.droplet = droplet
         # new_minions << minion if true || minion.provision!
         unless minion.provisioned?
-          if droplets.detect { |droplet| droplet.name == minion_name }
-            raise(Thor::Error, "Machine with the name of '#{minion_name}' already exists!")
+          existing_droplet = droplets.detect { |droplet| droplet.name == minion_name }
+          if existing_droplet
+            Pvcglue.logger.warn("Machine with the name of '#{minion_name}' already exists.")
+            if Thor::Shell::Basic.new.yes?("Existing machine found.  Do you want to use #{existing_droplet.id} for #{minion_name}")
+              minion.droplet = existing_droplet
+              new_minions << minion
+            else
+              Pvcglue.logger.error("Machine with the name of '#{minion_name}' already exists.")
+              raise("Machine with the name of '#{minion_name}' already exists.")
+            end
+          else
+            minion.provision!
+            new_minions << minion
           end
-          minion.provision!
-          new_minions << minion
         end
       end
       Pvcglue.logger_current_minion = nil
@@ -73,23 +83,17 @@ module Pvcglue
         # Pvcglue.cloud.reload_minions!
       end
 
-      minions.each do |minion_name, minion|
-        next unless minion.has_role?(@roles_filter)
-        Pvcglue.logger_current_minion = minion
-        minion.build!
+      unless Pvcglue.command_line_options[:provision_only]
+        minions.each do |minion_name, minion|
+          next unless minion.has_role?(@roles_filter)
+          Pvcglue.logger_current_minion = minion
+          minion.build!
+        end
+
+        Pvcglue.logger_current_minion = nil
+
+        Pvcglue::Pvcify.run unless minions.values.first.minion_manager?
       end
-      Pvcglue.logger_current_minion = nil
-
-      # raise(Thor::Error, 'STOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-      #
-      # %w(lb db web caching redis).each do |role|
-      #   if apply_role?(role)
-      #     Pvcglue::Packages.apply(role.to_sym, :build, Pvcglue.cloud.minions_filtered(role))
-      #   end
-      # end
-
-      Pvcglue::Pvcify.run unless minions.values.first.minion_manager?
-
     end
 
     def write_config(minions)
@@ -119,10 +123,10 @@ module Pvcglue
 
     def update_minion_data(minion, ip_addresses, cloud_id, data)
       unless minion.public_ip_address.nil? && minion.private_id_address.nil? && minion.cloud_id.nil?
-        raise(Thor::Error, "#{minion.machine_name} has previously defined ip address(es) or cloud_id, can not change.")
+        raise("#{minion.machine_name} has previously defined ip address(es) or cloud_id, can not change.")
       end
       if ip_addresses.public.nil? || ip_addresses.private.nil? || cloud_id.nil?
-        raise(Thor::Error, "New IP addresses (#{ip_addresses}) or cloud_id (#{cloud_id}) are not valid.")
+        raise("New IP addresses (#{ip_addresses}) or cloud_id (#{cloud_id}) are not valid.")
       end
 
 

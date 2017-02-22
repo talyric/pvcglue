@@ -6,11 +6,15 @@ module Pvcglue
 
   class CLI < Thor
     class_option :cloud_manager_override
-    class_option :verbose
-    class_option :rebuild
     class_option :save_before_upload
+    class_option :rebuild
     class_option :create_test_cert
     class_option :force_cert
+    class_option :provision_only
+    class_option :quiet
+    class_option :info
+    class_option :debug
+    class_option :verbose
 
     def initialize(args = [], local_options = {}, config = {})
       super
