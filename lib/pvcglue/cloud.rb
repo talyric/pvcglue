@@ -1,3 +1,4 @@
+# TODO:  Remove these requirements, is possible.
 require "active_support"
 require "active_support/core_ext" # for `with_indifferent_access`
 
@@ -12,6 +13,8 @@ module Pvcglue
     attr_accessor :passenger_ruby
     attr_accessor :port_in_node_context
     # attr_accessor :stage_secrets
+
+
 
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
@@ -330,6 +333,11 @@ module Pvcglue
 
     def gems
       project[:gems] || {}
+    end
+
+    def whenever_gem_installed?
+      data = File.read(Pvcglue.configuration.gemfile_file_name)
+      data =~ /^\s*gem\s+['"]whenever['"]/
     end
 
     def db_rebuild

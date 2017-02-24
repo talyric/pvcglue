@@ -1,14 +1,10 @@
-###
-There is an issue with gem 'tilt', '>=2.0.0', use
-
-    gem 'tilt', '<2.0.0'
-
-in your project's Gemfile, as a temporary workaournd.
 # PVC Glue
+###Pico Virtual Cloud
+The "glue" that creates a tightly integrated (and very small) virtual cloud for your Rails applications.
 
-Pico Virtual Cloud Glue creates a tightly integrated (very small) virtual cloud for your Rails application.
+PVC Glue is an cloud application manager for Rails applications using your own (virtual) servers.
 
-An opinionated cloud application manager for Rails applications using your own servers.
+PVC Glue was developed as a professional grade replacement for Heroku (and others).
 
 ![pvcglue diagram](/../master/images/pvcglue.png?raw=true "PVC Glue Server Diagram")
 
@@ -16,25 +12,36 @@ Currently supported stack:
 
   * SSL support:  none, manual and automatic with Let's Encrypt
   * Ubuntu 16.04 LTS
-  * Provision servers automatically on Digital Ocean (and Linode)
+  * Provision servers automatically on Digital Ocean (and Linode*)
   * No need to install anything on servers first (you just need SSH access)
-  * Ruby >= 1.9 (multiple versions supported on same server)
+  * Ruby >= 1.9 (multiple versions supported on same server!)
   * Rails >= 3.2
   * RVM
   * Postgresql 9.6
   * Nginx
-  * Passenger > 5.0
-  * Memcached
-  * Redis
+  * Phusion Passenger (>= 5.x)
+  * Memcached*
+  * Redis*
+  * Designed to easily support multiple staging environments
 
 Workers:
 
-  * Delayed Job
-  * Rescue
+  * Delayed Job*
+  * Rescue*
+  
+(* Coming soon)
+
+# Quick Start
+
+##New developer starting to working a application with PVC Glue already set up
+
+For each development machine used, the "manager" must be configured once.
+
+     pvc manager configure
 
 # This is a work in progress
 
-Although this project is being used on productions sites, this should be considered "Alpha" code, as things my change without notice until version 1.0.  :)
+Although this project is being used on productions sites, this should be considered "Beta" code, as things my change without notice until version 1.0.  :)
 
 # First Time Set Up for Existing Project
 
@@ -170,12 +177,12 @@ https://github.com/radar/guides/blob/master/gem-development.md#releasing-the-gem
 Add these lines to your application's Gemfile.  `dotenv-rails` must be listed first!
 
     ################# Must be the first Gem ###################
-    gem 'dotenv-rails', "0.11.1"
+    gem 'dotenv-rails'
     ################# Must be the first Gem ###################
 
-Then add these lines to your application's Gemfile, whereever you like (usually at the end):
+Then add these lines to your application's Gemfile, wherever you like (usually at the end):
 
-    gem 'pvcglue', "~> 0.1.18", :group => :development
+    gem 'pvcglue', "~> 0.9.2", :group => :development
     gem 'pvcglue_dbutils', "~> 0.5.3"
 
 And then execute:

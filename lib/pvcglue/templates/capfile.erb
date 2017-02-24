@@ -16,7 +16,8 @@ require 'capistrano/rails/assets'
 <% end %>
 
 require 'capistrano/rails/migrations'
-<% if Pvcglue.cloud.gems[:whenever] %>
+
+<% if Pvcglue.cloud.whenever_gem_installed? %>
 set :whenever_identifier, ->{ "#{fetch(:application)}_#{fetch(:stage)}" }
 require 'whenever/capistrano'
 <% end %>

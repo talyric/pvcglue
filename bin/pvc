@@ -5,12 +5,36 @@ require 'benchmark'
 # Allow use of Capistrano style environment syntax and convert to 'standard' syntax
 # Example:  `pvc production bootstrap` ==> `pvc bootstrap --stage=production`
 # TODO: refactor to use a list of user specified environments
-if ARGV.count >= 2 && %w[local vmtest test alpha beta gamma delta preview production staging all].include?(ARGV[0])
-  ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
-end
 
 Pvcglue.logger.info('Starting up...')
-Pvcglue.logger.debug { ARGV.inspect }
-# puts Benchmark.measure { Pvcglue::CLI.start }
-# pvc_puts.warn("----- Done #{Benchmark.measure { Pvcglue::CLI.start }}")
-Pvcglue.logger.info("----- Done #{Benchmark.measure { Pvcglue::CLI.start }}")
+# Pvcglue.logger.info("----- Done #{Benchmark.measure { Pvcglue::CLI.start }}")
+# ap Pvcglue.instance_variables
+def capistrano_style_environment
+  Pvcglue.logger.debug { ARGV.inspect }
+  if ARGV.count >= 2
+    if %w[local vmtest test alpha beta gamma delta preview production staging].include?(ARGV[0])
+      ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
+      Pvcglue.logger.debug { ARGV.inspect }
+      Pvcglue::CLI.start
+    elsif ARGV[0] == 'all'
+      Pvcglue.logger.error('Not supported, yet.  :(')
+    elsif ARGV[0].include?(',')
+      stages = ARGV[0].split(',')
+      original_argv_1 = ARGV[1]
+      stages.each do |stage|
+        # puts "********** Stage: #{stage} **********"
+        ARGV[0] = stage
+        Pvcglue.logger.debug { ARGV.inspect }
+        # Pvcglue.reset!
+        puts `pvc #{ARGV.join(' ')}`
+        # Pvcglue::CLI.start
+      end
+    else
+      Pvcglue::CLI.start
+    end
+  end
+end
+
+Pvcglue.logger.info("----- Done #{Benchmark.measure { capistrano_style_environment }}")
+
+

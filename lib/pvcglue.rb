@@ -33,6 +33,44 @@ require 'pry'
 # pvc manager bootstrap --cloud_manager_override=local_cloud.pvcglue.toml --save_before_upload=save --verbose
 
 module Pvcglue
+  # def self.reset!
+  #   ap Pvcglue.instance_variables
+  #   ap Pvcglue.class_variables
+  #
+  #   raise("Now working!")
+  #   Pvcglue.constants.select { |c| Pvcglue.const_get(c).is_a? Class }.each do |pvc_class|
+  #     pvc_class.instance_variables.each do |var|
+  #       pvc_class.remove_instance_variable(var)
+  #     end
+  #
+  #     if pvc_class.respond_to?(:class_variables)
+  #       pvc_class.class_variables.each do |var|
+  #         pvc_class.remove_class_variable(var)
+  #       end
+  #     end
+  #   end
+  #
+  #   Pvcglue::Packages.constants.select { |c| Pvcglue::Packages.const_get(c).is_a? Class }.each do |pvc_class|
+  #     pvc_class.instance_variables.each do |var|
+  #       pvc_class.remove_instance_variable(var)
+  #     end
+  #     if pvc_class.respond_to?(:class_variables)
+  #       pvc_class.class_variables.each do |var|
+  #         pvc_class.remove_class_variable(var)
+  #       end
+  #     end
+  #   end
+  #
+  #   self.instance_variables.each do |var|
+  #     # ap var.inspect
+  #     # ap self.instance_variable_get(var)
+  #     # self.instance_variable_set var, nil
+  #     self.remove_instance_variable(var)
+  #     # ap self.instance_variable_get(var)
+  #
+  #   end
+  # end
+
   mattr_accessor :command_line_options do
     {}
   end
@@ -41,14 +79,14 @@ module Pvcglue
 
     logger = Logger.new(STDOUT)
     # DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
-    if ARGV.detect {|arg| arg.downcase == '--debug' || arg.downcase == '--verbose'}
-      logger.level = Logger::DEBUG 
+    if ARGV.detect { |arg| arg.downcase == '--debug' || arg.downcase == '--verbose' }
+      logger.level = Logger::DEBUG
     elsif ARGV.detect { |arg| arg.downcase == '--quiet' }
-      logger.level = Logger::WARN 
+      logger.level = Logger::WARN
     elsif ARGV.detect { |arg| arg.downcase == '--info' }
-      logger.level = Logger::INFO 
+      logger.level = Logger::INFO
     else
-      logger.level = Logger::INFO 
+      logger.level = Logger::INFO
     end
 
     logger.formatter = proc do |severity, datetime, progname, msg|

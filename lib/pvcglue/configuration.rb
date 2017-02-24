@@ -122,6 +122,7 @@ module Pvcglue
       end
 
       def find_app_name
+        # TODO:  Just use something like `rails runner 'Rails.application.class.parent'` and then cache it to a temporary file
         # try known files...anyone know a better way, without loading Rails?
         rack_up = File.join(application_dir, 'config.ru')
         app_name = underscore($1) if File.exists?(rack_up) && File.read(rack_up) =~ /^run (.*)::/
@@ -166,6 +167,10 @@ module Pvcglue
 
       def ruby_version_file_name
         File.join(application_dir, '.ruby-version')
+      end
+
+      def gemfile_file_name
+        File.join(application_dir, 'Gemfile')
       end
 
       def ruby_version
