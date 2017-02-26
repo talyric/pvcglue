@@ -21,6 +21,10 @@ module Pvcglue
       end
 
       def install!
+        # TODO: Make this a package that checks for the existence of software-properties-common
+        connection.run!(:root, '', 'apt update -y')
+        connection.run!(:root, '', 'apt install -y software-properties-common python-software-properties')
+
         # These could be refactored into packages.  :)
 
         if nginx_needed?

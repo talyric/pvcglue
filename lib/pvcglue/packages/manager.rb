@@ -56,8 +56,12 @@ module Pvcglue
         #   raise("Remote manager file not found:  #{::Pvcglue::Manager.manager_file_name}")
         # end
         data = '' # to use `data` in block
-        Pvcglue.filter_verbose do
-          data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)
+        if Pvcglue.command_line_options[:cloud_manager_override]
+          data = File.read(Pvcglue.command_line_options[:cloud_manager_override])
+        else
+          Pvcglue.filter_verbose do
+            data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)
+          end
         end
         ::Pvcglue.cloud.data = TOML.parse(data)
       end
@@ -67,6 +71,8 @@ module Pvcglue
       end
 
       def push_configuration
+        raise('Not supported for local manager') if Pvcglue.command_line_options[:cloud_manager_override]
+
         connection.upload_file(user_name, ::Pvcglue.cloud.local_file_name, ::Pvcglue::Manager.manager_file_name, nil, nil, '600')
         git_commit!
         raise('Error saving configuration') unless working_directory_clean?
