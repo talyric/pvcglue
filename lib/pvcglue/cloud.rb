@@ -539,6 +539,7 @@ module Pvcglue
           minion.cloud_id = machine.cloud_id
           minion.remote_user_name = minion_user_name
           # TODO:  sync all machine options here, automatically
+          minion.machine_options = machine
         end
         # ap minion
         # puts "*"*175

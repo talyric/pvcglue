@@ -38,24 +38,22 @@ module Pvcglue
     end
 
     def create!
-      raise(Thor::Error, "#{cloud_provider.name} unknown") unless cloud_provider.name == 'digital-ocean' || cloud_provider.name == 'linode'
+      provider = Pvcglue::CloudProvider.new(machine_options.cloud_provider || cloud_provider.name)
+
       Pvcglue.logger.warn("Provisioning a machine for #{machine_name} on #{cloud_provider.name}...")
 
       # TODO:  Tags.  production, staging, load-balancer, web, worker, database, postgress, cache, memcache...
       name = machine_name
-      size = capacity || cloud_provider.default_capacity
+      size = machine_options.capacity || cloud_provider.default_capacity
       image = cloud_provider.image
-      region = cloud_provider.region
-      # ap cloud_provider.initial_users
-      # ap cloud_provider
+      region = machine_options.region || cloud_provider.region
       ssh_keys = cloud_provider.initial_users.map { |description, ssh_key| ssh_key }
-      backups = cloud_provider.backups.nil? ? true : cloud_provider.backups # default to true -- safety first!
-      tags = cloud_provider.tags
+      # backups = cloud_provider.backups.nil? ? true : cloud_provider.backups # default to true -- safety first!
+      backups = machine_options.backups.nil? ? true : machine_options.backups # default to true -- safety first!
+      tags = machine_options.tags
+      group = machine_options.group
 
-      # client.droplets.all.each do |droplet|
-      #   ap droplet
-      # end
-      droplet = DropletKit::Droplet.new(
+      options = ::SafeMash.new(
           name: name,
           region: region,
           image: image,
@@ -66,11 +64,12 @@ module Pvcglue
           private_networking: true,
           user_data: '',
           monitoring: true,
-          tags: tags
+          tags: tags,
+          group: group,
       )
-      droplet = Pvcglue::DigitalOcean.client.droplets.create(droplet)
+
+      droplet = provider.create(options)
       self.droplet = droplet
-      Pvcglue.logger.debug("Droplet ID:  #{droplet.id}")
       true
     end
 

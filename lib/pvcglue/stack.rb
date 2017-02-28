@@ -40,11 +40,11 @@ module Pvcglue
         # minion.droplet = droplet
         # new_minions << minion if true || minion.provision!
         unless minion.provisioned?
-          existing_droplet = droplets.detect { |droplet| droplet.name == minion_name }
-          if existing_droplet
+          existing_machine = machines.detect { |machine| machine.name == minion_name }
+          if existing_machine
             Pvcglue.logger.warn("Machine with the name of '#{minion_name}' already exists.")
-            if Thor::Shell::Basic.new.yes?("Existing machine found.  Do you want to use #{existing_droplet.id} for #{minion_name}")
-              minion.droplet = existing_droplet
+            if Thor::Shell::Basic.new.yes?("Existing machine found.  Do you want to use #{existing_machine.id} for #{minion_name}")
+              minion.machine = existing_machine
               new_minions << minion
             else
               Pvcglue.logger.error("Machine with the name of '#{minion_name}' already exists.")
@@ -106,10 +106,10 @@ module Pvcglue
         # Refresh droplet (didn't find a reload method)
         droplet_id = minion.droplet.id.to_s
         # ap droplet_id
-        minion.droplet = Pvcglue::DigitalOcean.client.droplets.find(id: droplet_id)
+        minion.droplet = Pvcglue::CloudProvider.client.droplets.find(id: droplet_id)
         # puts '='*175
         # ap minion.droplet
-        ip_addresses = Pvcglue::DigitalOcean.get_ip_addresses(minion.droplet)
+        ip_addresses = Pvcglue::CloudProvider.get_ip_addresses(minion.droplet)
         data = update_minion_data(minion, ip_addresses, droplet_id, data)
         minion.public_ip = ip_addresses.public
         minion.private_ip = ip_addresses.private
@@ -145,12 +145,12 @@ module Pvcglue
       new_data
     end
 
-    def droplets
-      @droplets ||= Pvcglue::DigitalOcean.client.droplets.all
+    def machines
+      @machines ||= Pvcglue::CloudProvider.client.droplets.all
     end
 
     def get_lazy_minions(minions)
-      droplets = Pvcglue::DigitalOcean.client.droplets.all
+      droplets = Pvcglue::CloudProvider.client.droplets.all
 
       minions.select do |minion_name, minion|
         Pvcglue.logger_current_minion = minion

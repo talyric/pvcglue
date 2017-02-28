@@ -1,31 +1,13 @@
-require 'pvcglue/version'
 require 'thor'
-require 'pvcglue/configuration'
-require 'pvcglue/manager'
-require 'pvcglue/cloud'
-require 'pvcglue/packages'
-Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
-require 'pvcglue/bootstrap'
-require 'pvcglue/nodes'
-require 'pvcglue/stack'
-require 'pvcglue/env'
-require 'pvcglue/deploy'
-require 'pvcglue/capistrano'
-require 'pvcglue/ssl'
-require 'pvcglue/db'
-require 'pvcglue/toml_pvc_dumper'
-require 'pvcglue/local'
-require 'pvcglue/monit'
-require 'pvcglue/pvcify'
 require 'tilt'
 require 'awesome_print'
 require 'hashie'
 require 'pvcglue/custom_hashie'
-require 'pvcglue/minion'
-require 'droplet_kit'
-require 'pvcglue/digital_ocean'
 require 'logger'
-require 'pvcglue/connection'
+Dir[File.dirname(__FILE__) + '/pvcglue/*.rb'].each { |file| require file }
+Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
+Dir[File.dirname(__FILE__) + '/pvcglue/cloud_provider/*.rb'].each { |file| require file }
+require 'droplet_kit'
 require 'paint'
 require 'pry'
 require 'net/http'
@@ -183,6 +165,14 @@ module Pvcglue
       raise("Error:  #{$?}")
     end
     true
+  end
+
+  def self.system_get_stdout(cmd)
+    Pvcglue.logger.debug { cmd }
+    result = `#{cmd}`
+    Pvcglue.verbose? { result }
+    Pvcglue.logger.debug { "exit_code=#{$?.to_i}" }
+    result
   end
 
   class Version
