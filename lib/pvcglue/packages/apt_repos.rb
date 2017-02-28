@@ -22,6 +22,10 @@ module Pvcglue
 
       def install!
         # TODO: Make this a package that checks for the existence of software-properties-common
+        #echo 'Acquire::ForceIPv4 "true";' | tee /etc/apt/apt.conf.d/99force-ipv4
+        connection.write_to_file(:root, 'Acquire::ForceIPv4 "true";', '/etc/apt/apt.conf.d/99force-ipv4')
+
+        connection.run!(:root, '', 'apt update -y')
         connection.run!(:root, '', 'apt update -y')
         connection.run!(:root, '', 'apt install -y software-properties-common python-software-properties')
 

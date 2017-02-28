@@ -48,6 +48,14 @@ module Pvcglue
         new.get_configuration
       end
 
+      def self.configuration_exists?
+        new.configuration_exists?
+      end
+
+      def configuration_exists?
+        connection.file_exists?(user_name, ::Pvcglue::Manager.manager_file_name)
+      end
+
       def get_configuration
         # if connection.file_exists?(user_name, ::Pvcglue::Manager.manager_file_name)
         #   data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)
@@ -98,8 +106,10 @@ module Pvcglue
         if connection.file_exists?(user_name, ::Pvcglue::Manager.manager_file_name)
           data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)
         else
-          data = "# Pvcglue manager configuration file\n\n"
+          template = Tilt.new(Pvcglue.template_file_name('pvc_manager.toml.erb'))
+          data = template.render(self, minion: minion)
         end
+
         file_name = ::Pvcglue.cloud.local_file_name
         if File.exist?(file_name)
           backup_file_name = ::Pvcglue.configuration.versioned_filename(file_name)

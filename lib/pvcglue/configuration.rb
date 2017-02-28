@@ -60,6 +60,7 @@ module Pvcglue
       end
 
       def configure_manager
+        byebug
         manager = ask('What is the IP address or host name of the manager?')
         default = !no?('Will this be the default manager? (Y/n)')
         file_name = default ? user_file_name : project_file_name

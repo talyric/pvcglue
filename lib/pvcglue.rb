@@ -29,6 +29,7 @@ require 'pvcglue/connection'
 require 'paint'
 require 'pry'
 require 'net/http'
+require 'byebug'
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 # pvc manager bootstrap --cloud_manager_override=local_cloud.pvcglue.toml --save_before_upload=save --verbose

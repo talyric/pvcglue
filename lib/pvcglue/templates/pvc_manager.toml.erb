@@ -1,0 +1,182 @@
+################################################################################
+#  === Pvcglue Manager configuration file ===
+################################################################################
+
+
+# ----------------- USERS ------------------------------------------------------
+[[users]]
+  name = 'Bob'
+  github_user_name = "bob" # Get public keys from https://github.com/bob.keys
+
+[[users]]
+  name = 'Rob'
+  [users.public_keys]
+    key_1 = "ssh-rsa Example 1..."
+    key_2 = "ssh-rsa Example 2..."
+
+
+# ----------------- GROUPS -----------------------------------------------------
+[groups]
+  manager_root_users = ['Bob', 'Rob']
+  manager_users = ["==manager_root_users=="]
+
+  lead_developers = ['Bob', 'Rob']
+  developers = ['==lead_developers==']
+  all_developers = ["==lead_developers==", "==developers=="]
+
+
+# ----------------- PROJECTS ---------------------------------------------------
+[[projects]]
+  name = "project_name"
+  user_name_base = "project_name"
+  repo_url = "git@github.com:bob/project_name.git"
+  excluded_db_tables = ["versions"]
+
+  [projects.gems]
+#    delayed_job = true
+#    resque = true
+#    whenever = true
+
+#  swapfile_size = 128
+  time_zone = "UTC" # TODO:  This needs to be at the machine level
+
+  [[projects.stages]]
+    name = 'alpha'
+    db_rebuild = true
+    domains = ["sub.example.com"]
+    ssl = "none"
+
+    [[projects.stages.stack]]
+      role = 'lb'
+      machine_name = '==staging-lb=='
+
+    [[projects.stages.stack]]
+      role = 'web'
+      role_index = 1
+      machine_name = '==staging-web-1=='
+
+    [[projects.stages.stack]]
+      role = 'web'
+      role_index = 2
+      machine_name = '==staging-web-2=='
+
+    [[projects.stages.stack]]
+      role = 'worker'
+      role_index = 1
+      machine_name = '==staging-worker-1=='
+      resque_workers = 2
+      delayed_job_workers = 2
+
+    [[projects.stages.stack]]
+      role = 'worker'
+      role_index = 2
+      machine_name = '==staging-web-2=='
+      resque_workers = 2
+      delayed_job_workers = 2
+
+    [[projects.stages.stack]]
+      role = 'mc'
+      machine_name = '==staging-mc=='
+
+    [[projects.stages.stack]]
+      role = 'pg'
+      machine_name = '==staging-pg=='
+
+  [[projects.stages]]
+    name = 'beta'
+    db_rebuild = true
+    domains = ["beta.example.com"]
+    ssl = "acme" # DNS must be set up first!
+
+    [[projects.stages.stack]]
+      role = 'lb'
+      machine_name = '==staging-lb=='
+
+    [[projects.stages.stack]]
+      role = 'web'
+      role_index = 1
+      machine_name = '==staging-web-1=='
+
+    [[projects.stages.stack]]
+      role = 'pg'
+      machine_name = '==staging-pg=='
+
+
+# ----------------- MACHINES ---------------------------------------------------
+[[machines]]
+  name = 'staging-lb'
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+[[machines]]
+  name = 'staging-web-1'
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+[[machines]]
+  name = 'staging-web-2'
+  tags = ['development', 'web']
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+[[machines]]
+  name = 'staging-worker-1'
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+[[machines]]
+  name = 'staging-pg'
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+[[machines]]
+  name = 'staging-mc'
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+[[machines]]
+  name = 'staging-redis'
+  root_users = "==lead_developers=="
+  users = "==all_developers=="
+
+
+# ----------------- CLOUD ------------------------------------------------------
+[cloud_provider]
+  name = 'digital-ocean'
+  image = 'ubuntu-16-04-x64'
+
+  #region = 'nyc1' # New York 1
+  #region = 'sfo1' # San Francisco 1
+  #region = 'nyc2' # New York 2
+  #region = 'ams2' # Amsterdam 2
+  #region = 'sgp1' # Singapore 1
+  #region = 'lon1' # London 1
+  #region = 'nyc3' # New York 3
+  #region = 'ams3' # Amsterdam 3
+  #region = 'fra1' # Frankfurt 1
+  #region = 'tor1' # Toronto 1
+  region = 'sfo2' # San Francisco 2
+  #region = 'blr1' # Bangalore 1
+
+  # can't use 'size' as a key
+  default_capacity = '512mb'
+  #default_capacity = '1gb'
+  #default_capacity = '2gb'
+  #default_capacity = '4gb'
+  #default_capacity = '8gb'
+  #default_capacity = '16gb'
+  #default_capacity = 'm-16gb'
+  #default_capacity = '32gb'
+  #default_capacity = 'm-32gb'
+  #default_capacity = '48gb'
+  #default_capacity = 'm-64gb'
+  #default_capacity = '64gb'
+  #default_capacity = 'm-128gb'
+  #default_capacity = 'm-224gb'
+
+  [cloud_provider.initial_users]
+    "Bob" = "d1:fe:e8:53:d4:fb:eb:f1:db:fc:ef:18:f1:cf:1e:5d"
+    "Rob" = "d1:fe:e8:53:d4:fb:eb:f1:db:fc:ef:18:f1:cf:1e:5d"
+
+
+

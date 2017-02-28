@@ -38,7 +38,7 @@ module Pvcglue
     end
 
     def create!
-      raise(Thor::Error, "#{cloud_provider.name} unknown") unless cloud_provider.name == 'digital-ocean'
+      raise(Thor::Error, "#{cloud_provider.name} unknown") unless cloud_provider.name == 'digital-ocean' || cloud_provider.name == 'linode'
       Pvcglue.logger.warn("Provisioning a machine for #{machine_name} on #{cloud_provider.name}...")
 
       # TODO:  Tags.  production, staging, load-balancer, web, worker, database, postgress, cache, memcache...
