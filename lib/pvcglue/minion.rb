@@ -37,27 +37,33 @@ module Pvcglue
       public_ip.present?
     end
 
-    def create!
-      provider = Pvcglue::CloudProvider.new(machine_options.cloud_provider || cloud_provider.name)
+    def pvc_cloud_provider
+      @pvc_cloud_provider ||= Pvcglue::CloudProviders.init(machine_options.cloud_provider || default_cloud_provider)
+    end
 
-      Pvcglue.logger.warn("Provisioning a machine for #{machine_name} on #{cloud_provider.name}...")
+    def create!
+      Pvcglue.logger.warn("Provisioning a machine for #{machine_name} on #{pvc_cloud_provider.name}...")
 
       # TODO:  Tags.  production, staging, load-balancer, web, worker, database, postgress, cache, memcache...
       name = machine_name
-      size = machine_options.capacity || cloud_provider.default_capacity
-      image = cloud_provider.image
-      region = machine_options.region || cloud_provider.region
-      ssh_keys = cloud_provider.initial_users.map { |description, ssh_key| ssh_key }
+      capacity = machine_options.cloud_provider.capacity
+      image = machine_options.cloud_provider.image
+      region = machine_options.cloud_provider.region
+      if machine_options.cloud_provider.initial_users
+        ssh_keys = machine_options.initial_users.map { |description, ssh_key| ssh_key }
+      else
+        ssh_keys = []
+      end
       # backups = cloud_provider.backups.nil? ? true : cloud_provider.backups # default to true -- safety first!
-      backups = machine_options.backups.nil? ? true : machine_options.backups # default to true -- safety first!
-      tags = machine_options.tags
-      group = machine_options.group
+      backups = machine_options.cloud_provider.backups.nil? ? true : machine_options.cloud_provider.backups # default to true -- safety first!
+      tags = machine_options.cloud_provider.tags
+      group = machine_options.cloud_provider.group
 
       options = ::SafeMash.new(
           name: name,
           region: region,
           image: image,
-          size: size,
+          capacity: capacity,
           ssh_keys: ssh_keys,
           backups: backups,
           ipv6: false,
@@ -68,7 +74,7 @@ module Pvcglue
           group: group,
       )
 
-      droplet = provider.create(options)
+      droplet = pvc_cloud_provider.create(options)
       self.droplet = droplet
       true
     end

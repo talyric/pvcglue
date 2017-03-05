@@ -538,26 +538,16 @@ module Pvcglue
           minion.users = machine.users
           minion.cloud_id = machine.cloud_id
           minion.remote_user_name = minion_user_name
-          # TODO:  sync all machine options here, automatically
           minion.machine_options = machine
+
+          minion.all_data = data
+          minion.project = project
+          minion.stage = stage
+          # minion.cloud_provider = data.cloud_provider
+          minion.cloud = ::Pvcglue.cloud
         end
-        # ap minion
-        # puts "*"*175
-        # ap minion.roles
-        # ap item.role
+
         minion.roles << item.role
-        # ap minion.roles
-
-        # if item.role_index?
-        #   minions
-        # end
-        # ap minion
-
-        minion.all_data = data
-        minion.project = project
-        minion.stage = stage
-        minion.cloud_provider = data.cloud_provider
-        minion.cloud = ::Pvcglue.cloud
 
         minions[machine.name] = minion
       end

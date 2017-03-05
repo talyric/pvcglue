@@ -6,7 +6,7 @@ require 'pvcglue/custom_hashie'
 require 'logger'
 Dir[File.dirname(__FILE__) + '/pvcglue/*.rb'].each { |file| require file }
 Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
-Dir[File.dirname(__FILE__) + '/pvcglue/cloud_provider/*.rb'].each { |file| require file }
+Dir[File.dirname(__FILE__) + '/pvcglue/cloud_providers/*.rb'].each { |file| require file }
 require 'droplet_kit'
 require 'paint'
 require 'pry'
@@ -16,6 +16,9 @@ require 'byebug'
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 # pvc manager bootstrap --cloud_manager_override=local_cloud.pvcglue.toml --save_before_upload=save --verbose
 
+
+# TODO:  Set up a maintenance mode page and command to allow the message to be changed without a redeploy, like if Amazon S3 goes down...
+#
 module Pvcglue
   # def self.reset!
   #   ap Pvcglue.instance_variables

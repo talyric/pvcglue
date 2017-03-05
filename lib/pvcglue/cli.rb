@@ -1,5 +1,4 @@
 require 'thor'
-require 'orca'
 require 'pvcglue'
 
 module Pvcglue

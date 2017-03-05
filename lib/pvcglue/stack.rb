@@ -40,7 +40,7 @@ module Pvcglue
         # minion.droplet = droplet
         # new_minions << minion if true || minion.provision!
         unless minion.provisioned?
-          existing_machine = machines.detect { |machine| machine.name == minion_name }
+          existing_machine = minion.pvc_cloud_provider.find_by_name(minion_name)
           if existing_machine
             Pvcglue.logger.warn("Machine with the name of '#{minion_name}' already exists.")
             if Thor::Shell::Basic.new.yes?("Existing machine found.  Do you want to use #{existing_machine.id} for #{minion_name}")

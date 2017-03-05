@@ -1,8 +1,8 @@
 module Pvcglue
-  class CloudHost
-    class DigitalOcean
+  class CloudProviders
+    class DigitalOcean < Pvcglue::CloudProviders
 
-      def create(options)
+    def create(options)
         droplet_options = DropletKit::Droplet.new(options)
         droplet = client.droplets.create(droplet_options)
         Pvcglue.logger.debug("Created Digital Ocean droplet, ID:  #{droplet.id}")
@@ -11,6 +11,10 @@ module Pvcglue
 
       def find(options)
 
+      end
+
+      def find_by_name(name)
+        raise 'not ready yet!'
       end
 
       def client
