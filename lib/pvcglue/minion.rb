@@ -38,6 +38,7 @@ module Pvcglue
     end
 
     def pvc_cloud_provider
+      byebug unless machine_options.cloud_provider || default_cloud_provider
       @pvc_cloud_provider ||= Pvcglue::CloudProviders.init(machine_options.cloud_provider || default_cloud_provider)
     end
 
@@ -74,8 +75,8 @@ module Pvcglue
           group: group,
       )
 
-      droplet = pvc_cloud_provider.create(options)
-      self.droplet = droplet
+      machine = pvc_cloud_provider.create(options)
+      self.machine = machine
       true
     end
 

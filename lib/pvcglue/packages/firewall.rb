@@ -21,6 +21,7 @@ module Pvcglue
         unless has_role?(:manager)
           minion.cloud.minions.each do |other_minion_name, other_minion|
             next if other_minion_name == minion.machine_name
+            next unless other_minion.provisioned?
             connection.run!(:root, '', "ufw allow from #{other_minion.private_ip}")
           end
         end

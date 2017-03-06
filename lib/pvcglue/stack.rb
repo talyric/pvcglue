@@ -63,11 +63,11 @@ module Pvcglue
         Pvcglue.logger.info("Checking status of new minions (#{new_minions.size})...")
         time = Benchmark.realtime do
           begin
-            lazy_minions = get_lazy_minions(minions)
+            lazy_minions = get_lazy_minions(new_minions)
             unless lazy_minions.size == 0
               # puts '*'*175
               # ap waiting_for
-              Pvcglue.logger.info("Waiting for #{lazy_minions.map { |key, value| key }.join(', ')}...")
+              Pvcglue.logger.info("Waiting for #{lazy_minions.map { |minion| minion.machine_name }.join(', ')}...")
               sleep(1.5)
             end
           end until lazy_minions.size == 0
@@ -77,6 +77,7 @@ module Pvcglue
             minions[updated_minion.machine_name].public_ip = updated_minion.public_ip
             minions[updated_minion.machine_name].cloud_id = updated_minion.cloud_id
             minions[updated_minion.machine_name].connection = Pvcglue::Connection.new(minions[updated_minion.machine_name])
+            Pvcglue::Packages::SshKeyCheck.apply(minions[updated_minion.machine_name])
           end
         end
         Pvcglue.logger.info("Minions (finally) ready after #{time.round(2)} seconds!")
@@ -101,19 +102,27 @@ module Pvcglue
       Pvcglue::Manager.pull_configuration
       data = File.read(Pvcglue.cloud.local_file_name)
       updated_minions = minions.map do |minion|
-        # puts '-'*175
-        # ap minion.droplet
-        # Refresh droplet (didn't find a reload method)
-        droplet_id = minion.droplet.id.to_s
-        # ap droplet_id
-        minion.droplet = Pvcglue::CloudProvider.client.droplets.find(id: droplet_id)
-        # puts '='*175
-        # ap minion.droplet
-        ip_addresses = Pvcglue::CloudProvider.get_ip_addresses(minion.droplet)
-        data = update_minion_data(minion, ip_addresses, droplet_id, data)
-        minion.public_ip = ip_addresses.public
-        minion.private_ip = ip_addresses.private
-        minion.cloud_id = droplet_id
+        # # puts '-'*175
+        # # ap minion.droplet
+        # # Refresh droplet (didn't find a reload method)
+        # droplet_id = minion.droplet.id.to_s
+        # # ap droplet_id
+        # minion.droplet = Pvcglue::CloudProvider.client.droplets.find(id: droplet_id)
+        # # puts '='*175
+        # # ap minion.droplet
+        # ip_addresses = Pvcglue::CloudProvider.get_ip_addresses(minion.droplet)
+        # data = update_minion_data(minion, ip_addresses, droplet_id, data)
+        # minion.public_ip = ip_addresses.public
+        # minion.private_ip = ip_addresses.private
+        # minion.cloud_id = droplet_id
+        # minion
+
+        minion.machine = minion.pvc_cloud_provider.reload_machine_data(minion)
+        data = update_minion_data(minion, data)
+        minion.public_ip = minion.machine.public_ip
+        minion.private_ip = minion.machine.private_ip
+        minion.cloud_id = minion.machine.id
+
         minion
       end
       File.write(Pvcglue.cloud.local_file_name, data)
@@ -121,16 +130,17 @@ module Pvcglue
       updated_minions
     end
 
-    def update_minion_data(minion, ip_addresses, cloud_id, data)
-      unless minion.public_ip_address.nil? && minion.private_id_address.nil? && minion.cloud_id.nil?
-        raise("#{minion.machine_name} has previously defined ip address(es) or cloud_id, can not change.")
+    # def update_minion_data(minion, ip_addresses, cloud_id, data)
+    def update_minion_data(minion, data)
+      unless minion.public_ip.nil? && minion.private_ip.nil? && minion.cloud_id.nil?
+        raise("#{minion.machine_name} has previously defined ip address(es) or id, can not change.  As a safety measure, you will need to manually remove any old data")
       end
-      if ip_addresses.public.nil? || ip_addresses.private.nil? || cloud_id.nil?
-        raise("New IP addresses (#{ip_addresses}) or cloud_id (#{cloud_id}) are not valid.")
+      if minion.machine.public_ip.nil? || minion.machine.private_ip.nil? || minion.machine.id.nil?
+        raise("New public IP address (#{minion.machine.public_ip}) or private IP address (#{minion.machine.private_ip}) or cloud_id (#{minion.machine.id}) are not valid.")
       end
 
 
-      replacement = "\\1\\2\n\\1public_ip = '#{ip_addresses.public}'\n\\1private_ip = '#{ip_addresses.private}'\n\\1cloud_id = '#{cloud_id}'"
+      replacement = "\\1\\2\n\\1public_ip = '#{minion.machine.public_ip}'\n\\1private_ip = '#{minion.machine.private_ip}'\n\\1cloud_id = '#{minion.machine.id}'"
       new_data = data.sub(/( *)(name\s*=\s*['"]#{Regexp.quote(minion.machine_name)}['"])/, replacement)
       raise "Unable to update minion data for #{minion.machine_name}." if data == new_data
 
@@ -150,20 +160,10 @@ module Pvcglue
     end
 
     def get_lazy_minions(minions)
-      droplets = Pvcglue::CloudProvider.client.droplets.all
-
-      minions.select do |minion_name, minion|
+      minions.select do |minion|
         Pvcglue.logger_current_minion = minion
-        # next unless minion.machine_name == 'staging-lb'
-        # ap minion_name
-        found = droplets.detect do |droplet|
-          droplet[:name] == minion.machine_name
-        end
-        # ap found
-        # ap found[:status]
-        !found || found[:status] != 'active'
+        !minion.pvc_cloud_provider.ready?(minion)
       end
-      # ap minions
     end
 
   end
