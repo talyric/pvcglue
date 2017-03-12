@@ -31,6 +31,7 @@ def capistrano_style_environment
       end
     else
       Pvcglue::CLI.start
+      Pvcglue.docs.done
     end
   end
 end

@@ -75,6 +75,7 @@ module Pvcglue
 
     def system_command?(cmd)
       Pvcglue.logger.debug { cmd }
+      Pvcglue.docs.log_cmd(cmd)
       system(cmd)
       Pvcglue.logger.debug { "exit_code=#{$?.exitstatus}" }
       $?
@@ -170,6 +171,7 @@ module Pvcglue
     end
 
     def write_to_file(user, data, file, owner = nil, group = nil, permissions = nil)
+      Pvcglue.docs.log_file_write(user: user, style: :shell, data: data, file: file, owner: owner, group: group, permissions: permissions)
       tmp_file = Tempfile.new('pvc')
       begin
         tmp_file.write(data)

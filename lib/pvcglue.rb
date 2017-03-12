@@ -1,17 +1,54 @@
+require 'pvcglue/version'
 require 'thor'
+require 'pvcglue/configuration'
+require 'pvcglue/manager'
+require 'pvcglue/cloud'
+require 'pvcglue/packages'
+Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
+Dir[File.dirname(__FILE__) + '/pvcglue/cloud_providers/*.rb'].each { |file| require file }
+require 'pvcglue/bootstrap'
+require 'pvcglue/nodes'
+require 'pvcglue/stack'
+require 'pvcglue/env'
+require 'pvcglue/deploy'
+require 'pvcglue/capistrano'
+require 'pvcglue/ssl'
+require 'pvcglue/db'
+require 'pvcglue/toml_pvc_dumper'
+require 'pvcglue/local'
+require 'pvcglue/monit'
+require 'pvcglue/pvcify'
+require 'pvcglue/docs'
 require 'tilt'
 require 'awesome_print'
 require 'hashie'
 require 'pvcglue/custom_hashie'
-require 'logger'
-Dir[File.dirname(__FILE__) + '/pvcglue/*.rb'].each { |file| require file }
-Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
-Dir[File.dirname(__FILE__) + '/pvcglue/cloud_providers/*.rb'].each { |file| require file }
+require 'pvcglue/minion'
 require 'droplet_kit'
+# require 'pvcglue/digital_ocean'
+require 'logger'
+require 'pvcglue/connection'
 require 'paint'
 require 'pry'
 require 'net/http'
 require 'byebug'
+
+
+# require 'thor'
+# require 'tilt'
+# require 'awesome_print'
+# require 'hashie'
+# require 'pvcglue/custom_hashie'
+# require 'logger'
+# Dir[File.dirname(__FILE__) + '/pvcglue/*.rb'].each { |file| require file unless File.basename(file) == 'cli.rb' }
+# require 'pvcglue/cli'
+# Dir[File.dirname(__FILE__) + '/pvcglue/packages/*.rb'].each { |file| require file }
+# Dir[File.dirname(__FILE__) + '/pvcglue/cloud_providers/*.rb'].each { |file| require file }
+# require 'droplet_kit'
+# require 'paint'
+# require 'pry'
+# require 'net/http'
+# require 'byebug'
 
 # puts File.join(File.dirname(__FILE__), 'pvcglue', 'packages', '*.rb')
 # pvc manager bootstrap --cloud_manager_override=local_cloud.pvcglue.toml --save_before_upload=save --verbose
@@ -88,19 +125,19 @@ module Pvcglue
       # background = 'black'
       background = nil
       case severity[0..0]
-        when 'E'
-          foreground = 'red'
-        when 'W'
-          # foreground = 'black'
-          # background = 'yellow'
-          foreground = 'yellow'
-        when 'I'
-          foreground = 'purple'
-        when 'D'
-          foreground = 'cyan'
-        else
-          foreground = 'black'
-          background = 'red'
+      when 'E'
+        foreground = 'red'
+      when 'W'
+        # foreground = 'black'
+        # background = 'yellow'
+        foreground = 'yellow'
+      when 'I'
+        foreground = 'purple'
+      when 'D'
+        foreground = 'cyan'
+      else
+        foreground = 'black'
+        background = 'red'
       end
       # case severity[0..0]
       #    when 'E'
@@ -121,6 +158,10 @@ module Pvcglue
   end
   mattr_accessor :logger_package_description
   mattr_accessor :logger_current_minion
+
+  mattr_accessor :docs do
+    Pvcglue::Docs.new(!!ARGV.detect { |arg| arg.downcase == '--docs' })
+  end
 
   def self.verbose?
     return if @filtering_verbose

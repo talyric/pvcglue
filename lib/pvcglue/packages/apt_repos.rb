@@ -21,21 +21,41 @@ module Pvcglue
       end
 
       def install!
+        docs.level_2('Repositories')
+
         # TODO: Make this a package that checks for the existence of software-properties-common
         #echo 'Acquire::ForceIPv4 "true";' | tee /etc/apt/apt.conf.d/99force-ipv4
-        connection.write_to_file(:root, 'Acquire::ForceIPv4 "true";', '/etc/apt/apt.conf.d/99force-ipv4')
+        docs.set_item(
+          heading: 'Force use of IPv4',
+          body: 'Needed for Linode as there were intermittent problems connecting to their repositories over IPv6 (February 2017)'
+        ) do
+          connection.write_to_file(:root, 'Acquire::ForceIPv4 "true";', '/etc/apt/apt.conf.d/99force-ipv4')
+        end
 
-        connection.run!(:root, '', 'apt update -y')
-        connection.run!(:root, '', 'apt update -y')
-        connection.run!(:root, '', 'apt install -y software-properties-common python-software-properties')
 
+        docs.set_item(
+          heading: 'Update Repositories'
+        ) do
+          connection.run!(:root, '', 'apt update -y')
+        end
+        docs.set_item(
+          heading: 'Install Requirements',
+          body: 'Install the requirements for adding more repositories'
+        ) do
+          connection.run!(:root, '', 'apt install -y software-properties-common python-software-properties')
+        end
         # These could be refactored into packages.  :)
 
         if nginx_needed?
-          # Reference:  https://www.phusionpassenger.com/library/install/nginx/install/oss/xenial/
-          connection.run!(:root, '', 'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7')
-          connection.run!(:root, '', 'apt-get install -y apt-transport-https ca-certificates')
-          connection.write_to_file(:root, PASSENGER_SOURCES_LIST_DATA, PASSENGER_SOURCES_LIST_FILENAME)
+          docs.set_item(
+            heading: 'Nginx',
+            body: 'Install the latest version using the Phusion repos.',
+            reference: 'https://www.phusionpassenger.com/library/install/nginx/install/oss/xenial/'
+          ) do
+            connection.run!(:root, '', 'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7')
+            connection.run!(:root, '', 'apt-get install -y apt-transport-https ca-certificates')
+            connection.write_to_file(:root, PASSENGER_SOURCES_LIST_DATA, PASSENGER_SOURCES_LIST_FILENAME)
+          end
         end
 
         if node_js_needed?
@@ -48,6 +68,7 @@ module Pvcglue
           connection.run!(:root, '', 'add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main"')
           connection.run!(:root, '', 'wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -')
         end
+        byebug
 
         set_minion_state(:apt_repos_updated_at, Time.now.utc)
       end

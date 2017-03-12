@@ -17,6 +17,10 @@ module Pvcglue
       @errors = []
     end
 
+    def docs
+      Pvcglue.docs
+    end
+
     def errors?
       errors.size > 0
     end

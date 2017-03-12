@@ -14,6 +14,7 @@ module Pvcglue
     class_option :info
     class_option :debug
     class_option :verbose
+    class_option :docs
 
     def initialize(args = [], local_options = {}, config = {})
       super

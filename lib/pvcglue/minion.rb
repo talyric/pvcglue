@@ -3,10 +3,11 @@ module Pvcglue
     include Hashie::Extensions::Mash::SafeAssignment
 
     def build!
-      # puts '*'*175
-      Pvcglue.logger.info('BUILD') { "Building #{machine_name}" }
-
       minion = self # for readability
+
+      Pvcglue.logger.info('BUILD') { "Building #{machine_name}" }
+      Pvcglue.docs.level_1_roles(minion)
+
       Pvcglue::Packages::SshKeyCheck.apply(minion)
       Pvcglue::Packages::AptRepos.apply(minion)
       Pvcglue::Packages::AptUpdate.apply(minion)
