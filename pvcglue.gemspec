@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '>= 1.3.0', '< 2.0'
   spec.add_development_dependency 'rake', '~> 10.1'
   spec.add_development_dependency 'byebug'
+  # spec.add_development_dependency 'pry'
 
   spec.add_dependency 'thor', '~> 0.19', '>= 0.19.1'
   spec.add_dependency 'toml-rb', '~> 0.3', '>= 0.3.15'
@@ -34,6 +35,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'hashie'
   spec.add_dependency 'droplet_kit'
   spec.add_dependency 'paint'
-  spec.add_dependency 'pry'
+  spec.add_dependency 'tilt'
 
 end

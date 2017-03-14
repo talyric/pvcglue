@@ -29,7 +29,7 @@ require 'droplet_kit'
 require 'logger'
 require 'pvcglue/connection'
 require 'paint'
-require 'pry'
+# require 'pry'
 require 'net/http'
 require 'byebug'
 

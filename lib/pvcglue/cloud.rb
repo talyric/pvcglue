@@ -15,7 +15,6 @@ module Pvcglue
     # attr_accessor :stage_secrets
 
 
-
     def data
       ::Pvcglue::Manager.initialize_cloud_data unless @data
       @data
@@ -335,9 +334,35 @@ module Pvcglue
       project[:gems] || {}
     end
 
+    def gem_file_data
+      @gem_file_data ||= begin
+        File.read(Pvcglue.configuration.gemfile_file_name)
+      end
+    end
+
+    def gem_installed?(gem)
+      value = gems[gem]
+      return value unless value == 'auto'
+      yield
+    end
+
     def whenever_gem_installed?
-      data = File.read(Pvcglue.configuration.gemfile_file_name)
-      data =~ /^\s*gem\s+['"]whenever['"]/
+      gem_installed?(:whenever) do
+        gem_file_data =~ /^\s*gem\s+['"]whenever['"]/
+      end
+    end
+
+    def delayed_job_gem_installed?
+      gem_installed?(:delayed_job) do
+        raise('Not implemented, yet.  :(')
+        gem_file_data =~ /^\s*gem\s+['"]whenever['"]/
+      end
+    end
+
+    def sidekiq_gem_installed?
+      gem_installed?(:sidekiq) do
+        gem_file_data =~ /^\s*gem\s+['"]sidekiq['"]/
+      end
     end
 
     def db_rebuild
@@ -370,12 +395,12 @@ module Pvcglue
 
     def port_in_context(context)
       case context
-        when :bootstrap, :manager
-          port = "22"
-        when :env, :build, :shell, :deploy, :maintenance
-          port = project[:ssh_allowed_from_all_port] || "22"
-        else
-          raise "Context not specified or invalid"
+      when :bootstrap, :manager
+        port = "22"
+      when :env, :build, :shell, :deploy, :maintenance
+        port = project[:ssh_allowed_from_all_port] || "22"
+      else
+        raise "Context not specified or invalid"
       end
       puts "Setting port to #{port}"
       @port_in_node_context = port

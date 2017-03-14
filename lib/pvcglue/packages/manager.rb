@@ -81,6 +81,11 @@ module Pvcglue
       def push_configuration
         raise('Not supported for local manager') if Pvcglue.command_line_options[:cloud_manager_override]
 
+        test_data = File.read(::Pvcglue.cloud.local_file_name)
+        TOML.parse(test_data) # At least make sure it's valid TOML
+
+        # TODO:  More in-depth validations
+
         connection.upload_file(user_name, ::Pvcglue.cloud.local_file_name, ::Pvcglue::Manager.manager_file_name, nil, nil, '600')
         git_commit!
         raise('Error saving configuration') unless working_directory_clean?

@@ -1,8 +1,12 @@
 module Pvcglue
   class CloudProviders
+    REQUIRED_OPTIONS = %w(name region capacity image)
+
     class DigitalOcean < Pvcglue::CloudProviders
 
-    def create(options)
+      def create(options)
+        validate_options!(options)
+
         droplet_options = DropletKit::Droplet.new(options)
         droplet = client.droplets.create(droplet_options)
         Pvcglue.logger.debug("Created Digital Ocean droplet, ID:  #{droplet.id}")

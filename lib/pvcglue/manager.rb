@@ -191,7 +191,6 @@ module Pvcglue
 
     def self.push_configuration
       Pvcglue::Packages::Manager.push_configuration
-      # Pvcglue::Packages.apply('manager-push'.to_sym, :manager, manager_node, 'pvcglue', 'manager')
       # clear_cloud_data_cache
     end
 
