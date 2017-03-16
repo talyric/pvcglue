@@ -21,9 +21,19 @@ module Pvcglue
         force_option = Pvcglue.command_line_options[:force_cert] ? '--force ' : ''
         debug_option = Pvcglue.logger.level == 0 ? '--debug ' : ''
 
-        unless Net::HTTP.get(first_domain, '/.well-known/acme-challenge/test.html') =~ /shiny/
-          Pvcglue.logger.error("Unable to connect to #{first_domain} at #{minion.public_ip}")
-          raise(Thor::Error, 'Please fix and then restart.')
+        begin
+
+          # Test with http://www.example.com/.well-known/acme-challenge/test.html
+          base_name = "test-#{SecureRandom.hex}.html"
+          verification_file_name = File.join(Pvcglue.cloud.letsencrypt_full, base_name)
+          connection.write_to_file(:root, "Everything's shiny, Cap'n. Not to fret.", verification_file_name, 'root', 'www-data', '660')
+
+          unless Net::HTTP.get(first_domain, "/.well-known/acme-challenge/#{base_name}") =~ /shiny/
+            Pvcglue.logger.error("Unable to connect to #{first_domain} at #{minion.public_ip}")
+            raise(Thor::Error, 'Please fix and then restart.')
+          end
+        ensure
+          # TODO:  Delete verification file
         end
 
         result = connection.ssh?(:root, '', "/root/.acme.sh/acme.sh #{debug_option}#{staging_option}#{force_option}--issue #{domain_options} -w #{Pvcglue.cloud.letsencrypt_root}")

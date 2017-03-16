@@ -24,6 +24,7 @@ require 'awesome_print'
 require 'hashie'
 require 'pvcglue/custom_hashie'
 require 'pvcglue/minion'
+require 'pvcglue/cloud_providers'
 require 'droplet_kit'
 # require 'pvcglue/digital_ocean'
 require 'logger'
@@ -188,12 +189,15 @@ module Pvcglue
   end
 
   def self.template_file_name(template)
+    override = File.join(Pvcglue.configuration.template_override_dir, template)
+    return override if File.exists?(override)
     File.join(Pvcglue::gem_dir, 'lib', 'pvcglue', 'templates', template)
   end
 
   def self.render_template(template, file_name = nil)
     # puts '-'*80
     # puts "---> render_template(template=#{template}, file_name=#{file_name}"
+    # Pvcglue.logger.debug { "render_template(template=#{template}, file_name=#{file_name}" }
     data = Tilt.new(Pvcglue.template_file_name(template)).render
     if file_name
       File.write(file_name, data)

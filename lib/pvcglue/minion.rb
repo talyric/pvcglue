@@ -47,19 +47,20 @@ module Pvcglue
       Pvcglue.logger.warn("Provisioning a machine for #{machine_name} on #{pvc_cloud_provider.name}...")
 
       # TODO:  Tags.  production, staging, load-balancer, web, worker, database, postgress, cache, memcache...
+
       name = machine_name
-      capacity = machine_options.cloud_provider.capacity
-      image = machine_options.cloud_provider.image
-      region = machine_options.cloud_provider.region
-      if machine_options.cloud_provider.initial_users
-        ssh_keys = machine_options.initial_users.map { |description, ssh_key| ssh_key }
+      capacity = pvc_cloud_provider.options.capacity
+      image = pvc_cloud_provider.options.image
+      region = pvc_cloud_provider.options.region
+      if pvc_cloud_provider.options.initial_users
+        ssh_keys = pvc_cloud_provider.options.initial_users.map { |description, ssh_key| ssh_key }
       else
         ssh_keys = []
       end
       # backups = cloud_provider.backups.nil? ? true : cloud_provider.backups # default to true -- safety first!
-      backups = machine_options.cloud_provider.backups.nil? ? true : machine_options.cloud_provider.backups # default to true -- safety first!
-      tags = machine_options.cloud_provider.tags
-      group = machine_options.cloud_provider.group
+      backups = pvc_cloud_provider.options.backups.nil? ? true : machine_options.cloud_provider.backups # default to true -- safety first!
+      tags = pvc_cloud_provider.options.tags
+      group = pvc_cloud_provider.options.group
 
       options = ::SafeMash.new(
           name: name,

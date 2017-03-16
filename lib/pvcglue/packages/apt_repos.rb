@@ -68,7 +68,7 @@ module Pvcglue
           connection.run!(:root, '', 'add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main"')
           connection.run!(:root, '', 'wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -')
         end
-        byebug
+        # byebug # docs resume here
 
         set_minion_state(:apt_repos_updated_at, Time.now.utc)
       end

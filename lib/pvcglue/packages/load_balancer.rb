@@ -6,6 +6,8 @@ module Pvcglue
       end
 
       def install!
+        sync_maintenance_files
+
         if Pvcglue.cloud.ssl_mode == :acme && !connection.file_exists?(:root, Pvcglue.cloud.nginx_ssl_crt_file_name)
           # Don't include the SSL stuff in the Nginx config until we have a cert,
           # but Nginx has to be configured to get the cert from Let's Encrypt
@@ -24,7 +26,6 @@ module Pvcglue
           nginx_restart!
         end
 
-        sync_maintenance_files
       end
 
       def nginx_restart!
@@ -56,10 +57,12 @@ module Pvcglue
       end
 
       def sync_maintenance_files
+        Pvcglue.logger.debug { 'Synchronizing maintenance mode files' }
         source_dir = Pvcglue.configuration.app_maintenance_files_dir
         dest_dir = Pvcglue.cloud.maintenance_files_dir
         maintenance_file_name = File.join(source_dir, 'maintenance.html')
         unless File.exists?(maintenance_file_name)
+          Pvcglue.logger.debug { 'Creating default maintenance mode files' }
           # TODO:  Make this use a template
           `mkdir -p #{source_dir}`
           File.write(maintenance_file_name, '-Maintenance Mode-')

@@ -60,7 +60,7 @@ module Pvcglue
 
       if new_minions.size > 0
         # ap new_minions
-        Pvcglue.logger.info("Checking status of new minions (#{new_minions.size})...")
+        Pvcglue.logger.info("Checking the status of the #{new_minions.size == 1 ? 'new minion' : "#{new_minions.size} minions"}...")
         time = Benchmark.realtime do
           begin
             lazy_minions = get_lazy_minions(new_minions)
@@ -153,10 +153,6 @@ module Pvcglue
 
       Pvcglue.logger.debug("Updated configuration for machine named #{minion.machine_name}.")
       new_data
-    end
-
-    def machines
-      @machines ||= Pvcglue::CloudProvider.client.droplets.all
     end
 
     def get_lazy_minions(minions)

@@ -146,6 +146,10 @@ module Pvcglue
         File.join(tmp_dir, 'pvcglue')
       end
 
+      def template_override_dir
+        File.join(application_dir, 'config', 'pvcglue', 'templates')
+      end
+
       def cloud_cache_file_name
         # Just in case the Rails project hasn't yet been run, make sure the tmp
         # dir exists.

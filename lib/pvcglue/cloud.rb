@@ -568,7 +568,7 @@ module Pvcglue
           minion.all_data = data
           minion.project = project
           minion.stage = stage
-          # minion.cloud_provider = data.cloud_provider
+          minion.default_cloud_provider = data.default_cloud_provider
           minion.cloud = ::Pvcglue.cloud
         end
 

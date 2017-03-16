@@ -1,22 +1,27 @@
 module Pvcglue
   class CloudProviders
-    REQUIRED_OPTIONS = []
+    # REQUIRED_OPTIONS = []
 
-    def self.init(cloud_provider)
-      @name = cloud_provider.name
-      if cloud_provider.name == 'digital-ocean'
-        Pvcglue.logger.debug("Digital Ocean provider initialized for '#{cloud_provider.name}'.")
-        Pvcglue::CloudProviders::DigitalOcean.new
-      elsif cloud_provider.name == 'linode'
-        Pvcglue.logger.debug("Linode provider initialized for '#{cloud_provider.name}'.")
-        Pvcglue::CloudProviders::Linode.new
+    def self.init(provider_options)
+      @options = provider_options
+      @name = provider_options.name
+      if provider_options.name == 'digital-ocean'
+        Pvcglue.logger.debug("Digital Ocean provider initialized for '#{provider_options.name}'.")
+        Pvcglue::CloudProviders::DigitalOcean.new(provider_options)
+      elsif provider_options.name == 'linode'
+        Pvcglue.logger.debug("Linode provider initialized for '#{provider_options.name}'.")
+        Pvcglue::CloudProviders::Linode.new(provider_options)
       else
-        raise(Thor::Error, "Cloud Provider '#{cloud_provider.name}' not supported, use 'manual' mode.")
+        raise(Thor::Error, "Cloud Provider '#{provider_options.name}' not supported, use 'manual' mode.")
       end
     end
 
     def name
       @name
+    end
+
+   def options
+      @options
     end
 
     def validate_options!(options)

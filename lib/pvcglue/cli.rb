@@ -11,7 +11,7 @@ module Pvcglue
     class_option :force_cert
     class_option :provision_only
     class_option :quiet
-    class_option :info
+    # class_option :info
     class_option :debug
     class_option :verbose
     class_option :docs
@@ -28,6 +28,7 @@ module Pvcglue
     desc "version", "show the version of PVC..."
 
     def version
+      byebug
       puts Pvcglue::Version.version
     end
 
@@ -259,6 +260,17 @@ module Pvcglue
 
     def update_config
       Pvcglue::Local.update_local_config_from_cache
+    end
+
+    desc "render template", "debug use"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def render(template_file_name, machine_name = nil)
+      minion = machine_name.nil? ? nil : Pvcglue.cloud.find_minion_by_name(machine_name)
+      template = Tilt.new(Pvcglue.template_file_name(template_file_name))
+      data = template.render(self, minion: minion)
+      puts data
+      puts "---> Rendered '#{template_file_name}' from #{Pvcglue.template_file_name(template_file_name)}"
     end
 
 
