@@ -1,11 +1,9 @@
 module Pvcglue
   class CloudProviders
-    REQUIRED_OPTIONS = %w(name region capacity image)
-
     class Linode < Pvcglue::CloudProviders
 
       def create(options)
-        validate_options!(options)
+        validate_options!(options, %w(name region capacity image))
 
         cmd = "linode create #{options.name} "
         cmd += "--location #{options.region} "

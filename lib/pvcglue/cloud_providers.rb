@@ -1,8 +1,10 @@
+# TODO:  Refactor this, it's kinda messy :(
 module Pvcglue
   class CloudProviders
     # REQUIRED_OPTIONS = []
 
     def self.init(provider_options)
+
       @options = provider_options
       @name = provider_options.name
       if provider_options.name == 'digital-ocean'
@@ -24,9 +26,9 @@ module Pvcglue
       @options
     end
 
-    def validate_options!(options)
+    def validate_options!(options, required)
       errors = []
-      REQUIRED_OPTIONS.each { |option_name| errors << "#{option_name} required" unless options[option_name] }
+      required.each { |option_name| errors << "#{option_name} required" unless options[option_name] }
       raise("Errors:  #{errors.join(', ')}.") if errors.any?
     end
 

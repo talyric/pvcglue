@@ -38,9 +38,16 @@ module Pvcglue
       public_ip.present?
     end
 
+    def get_cloud_provider_options
+      # Merge default and machine options
+      options = machine_options.cloud_provider || {}
+      options.merge(default_cloud_provider)
+    end
+
     def pvc_cloud_provider
-      byebug unless machine_options.cloud_provider || default_cloud_provider
-      @pvc_cloud_provider ||= Pvcglue::CloudProviders.init(machine_options.cloud_provider || default_cloud_provider)
+      options = get_cloud_provider_options
+      # raise("Unknown cloud provider '#{get_cloud_provider_name}'") unless get_cloud_provider_name
+      @pvc_cloud_provider ||= Pvcglue::CloudProviders.init(options)
     end
 
     def create!
@@ -70,9 +77,6 @@ module Pvcglue
           ssh_keys: ssh_keys,
           backups: backups,
           ipv6: false,
-          private_networking: true,
-          user_data: '',
-          monitoring: true,
           tags: tags,
           group: group,
       )

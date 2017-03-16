@@ -57,7 +57,10 @@ module Pvcglue
     end
 
     def set_item(options)
-      return unless enabled
+      unless enabled
+        yield
+        return
+      end
       options = ::SafeMash.new(options)
       add_header(3, options.heading)
       add('----')

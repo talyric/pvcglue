@@ -25,7 +25,7 @@ require 'hashie'
 require 'pvcglue/custom_hashie'
 require 'pvcglue/minion'
 require 'pvcglue/cloud_providers'
-require 'droplet_kit'
+# require 'droplet_kit'
 # require 'pvcglue/digital_ocean'
 require 'logger'
 require 'pvcglue/connection'
@@ -215,11 +215,12 @@ module Pvcglue
     true
   end
 
-  def self.system_get_stdout(cmd)
+  def self.system_get_stdout(cmd, raise_error = false)
     Pvcglue.logger.debug { cmd }
     result = `#{cmd}`
     Pvcglue.verbose? { result }
     Pvcglue.logger.debug { "exit_code=#{$?.to_i}" }
+    raise($?.inspect) if raise_error && $?.to_i != 0
     result
   end
 

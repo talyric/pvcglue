@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'sshkit', '~> 1.3', '>= 1.3.0'
   spec.add_dependency 'awesome_print'
   spec.add_dependency 'hashie'
-  spec.add_dependency 'droplet_kit'
+  # spec.add_dependency 'droplet_kit'
   spec.add_dependency 'paint'
   spec.add_dependency 'tilt'
 

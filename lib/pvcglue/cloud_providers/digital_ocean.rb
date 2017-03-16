@@ -1,7 +1,5 @@
 module Pvcglue
   class CloudProviders
-    REQUIRED_OPTIONS = %w(name region capacity image)
-
     class DigitalOcean < Pvcglue::CloudProviders
 
       def initialize(provider_options)
@@ -9,17 +7,44 @@ module Pvcglue
       end
 
       def create(options)
-        validate_options!(options)
+        validate_options!(options, %w(name region capacity image))
+        #doctl compute droplet create test --size 512mb --image ubuntu-16-04-x64 --region sfo2 --ssh-keys d1:fe:e8:53:d4:fb:eb:f1:db:fc:ef:18:f1:cf:1e:5d --enable-backups --enable-private-networking
+        cmd = "doctl compute droplet create #{options.name} "
+        cmd += "--region #{options.region} "
+        cmd += "--size #{options.capacity} "
+        cmd += "--image '#{options.image}' "
+        cmd += '--enable-private-networking '
+        cmd += '--enable-monitoring '
+        cmd += '--enable-backups ' if options.backups
+        # cmd += "--tags '#{options.group}' " if options.group
+        cmd += "--ssh-keys #{options.ssh_keys.join(',')} "
+        cmd += '--output json'
 
-        opts = options.to_h
-        opts[:size] = opts.delete('capacity')
-
-        droplet_options = DropletKit::Droplet.new(opts)
-        droplet = client.droplets.create(droplet_options)
+        result = Pvcglue.system_get_stdout(cmd, true)
+        array_data = JSON.parse(result)
+        array_data.each { |h| h['size_data'] = h.delete('size') }
+        data = []
+        array_data.each do |machine|
+          data << ::SafeMash.new(machine)
+        end
+        droplet = data.first
+        Pvcglue.verbose? { data.inspect }
         Pvcglue.logger.debug("Created Digital Ocean droplet, ID:  #{droplet.id}")
         droplet
       end
 
+      # def create(options)
+      #   validate_options!(options, %w(name region capacity image))
+      #   byebug
+      #   opts = options.to_h
+      #   opts[:size] = opts.delete('capacity')
+      #
+      #   droplet_options = DropletKit::Droplet.new(opts)
+      #   droplet = client.droplets.create(droplet_options)
+      #   Pvcglue.logger.debug("Created Digital Ocean droplet, ID:  #{droplet.id}")
+      #   droplet
+      # end
+      #
       def ready?(minion)
         droplet = find_by_name(minion.machine_name)
 
@@ -53,9 +78,40 @@ module Pvcglue
         get_ip_addresses(droplet).public
       end
 
+      def run(cmd)
+        result = Pvcglue.system_get_stdout(cmd, true)
+        array_data = JSON.parse(result)
+        array_data.each { |h| h['size_data'] = h.delete('size') }
+        data = []
+        array_data.each do |machine|
+          data << ::SafeMash.new(machine)
+        end
+        Pvcglue.verbose? { data.inspect }
+        [data, request_error(data)]
+      end
+
+      def request_error(data)
+        # TODO:  Better error handling
+        return nil # for now
+        # return nil unless data.errors
+        # raise data.errors.values.join('.  ')
+      end
+
       def droplets
-        client.droplets.all
+        # client.droplets.all
         # @droplets ||= client.droplets.all
+        # return nil
+        cmd = 'doctl compute droplet list --output json'
+
+        result = Pvcglue.system_get_stdout(cmd, true)
+        array_data = JSON.parse(result)
+        array_data.each { |h| h['size_data'] = h.delete('size') }
+        data = []
+        array_data.each do |machine|
+          data << ::SafeMash.new(machine)
+        end
+        Pvcglue.verbose? { data.inspect }
+        data
       end
 
       def client
