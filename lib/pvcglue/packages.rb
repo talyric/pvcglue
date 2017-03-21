@@ -113,12 +113,19 @@ module Pvcglue
       end
     end
 
-    def get_minion_state(key)
+    def get_minion_state(key = nil)
+      key = get_minion_state_key(key)
       get_minion_state_data
       connection.minion_state_data[key]
     end
 
-    def set_minion_state(key, value)
+    def get_minion_state_key(key)
+      key || self.class.name.downcase.gsub(':', '_').to_sym
+    end
+
+    def set_minion_state(key = nil, value = nil)
+      value ||= Time.now.utc
+      key = get_minion_state_key(key)
       get_minion_state_data
       connection.minion_state_data[key] = value
       connection.write_to_file(:root, TOML.dump(connection.minion_state_data), minion_state_file_name)

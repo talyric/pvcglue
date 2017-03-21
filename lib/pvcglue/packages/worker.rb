@@ -13,6 +13,7 @@ module Pvcglue
         Pvcglue::Packages::Ruby.apply(minion)
         Pvcglue::Packages::Bundler.apply(minion)
         Pvcglue::Packages::Secrets.apply(minion)
+        Pvcglue::Packages::SidekiqWorkers.apply(minion)
       end
 
       def post_install_check?

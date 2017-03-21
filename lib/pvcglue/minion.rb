@@ -40,7 +40,7 @@ module Pvcglue
 
     def get_cloud_provider_options
       # Merge default and machine options
-      options = machine_options.cloud_provider || {}
+      options = machine_options.cloud_provider || ::SafeMash.new
       options.merge(default_cloud_provider)
     end
 

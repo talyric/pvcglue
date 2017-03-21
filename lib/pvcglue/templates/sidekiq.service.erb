@@ -1,0 +1,30 @@
+# Based on https://github.com/mperham/sidekiq/blob/master/examples/systemd/sidekiq.service
+#
+[Unit]
+Description=<%= "Sidekiq Worker for #{minion.remote_user_name}" %>
+# start us only once the network and logging subsystems are available,
+# consider adding redis-server.service if Redis is local and systemd-managed.
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=<%= Pvcglue.cloud.deploy_to_app_current_dir %>
+ExecStart=/bin/bash -lc 'bundle exec sidekiq -e <%= minion.stage %>'
+
+User=<%= minion.remote_user_name %>
+Group=<%= minion.remote_user_name %>
+UMask=0002
+
+# if we crash, restart
+RestartSec=1
+Restart=on-failure
+
+# output goes to /var/log/syslog
+StandardOutput=syslog
+StandardError=syslog
+
+# This will default to "bundler" if we don't specify it
+SyslogIdentifier=sidekiq
+
+[Install]
+WantedBy=multi-user.target

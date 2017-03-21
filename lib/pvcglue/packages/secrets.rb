@@ -7,7 +7,7 @@ module Pvcglue
 
       def install!
         Pvcglue::Env.initialize_stage_env
-        connection.write_to_file_from_template(user_name, 'web.env.erb', Pvcglue.cloud.env_file_name, nil, nil, '0640') # TODO:  Double check permissions
+        connection.write_to_file_from_template(user_name, 'web.env.erb', Pvcglue.cloud.env_file_name, nil, nil, nil, '0640') # TODO:  Double check permissions
         restart_web_app!
       end
 

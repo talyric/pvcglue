@@ -495,7 +495,8 @@ module Pvcglue
 
 
     def minion_user_name_base
-      project[:user_name_base] || 'deploy'
+      # project[:user_name_base] || 'deploy'
+      project[:user_name_base] || raise('user_name_base is required')
     end
 
     def minion_user_name

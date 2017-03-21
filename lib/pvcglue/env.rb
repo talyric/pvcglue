@@ -93,38 +93,48 @@ module Pvcglue
       defaults['RAILS_SECRET_TOKEN'] = SecureRandom.hex(64) # From rails/railties/lib/rails/tasks/misc.rake
       defaults['SECRET_KEY_BASE'] = SecureRandom.hex(64) # From rails/railties/lib/rails/tasks/misc.rake
 
-      if Pvcglue.cloud.minions_filtered('pg').any?
+      # Don't set a default until we have a provisioned server
+      if db_host
         defaults['DB_USER_POSTGRES_HOST'] = db_host
-        defaults['DB_USER_POSTGRES_PORT'] = "5432"
+        defaults['DB_USER_POSTGRES_PORT'] = '5432'
         defaults['DB_USER_POSTGRES_USERNAME'] = "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}"
         defaults['DB_USER_POSTGRES_DATABASE'] = "#{Pvcglue.cloud.app_name}_#{Pvcglue.cloud.stage_name_validated}"
         defaults['DB_USER_POSTGRES_PASSWORD'] = new_password
       end
 
-      if Pvcglue.cloud.minions_filtered('memcached').any?
+      # Don't set a default until we have a provisioned server
+      if memcached_host
         defaults['MEMCACHE_SERVERS'] = memcached_host
       end
 
-      if Pvcglue.cloud.minions_filtered('redis').any?
-        defaults['REDIS_SERVER'] = redis_host
+      # Don't set a default until we have a provisioned server
+      if redis_url
+        defaults['REDIS_URL'] = redis_url
       end
 
       defaults
     end
 
     def self.db_host
-      # Assume 1 pg server
-      Pvcglue.cloud.minions_filtered('pg').values.first.private_ip
+      # Assume first pg server
+      minion = Pvcglue.cloud.minions_filtered('pg').values.first
+      minion && minion.private_ip
     end
 
     def self.memcached_host
-      node = Pvcglue.cloud.find_minion_by_name('memcached', false)
-      node ? "#{node['memcached']['private_ip']}:11211" : ""
+      # Assume first server
+      minion = Pvcglue.cloud.minions_filtered('memcached').values.first
+      ip = minion && minion.private_ip
+      ip ? "#{ip}:11211" : nil
     end
 
-    def self.redis_host
-      node = Pvcglue.cloud.find_minion_by_name('redis', false)
-      node ? "#{node['redis']['private_ip']}:6379" : ""
+    def self.redis_url
+      # Assume first server
+      # TODO:  (low priority) check all other apps/environments to see if
+      # the current database number is used, and find an unused one, if it is.
+      minion = Pvcglue.cloud.minions_filtered('redis').values.first
+      ip = minion && minion.private_ip
+      ip ? "redis://#{ip}:6379/0" : nil
     end
 
     def self.new_password

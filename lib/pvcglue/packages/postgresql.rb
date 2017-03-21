@@ -7,9 +7,12 @@ module Pvcglue
       end
 
       def install!
+        # TODO:  Adjust vm.overcommit_memory?
+        # See https://www.postgresql.org/docs/9.3/static/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT
+        # http://serverfault.com/questions/755772/redis-and-postgresql-on-same-machine-vm-overcommit-memory
         Pvcglue::Env.initialize_stage_env
-        connection.write_to_file_from_template(:root, 'postgresql.conf.erb', '/etc/postgresql/9.6/main/postgresql.conf', 'postgres', 'postgres', '0644')
-        connection.write_to_file_from_template(:root, 'pg_hba.conf.erb', '/etc/postgresql/9.6/main/pg_hba.conf', 'postgres', 'postgres', '0644')
+        connection.write_to_file_from_template(:root, 'postgresql.conf.erb', '/etc/postgresql/9.6/main/postgresql.conf', nil, 'postgres', 'postgres', '0644')
+        connection.write_to_file_from_template(:root, 'pg_hba.conf.erb', '/etc/postgresql/9.6/main/pg_hba.conf', nil, 'postgres', 'postgres', '0644')
 
         connection.run_get_stdout(:root, '', 'service postgresql restart')
         unless $?.exitstatus == 0

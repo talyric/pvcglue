@@ -13,6 +13,7 @@ module Pvcglue
         nginx
         nginx-extras
         nodejs
+        redis-tools
       ]
       PACKAGES = {
           common: %w[
@@ -36,6 +37,9 @@ module Pvcglue
             postgresql-9.6
             postgresql-contrib-9.6
             libpq-dev
+          ],
+          redis: %w[
+            redis-server
           ],
           mc: %w[
           ],

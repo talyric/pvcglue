@@ -8,6 +8,11 @@ module Pvcglue
         has_roles? %w(lb web)
       end
 
+      def redis_needed?
+        # has_roles? %w(redis)
+        has_roles? %w(redis web worker) # web worker will just have package `redis-tools`
+      end
+
       def node_js_needed?
         has_roles? %w(web worker)
       end
@@ -55,6 +60,16 @@ module Pvcglue
             connection.run!(:root, '', 'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7')
             connection.run!(:root, '', 'apt-get install -y apt-transport-https ca-certificates')
             connection.write_to_file(:root, PASSENGER_SOURCES_LIST_DATA, PASSENGER_SOURCES_LIST_FILENAME)
+          end
+        end
+
+        if redis_needed?
+          docs.set_item(
+            heading: 'Redis',
+            body: 'Install the latest stable version.  The current Ubuntu version is apparently behind on security updates.',
+            reference: 'https://www.linode.com/docs/databases/redis/deploy-redis-on-ubuntu-or-debian'
+          ) do
+            connection.run!(:root, '', 'add-apt-repository "ppa:chris-lea/redis-server"')
           end
         end
 

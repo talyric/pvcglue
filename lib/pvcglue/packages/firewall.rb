@@ -4,8 +4,7 @@ module Pvcglue
       # Reference:  http://manpages.ubuntu.com/manpages/xenial/en/man8/ufw-framework.8.html
       # Examples:  https://help.ubuntu.com/community/UFW
       def installed?
-        result = connection.run_get_stdout!(:root, '', 'ufw status verbose')
-        result =~ /Status: active/ && result =~ /Default: deny \(incoming\), allow \(outgoing\)/
+        get_minion_state
       end
 
       def install!
@@ -26,8 +25,13 @@ module Pvcglue
           end
         end
 
+        set_minion_state
       end
 
+      def post_install_check?
+        result = connection.run_get_stdout!(:root, '', 'ufw status verbose')
+        result =~ /Status: active/ && result =~ /Default: deny \(incoming\), allow \(outgoing\)/
+      end
     end
   end
 end
