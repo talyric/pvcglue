@@ -12,7 +12,10 @@ set :delayed_job_args, "<%= Pvcglue.cloud.delayed_job_args %>"
 set :ssh_options, {port: <%= Pvcglue.cloud.port_in_context(:deploy) %>}
 
 <% Pvcglue.cloud.minions_filtered('web').each do |minion_name, minion| %>
-server '<%= minion.public_ip %>', roles: %w{web app db}, user: '<%= minion.remote_user_name %>' # server:  <%= minion_name.to_s %>
+server '<%= minion.public_ip %>', roles: %w{web app}, user: '<%= minion.remote_user_name %>' # server:  <%= minion.machine_name %>
+<% end %>
+<% Pvcglue.cloud.minions_filtered('worker').each do |minion_name, minion| %>
+server '<%= minion.public_ip %>', roles: %w{web app}, user: '<%= minion.remote_user_name %>' # server:  <%= minion.machine_name %>
 <% end %>
 <% if Pvcglue.cloud.db_rebuild %>
 

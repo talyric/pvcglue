@@ -1,0 +1,7 @@
+webhook_url="<%= minion.project.slack_webhook_url %>"      # Incoming Webhooks integration URL. See https://my.slack.com/services/new/incoming-webhook
+upload_token="<%= minion.project.slack_upload_token %>"     # The user's API authentication token, only used for file uploads. See https://api.slack.com/#auth
+channel="<%= minion.project.slack_default_channel || 'general' %>"          # Default channel to post messages. '#' is prepended, if it doesn't start with '#' or '@'.
+tmp_dir="/tmp"      # Temporary file is created in this directory.
+username="<%= minion.remote_user_name %>" # Default username to post messages.
+icon="<%= minion.project.slack_icon || 'large_blue_diamond' %>"        # Default emoji or a direct url to an image to post messages. You don't have to wrap emoji with ':'. See http://www.emoji-cheat-sheet.com.
+attachment=""       # Default color of the attachments. If an empty string is specified, the attachments are not used.

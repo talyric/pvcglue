@@ -13,7 +13,7 @@ module Pvcglue
         # Do it again, the first time only sets things up, and does not import the keys
         connection.run!(user_name, '', '\curl -sSL https://get.rvm.io | bash -s stable --with-default-gems=bundler')
 
-        # TODO: set autolibs mode so there are not installed automatically, as the user won't have sudo permissions later.
+        # TODO: set autolibs mode so they are not installed automatically, as the user won't have sudo permissions later.
         # OR create a 'install' user that can sudo...might be easier...
         # Installing required packages: libreadline6-dev, libyaml-dev, libsqlite3-dev, sqlite3, autoconf, libgmp-dev, libgdbm-dev, libncurses5-dev, automake, libtool, bison, pkg-config, libffi-dev...............
 

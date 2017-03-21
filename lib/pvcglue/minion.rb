@@ -18,6 +18,7 @@ module Pvcglue
       Pvcglue::Packages::UnattendedUpgrades.apply(minion)
       Pvcglue::Packages::Users.apply(minion)
       Pvcglue::Packages::AuthorizedKeys.apply(minion)
+      Pvcglue::Packages::Slack.apply(minion)
       Pvcglue::Packages::Roles.apply(minion)
 
 

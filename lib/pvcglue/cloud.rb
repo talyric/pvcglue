@@ -544,6 +544,7 @@ module Pvcglue
       find_or_raise(data.machines, name)
     end
 
+
     def get_minions
       minions = ::SafeMash.new
       stage.stack.each do |item|
@@ -565,6 +566,7 @@ module Pvcglue
           minion.cloud_id = machine.cloud_id
           minion.remote_user_name = minion_user_name
           minion.machine_options = machine
+          minion.stage_options = item
 
           minion.all_data = data
           minion.project = project

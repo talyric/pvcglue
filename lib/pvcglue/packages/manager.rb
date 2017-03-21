@@ -82,7 +82,7 @@ module Pvcglue
         raise('Not supported for local manager') if Pvcglue.command_line_options[:cloud_manager_override]
 
         test_data = File.read(::Pvcglue.cloud.local_file_name)
-        TOML.parse(test_data) # At least make sure it's valid TOML
+        ::SafeMash.new(TOML.parse(test_data)) # At least make sure it's valid TOML and that we can load it in
 
         # TODO:  More in-depth validations
 

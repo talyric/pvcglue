@@ -165,7 +165,7 @@ module Pvcglue
     def write_to_file_from_template(user, template_file_name, file, locals = nil, owner = nil, group = nil, permissions = nil)
       Pvcglue.logger.debug { "Writing to #{file} from template '#{template_file_name}'" }
       template = Tilt.new(Pvcglue.template_file_name(template_file_name))
-      data = template.render(self, {minion: minion}.merge(locals))
+      data = template.render(self, {minion: minion}.merge(locals || {}))
 
       write_to_file(user, data, file, owner, group, permissions)
     end

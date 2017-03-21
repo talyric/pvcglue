@@ -9,6 +9,7 @@ module Pvcglue
         Pvcglue::Env.initialize_stage_env
         connection.write_to_file_from_template(user_name, 'web.env.erb', Pvcglue.cloud.env_file_name, nil, nil, nil, '0640') # TODO:  Double check permissions
         restart_web_app!
+        restart_workers!
       end
 
       def post_install_check?
@@ -19,6 +20,11 @@ module Pvcglue
         if connection.file_exists?(user_name, Pvcglue.cloud.deploy_to_app_current_temp_dir)
           connection.ssh!(user_name, '', "touch #{Pvcglue.cloud.restart_txt_file_name}")
         end
+      end
+
+      def restart_workers!
+        puts ('*'*800).red
+        puts 'Workers not restarted!!!'.yellow
       end
 
       def self.load_for_stage

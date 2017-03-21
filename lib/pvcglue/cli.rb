@@ -61,11 +61,46 @@ module Pvcglue
       Pvcglue::Stack.build(Pvcglue.cloud.minions, roles)
     end
 
+    desc "show configuration", "Show configuration details for the stage"
+    method_option :stage, :required => true, :aliases => "-s"
+
+    def config(roles = 'all')
+      if roles == 'all'
+        ap Pvcglue.cloud.data
+      else
+        minions = Pvcglue.cloud.minions_filtered(roles)
+        minions.each do |minion_name, minion|
+          filtered = '[filtered]'
+          # filtered = nil
+          project = minion.merge({
+            stages: filtered,
+            all_data: filtered,
+            cloud: filtered,
+            project: filtered,
+            stage: filtered,
+            default_cloud_provider: filtered,
+            connection: filtered
+          })
+          # project = project.select { |_, value| !value.nil? }
+          data = minion.merge({
+            cloud: filtered,
+            all_data: filtered,
+            connection: filtered,
+            project: project
+          })
+          # ap data.select { |_, value| !value.nil? }
+          ap(data, indent: 2)
+        end
+
+      end
+
+    end
+
     desc "console", "open rails console"
     method_option :stage, :required => true, :aliases => "-s"
 
-    def console(server='web')
-      data = Pvcglue.cloud.minions_filtered(server)
+    def console(role='web')
+      data = Pvcglue.cloud.minions_filtered(role)
       minion_name = data.keys.first
       minion = data.values.first
       working_dir = Pvcglue.cloud.deploy_to_app_current_dir
