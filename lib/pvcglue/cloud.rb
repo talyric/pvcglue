@@ -365,6 +365,10 @@ module Pvcglue
       end
     end
 
+    def generated_file_warning
+      'This is a generated file.  Do not modify...or else!  :)'
+    end
+
     def db_rebuild
       !!stage[:db_rebuild]
     end
@@ -446,6 +450,13 @@ module Pvcglue
       '/var/www/letsencrypt_root'
     end
 
+    def service_directory
+      '/lib/systemd/system/'
+    end
+
+    def service_extension
+      '.service'
+    end
 
     # ==============================================================================================
 

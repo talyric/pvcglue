@@ -1,35 +1,90 @@
-# This is a generated file.  Do not modify...or else!  :)
+# <%= Pvcglue.cloud.generated_file_warning %>
 
 set :tmp_dir, '/tmp/<%= Pvcglue.cloud.app_and_stage_name %>'
-set :stage, :<%= Pvcglue.cloud.stage_name %>
-set :rails_env, :<%= Pvcglue.cloud.stage_name %> # workaround for RAILS_ENV= being blank in delayed job tasks
+set :stage, <%= ":#{Pvcglue.cloud.stage_name}" %>
+set :rails_env, <%= ":#{Pvcglue.cloud.stage_name}" %> # workaround for RAILS_ENV= being blank in delayed job tasks
 set :deploy_to, '<%= Pvcglue.cloud.deploy_to_app_dir %>'
 set :linked_files, ['.env.<%= Pvcglue.cloud.stage_name %>']
 set :rvm_ruby_version, '<%= Pvcglue.configuration.ruby_version %>'
 <% if Pvcglue.cloud.delayed_job_args %>
 set :delayed_job_args, "<%= Pvcglue.cloud.delayed_job_args %>"
 <% end %>
-set :ssh_options, {port: <%= Pvcglue.cloud.port_in_context(:deploy) %>}
+set :ssh_options, <%= "{port: #{Pvcglue.cloud.port_in_context(:deploy)}}" %>
 
 <% Pvcglue.cloud.minions_filtered('web').each do |minion_name, minion| %>
-server '<%= minion.public_ip %>', roles: %w{web app}, user: '<%= minion.remote_user_name %>' # server:  <%= minion.machine_name %>
+server '<%= minion.public_ip %>', roles: %w{web}, user: '<%= minion.remote_user_name %>', minion_name: '<%= minion_name %>'
 <% end %>
 <% Pvcglue.cloud.minions_filtered('worker').each do |minion_name, minion| %>
-server '<%= minion.public_ip %>', roles: %w{web app}, user: '<%= minion.remote_user_name %>' # server:  <%= minion.machine_name %>
+server '<%= minion.public_ip %>', roles: %w{worker}, user: '<%= minion.remote_user_name %>', minion_name: '<%= minion_name %>'
 <% end %>
-<% if Pvcglue.cloud.db_rebuild %>
 
+
+<% if Pvcglue.cloud.sidekiq_gem_installed? %>
+namespace :sidekiq do
+  desc 'Quiet the workers, so they stop processing jobs'
+  task :quiet do
+    on roles(:all) do |host|
+      <% Pvcglue.cloud.minions.each do |minion_name, minion| %>
+      <% if minion.quiet_all_workers_cmd.present? %>
+      if host.properties.minion_name == '<%= minion_name %>'
+        begin
+          execute('<%= minion.quiet_all_workers_cmd %>')
+        rescue SSHKit::Runner::ExecuteError => e
+          puts e.message
+        end
+      end
+      <% end %>
+      <% end %>
+    end
+  end
+
+  desc 'Stop the workers'
+  task :stop do
+    on roles(:all) do |host|
+      <% Pvcglue.cloud.minions.each do |minion_name, minion| %>
+      <% if minion.stop_all_workers_cmd.present? %>
+      if host.properties.minion_name == '<%= minion_name %>'
+        execute('<%= minion.stop_all_workers_cmd %>')
+      end
+      <% end %>
+      <% end %>
+    end
+  end
+
+  desc 'Start the workers'
+  task :start do
+    on roles(:all) do |host|
+      <% Pvcglue.cloud.minions.each do |minion_name, minion| %>
+      <% if minion.stop_all_workers_cmd.present? %>
+      if host.properties.minion_name == '<%= minion_name %>'
+        execute('<%= minion.start_all_workers_cmd %>')
+      end
+      <% end %>
+      <% end %>
+    end
+  end
+end
+
+after 'deploy:starting', 'sidekiq:quiet'
+after 'deploy:updated', 'sidekiq:stop'
+after 'deploy:reverted', 'sidekiq:stop'
+after 'deploy:published', 'sidekiq:start'
+<% end %>
+
+
+<% if Pvcglue.cloud.db_rebuild %>
 namespace :deploy do
-  Rake::Task["deploy:migrate"].clear_actions # Don't run migrations...just do the reload.
+  Rake::Task['deploy:migrate'].clear_actions # Don't run migrations...just do the reload.
   desc 'Overrides db:migrate to just run db:reload'
   task :migrate => [:set_rails_env] do
     on primary fetch(:migration_role) do
       within release_path do
         with rails_env: fetch(:rails_env) do
-          execute :rake, "db:reload"
+          execute :rake, 'db:reload'
         end
       end
     end
   end
 end
 <% end %>
+

@@ -1,4 +1,4 @@
-# This is a generated file.  Do not modify...or else!  :)
+# <%= Pvcglue.cloud.generated_file_warning %>
 
 # Load DSL and Setup Up Stages
 require 'capistrano/setup'
@@ -24,3 +24,5 @@ require 'whenever/capistrano'
 
 # Loads custom tasks from `lib/capistrano/tasks' if you have any defined.
 Dir.glob('lib/capistrano/tasks/*.cap').each { |r| import r }
+
+require 'capistrano/passenger'

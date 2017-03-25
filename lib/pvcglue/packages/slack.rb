@@ -3,6 +3,7 @@ module Pvcglue
     class Slack < Pvcglue::Packages
 
       def installed?
+        return true unless minion.project.slack_webhook_url.present?
         get_minion_state
       end
 
@@ -14,7 +15,7 @@ module Pvcglue
             ''
           ],
           cheatsheet: [
-            'Test:  echo "Hello World!" | slacktee.sh',
+            'Test:  echo "Hello World!" | slacktee',
           ],
           references: [
             '[slacktee home]https://github.com/course-hero/slacktee',
@@ -25,16 +26,14 @@ module Pvcglue
           # Persistence
           connection.run!(:root, '', 'curl -o /usr/local/bin/slacktee.sh https://raw.githubusercontent.com/course-hero/slacktee/v1.2.12/slacktee.sh')
           connection.run!(:root, '', 'chmod +x /usr/local/bin/slacktee.sh')
+          connection.run!(:root, '', 'cp /usr/local/bin/slacktee.sh /usr/local/bin/slacktee')
           connection.write_to_file_from_template(user_name, 'slacktee.erb', '.slacktee')
         end
+        connection.run!(user_name, '', %Q(echo 'Test from #{user_name} on #{minion.machine_name} at #{Time.now.utc.to_s}' | slacktee.sh ))
 
         set_minion_state
       end
 
-      def post_install_check?
-        connection.run!(user_name, '', %Q(echo 'Test from #{user_name} on #{minion.machine_name} at #{Time.now.utc.to_s}' | slacktee.sh ) )
-        true
-      end
     end
   end
 end

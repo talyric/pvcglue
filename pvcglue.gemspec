@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'capistrano-bundler', '~> 1.1', '>= 1.1.1'
   spec.add_dependency 'capistrano-rails', '~> 1.1', '>= 1.1.1'
   spec.add_dependency 'capistrano-rvm', '~> 0.1', '>= 0.1.1'
+  spec.add_dependency 'capistrano-passenger', '~> 0.1', '>= 0.1.1'
   spec.add_dependency 'sshkit', '~> 1.3', '>= 1.3.0'
   spec.add_dependency 'awesome_print'
   spec.add_dependency 'hashie'

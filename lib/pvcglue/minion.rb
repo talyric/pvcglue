@@ -191,5 +191,58 @@ module Pvcglue
     #   self.public_ip = another_minion.public_ip
     #   self.cloud_id = another_minion.cloud_id
     # end
+    
+    def sidekiq_worker_base_name # pvc-sidekiq-project-stage-
+      "pvc-sidekiq-#{remote_user_name}-"
+    end
+
+    def sidekiq_service_file_name(name) # /lib/systemd/system/pvc-sidekiq-project-stage-name.service
+      "#{Pvcglue.cloud.service_directory}#{sidekiq_service_name(name)}#{Pvcglue.cloud.service_extension}"
+    end
+
+    def sidekiq_service_name(name) # pvc-sidekiq-project-stage-name
+      "#{sidekiq_worker_base_name}#{name}"
+    end
+
+
+    def quiet_all_sidekiq_workers_cmd
+      cmd = []
+      return cmd unless stage_options.sidekiq_queues
+      stage_options.sidekiq_queues.each do |name, options|
+        cmd << "sudo systemctl kill -s USR1 --kill-who=main #{sidekiq_service_name(name)}"
+      end
+      cmd
+    end
+    
+    def stop_all_sidekiq_workers_cmd
+      cmd = []
+      return cmd unless stage_options.sidekiq_queues
+      stage_options.sidekiq_queues.each do |name, options|
+        cmd << "sudo systemctl stop #{sidekiq_service_name(name)}"
+      end
+      cmd
+    end
+
+    def start_all_sidekiq_workers_cmd
+      cmd = []
+      return cmd unless stage_options.sidekiq_queues
+      stage_options.sidekiq_queues.each do |name, options|
+        cmd << "sudo systemctl start #{sidekiq_service_name(name)}"
+      end
+      cmd
+    end
+
+    def quiet_all_workers_cmd
+      quiet_all_sidekiq_workers_cmd.join('; ')
+    end
+
+
+    def stop_all_workers_cmd
+      stop_all_sidekiq_workers_cmd.join(' && ')
+    end
+
+    def start_all_workers_cmd
+      start_all_sidekiq_workers_cmd.join(' && ')
+    end
   end
 end

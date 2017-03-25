@@ -4,7 +4,9 @@ The "glue" that creates a tightly integrated (and very small) virtual cloud for 
 
 PVC Glue is an cloud application manager for Rails applications using your own (virtual) servers.
 
-PVC Glue was developed as a professional grade replacement for Heroku (and others).
+PVC Glue was developed as a professional grade replacement for Heroku (and others).  It is 
+designed to be used on small to medium size applications, depending on the application 
+requirements and hardware used.
 
 ![pvcglue diagram](/../master/images/pvcglue.png?raw=true "PVC Glue Server Diagram")
 
@@ -12,7 +14,7 @@ Currently supported stack:
 
   * SSL support:  none, manual and automatic with Let's Encrypt
   * Ubuntu 16.04 LTS
-  * Provision servers automatically on Digital Ocean (and Linode*)
+  * Provision servers automatically on Digital Ocean and Linode
   * No need to install anything on servers first (you just need SSH access)
   * Ruby >= 1.9 (multiple versions supported on same server!)
   * Rails >= 3.2
@@ -21,11 +23,12 @@ Currently supported stack:
   * Nginx
   * Phusion Passenger (>= 5.x)
   * Memcached*
-  * Redis*
-  * Designed to easily support multiple staging environments
+  * Redis
+  * Designed to easily manage multiple environments (i.e. alpha, beta, preview, production ...)
 
 Workers:
 
+  * Sidekiq
   * Delayed Job*
   * Rescue*
   

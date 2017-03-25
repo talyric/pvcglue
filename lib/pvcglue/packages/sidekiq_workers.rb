@@ -29,40 +29,41 @@ module Pvcglue
             'https://www.freedesktop.org/software/systemd/man/systemd.service.html#Restart=',
           ]
         ) do
-          # stop and disable and remove "old" workers
-          services = get_stage_service_file_names
-          services.each do |file_name|
+          Pvcglue.logger.debug { 'Stopping, disabling and removing "old" workers' }
+          old_services = stage_service_file_names
+          old_services.each do |file_name|
             service = File.basename(file_name)
-            # TODO:  Stop all the workers, nicely.  :)
-            # connection.run!(:root, '', "systemctl stop #{service}")
+            Pvcglue.logger.debug { "Quieting #{service}" }
+            connection.run(:root, '', "sudo systemctl kill -s USR1 --kill-who=main #{service}")
           end
-          services.each do |file_name|
+
+          # TODO:  Wait for workers to be quiet?
+
+          old_services.each do |file_name|
             service = File.basename(file_name)
+            Pvcglue.logger.debug { "Stopping, disabling and removing #{service}" }
             connection.run!(:root, '', "systemctl stop #{service}")
             connection.run!(:root, '', "systemctl disable #{service}")
             connection.run!(:root, '', "rm #{file_name}")
           end
-          services = get_stage_service_file_names
-          raise("Unable to remove services: #{services.join(', ')}") if services.any?
+          old_services = stage_service_file_names
+          raise("Unable to remove services: #{old_services.join(', ')}") if old_services.any?
 
-          # create workers
+          Pvcglue.logger.debug { 'New workers' }
           minion.stage_options.sidekiq_queues.each do |name, options|
+            service = minion.sidekiq_service_name(name)
+            Pvcglue.logger.debug { "Creating, enabling and starting #{service}" }
             locals = {
-              syslog_identifier: service_name(name),
+              syslog_identifier: service,
               sidekiq_options: options
             }
-            connection.write_to_file_from_template(:root, 'sidekiq.service.erb', service_file_name(name), locals)
+            connection.write_to_file_from_template(:root, 'sidekiq.service.erb', minion.sidekiq_service_file_name(name), locals)
             connection.run!(:root, '', 'systemctl daemon-reload')
-            connection.run!(:root, '', "systemctl enable #{service_name(name)}")
-            connection.run!(:root, '', "systemctl start #{service_name(name)}")
+            connection.run!(:root, '', "systemctl enable #{service}")
+            connection.run!(:root, '', "systemctl start #{service}")
           end
         end
 
-      end
-
-      def get_stage_service_file_names
-        data = connection.run_get_stdout(:root, '', "ls #{"#{service_directory}#{worker_base_name}*.service"}")
-        data.split("\n")
       end
 
       def post_install_check?
@@ -70,25 +71,12 @@ module Pvcglue
         true
       end
 
-      def worker_base_name # pvc-sidekiq-project-stage-
-        "pvc-sidekiq-#{minion.remote_user_name}-"
+      def stage_service_file_names
+        cmd = "ls #{"#{Pvcglue.cloud.service_directory}#{minion.sidekiq_worker_base_name}*#{Pvcglue.cloud.service_extension}"}"
+        data = connection.run_get_stdout(:root, '', cmd)
+        data.split("\n")
       end
 
-      def service_directory
-        '/lib/systemd/system/'
-      end
-
-      def service_file_name(name) # /lib/systemd/system/pvc-sidekiq-project-stage-name.service
-        "#{service_directory}#{service_name(name)}#{service_extension}"
-      end
-
-      def service_name(name) # pvc-sidekiq-project-stage-name
-        "#{worker_base_name}#{name}"
-      end
-
-      def service_extension
-        '.service'
-      end
     end
   end
 end
