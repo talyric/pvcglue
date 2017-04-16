@@ -42,7 +42,7 @@ module Pvcglue
     def get_cloud_provider_options
       # Merge default and machine options
       options = machine_options.cloud_provider || ::SafeMash.new
-      options.merge(default_cloud_provider)
+      options.reverse_merge(default_cloud_provider)
     end
 
     def pvc_cloud_provider
@@ -179,7 +179,8 @@ module Pvcglue
         keys += get_github_authorized_keys(user)
         keys.each do |public_key|
           line = %Q(environment="PVCGLUE_USER=#{user.name}" #{public_key})
-          # line = %Q(command="export PVCGLUE_USER=#{id}" #{public_key})
+          # line = %Q(command="export PVCGLUE_USER=#{user.name}" #{public_key})
+          # line = %Q(command="path/to/script",environment="LEVEL=1" command="export PVCGLUE_USER=#{user.name}" #{public_key})
           data << line
         end
       end

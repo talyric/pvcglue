@@ -94,7 +94,8 @@ module Pvcglue
       end
 
       def git_commit!
-        connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-$PVCGLUE_USER <>" -m "Change configuration"))
+        # connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-$PVCGLUE_USER <>" -m "Change configuration"))
+        connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-\\`printenv PVCGLUE_USER\\` <>" -m "Change configuration"))
       end
 
       def working_directory_clean?
@@ -107,6 +108,7 @@ module Pvcglue
       end
 
       def pull_configuration
+        # ssh REMOTE "sh -c \"(nohup sleep 30; touch nohup-exit) > /dev/null &\""
         # TODO:  Rename to edit_config_start, and create Thor commands to match
         if connection.file_exists?(user_name, ::Pvcglue::Manager.manager_file_name)
           data = connection.read_from_file(user_name, ::Pvcglue::Manager.manager_file_name)

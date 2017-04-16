@@ -37,7 +37,8 @@ module Pvcglue
       end
 
       def set_passenger_ruby
-        info = connection.run_get_stdout!(user_name, '', "rvm use #{Pvcglue.configuration.ruby_version} && $(which passenger-config) --ruby-command")
+        # info = connection.run_get_stdout!(user_name, '', "rvm use #{Pvcglue.configuration.ruby_version} && $(which passenger-config) --ruby-command")
+        info = connection.run_get_stdout!(user_name, '', "rvm use #{Pvcglue.configuration.ruby_version} && passenger-config about ruby-command")
         if info =~ /passenger_ruby (.*)/
           Pvcglue.cloud.passenger_ruby = $1
         else

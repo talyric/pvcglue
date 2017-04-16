@@ -48,6 +48,7 @@ module Pvcglue
       end
 
       def post_install_check?
+        post_install_retry(20,0.5)
         redis_info = connection.run_get_stdout!(user_name, '', 'redis-cli info')
         no_eviction = redis_info =~ /maxmemory_policy:noeviction/
         aof_enabled = redis_info =~ /aof_enabled:1/

@@ -4,7 +4,6 @@ require 'benchmark'
 
 # Allow use of Capistrano style environment syntax and convert to 'standard' syntax
 # Example:  `pvc production bootstrap` ==> `pvc bootstrap --stage=production`
-# TODO: refactor to use a list of user specified environments
 
 Pvcglue.logger.info('Starting up...')
 # Pvcglue.logger.info("----- Done #{Benchmark.measure { Pvcglue::CLI.start }}")
@@ -12,7 +11,8 @@ Pvcglue.logger.info('Starting up...')
 def capistrano_style_environment
   Pvcglue.logger.debug { ARGV.inspect }
   if ARGV.count >= 2
-    if %w[local vmtest test alpha beta gamma delta preview production staging].include?(ARGV[0])
+    # TODO: refactor to use a list of user specified environments
+    if %w[local vmtest test alpha beta gamma delta preview production staging runner].include?(ARGV[0])
       ARGV[0], ARGV[1] = ARGV[1], "--stage=#{ARGV[0]}"
       Pvcglue.logger.debug { ARGV.inspect }
       Pvcglue::CLI.start

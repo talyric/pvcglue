@@ -2,6 +2,10 @@ module Pvcglue
   class CloudProviders
     class Linode < Pvcglue::CloudProviders
 
+      def initialize(provider_options)
+        @options = provider_options
+      end
+
       def create(options)
         validate_options!(options, %w(name region capacity image))
 

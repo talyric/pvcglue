@@ -10,6 +10,9 @@ module Pvcglue
 
     attr_accessor :errors
     attr_accessor :options
+    attr_accessor :post_install_max_retry_seconds
+    attr_accessor :post_install_max_retry_count
+    attr_accessor :post_install_retry_delay_seconds
 
     def initialize(minion, options = {})
       @minion = minion
@@ -42,7 +45,7 @@ module Pvcglue
         Pvcglue.logger_package_description = self.class.name
         unless installed?
           install!
-          if post_install_check?
+          if post_install_check_with_retry?
             post_install!
           else
             # TODO:  Better error message
@@ -69,6 +72,27 @@ module Pvcglue
     def post_install_check?
       # override to do a different (more time consuming/more detailed) check
       installed?
+    end
+
+    def post_install_retry(max_tries, delay_seconds = 0, max_seconds = 30)
+      self.post_install_max_retry_seconds = max_seconds
+      self.post_install_retry_delay_seconds = delay_seconds
+      self.post_install_max_retry_count = max_tries
+    end
+
+    def post_install_check_with_retry?
+      self.post_install_max_retry_seconds = 0.0
+      self.post_install_retry_delay_seconds = 0.0
+      self.post_install_max_retry_count = 1
+      started_at = Time.now.utc.to_f
+      tries = 0
+      begin
+        return true if post_install_check?
+        tries += 1
+        Pvcglue.logger.debug('Failed post install check, retrying...')
+        sleep(post_install_retry_delay_seconds)
+      end until tries >= post_install_max_retry_count || Time.now.utc.to_f - started_at > post_install_max_retry_seconds
+      false
     end
 
     def post_install!

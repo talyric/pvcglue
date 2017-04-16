@@ -3,7 +3,7 @@ module Pvcglue
     class Slack < Pvcglue::Packages
 
       def installed?
-        return true unless minion.project.slack_webhook_url.present?
+        return true unless minion.project.respond_to?(:slack_webhook_url)
         get_minion_state
       end
 

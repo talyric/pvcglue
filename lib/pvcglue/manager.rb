@@ -48,12 +48,9 @@ module Pvcglue
     desc "shell", "run shell"
 
     def sh # `shell` is a Thor reserved word
-      working_dir = self.class.manager_dir
-      cloud_manager = Pvcglue.configuration.cloud_manager
-      user_name = self.class.user_name
-      cloud_name = Pvcglue.configuration.cloud_name
-      puts "Connection to #{cloud_name} cloud on manager at (#{cloud_manager}) as user '#{user_name}'..."
-      system(%(ssh -p #{Pvcglue.cloud.port_in_context(:manager)} -t #{user_name}@#{cloud_manager} "cd #{working_dir} && bash -i"))
+      minion = Pvcglue.cloud.manager_minion
+      Pvcglue.logger.warn("Connecting to #{minion.machine_name} (#{minion.public_ip}) as user '#{minion.remote_user_name}'...")
+      minion.connection.ssh!(minion.remote_user_name, '', '')
     end
 
     desc "user PATH_TO_FILE", "add or update user's ssh key to allow access to the manager"
