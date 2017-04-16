@@ -94,8 +94,9 @@ module Pvcglue
       end
 
       def git_commit!
-        # connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-$PVCGLUE_USER <>" -m "Change configuration"))
-        connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-\\`printenv PVCGLUE_USER\\` <>" -m "Change configuration"))
+        # connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-$PVCGLUE_USER <>" -m "Change configuration")) # Will not work as $PVCGLUE_USER is in the local context here
+        connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-\\$PVCGLUE_USER <>" -m "Change configuration")) # It's all about context!
+        # connection.ssh!(user_name, '', %Q(cd #{manager_dir} && git add -A && git commit --allow-empty --author="pvc-\\`printenv PVCGLUE_USER\\` <>" -m "Change configuration")) # Another way that works...for future reference
       end
 
       def working_directory_clean?

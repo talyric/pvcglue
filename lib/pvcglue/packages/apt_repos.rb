@@ -22,6 +22,7 @@ module Pvcglue
       end
 
       def installed?
+        # TODO:  Use a versioned state, so that when PvcGlue is updated, it will rebuild all
         get_minion_state(:apt_repos_updated_at)
       end
 

@@ -51,7 +51,7 @@ module Pvcglue
             # TODO:  Better error message
 
             errors << 'Install failed post install check.'
-            Pvcglue.logger.error { full_error_message }
+            Pvcglue.logger.error {full_error_message}
             return false
           end
         end
@@ -144,7 +144,8 @@ module Pvcglue
     end
 
     def get_minion_state_key(key)
-      key || self.class.name.downcase.gsub(':', '_').to_sym
+      # TODO:  Use a versioned state, so that when the Pvcglue version is updated, it will rebuild all
+    key || self.class.name.downcase.gsub(':', '_').to_sym
     end
 
     def set_minion_state(key = nil, value = nil)
