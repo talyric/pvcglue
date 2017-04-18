@@ -23,6 +23,7 @@ module Pvcglue
             'https://serverfault.com/questions/256098/authorized-keys-environment-variables-not-setting-environment-variables',
             'https://serverfault.com/questions/527638/security-risks-of-permituserenvironment-in-ssh',
             '',
+            'https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps',
             'https://binblog.info/2008/10/20/openssh-going-flexible-with-forced-commands/',
             'https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.2.0/com.ibm.zos.v2r2.foto100/authkeyf.htm',
             'https://en.wikibooks.org/wiki/OpenSSH/Client_Configuration_Files#environment.3D.22NAME.3Dvalue.22',

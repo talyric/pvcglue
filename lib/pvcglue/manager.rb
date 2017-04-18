@@ -4,6 +4,7 @@ module Pvcglue
 
   class Manager < Thor
 
+    # TODO:  Rename to 'build'?
     desc "bootstrap", "bootstrap"
 
     def bootstrap

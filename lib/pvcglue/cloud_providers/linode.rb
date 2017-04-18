@@ -7,6 +7,7 @@ module Pvcglue
       end
 
       def create(options)
+        # TODO:  Set machine name.  Example:  "thekraken-alpha@ubuntu:~$" should be "thekraken-alpha@staging-web:~$"
         validate_options!(options, %w(name region capacity image))
 
         cmd = "linode create #{options.name} "
