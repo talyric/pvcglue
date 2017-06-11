@@ -198,6 +198,7 @@ module Pvcglue
     # puts '-'*80
     # puts "---> render_template(template=#{template}, file_name=#{file_name}"
     # Pvcglue.logger.debug { "render_template(template=#{template}, file_name=#{file_name}" }
+    Pvcglue.logger.debug { "render_template(template_file_name=#{Pvcglue.template_file_name(template)}" }
     data = Tilt.new(Pvcglue.template_file_name(template)).render
     if file_name
       File.write(file_name, data)

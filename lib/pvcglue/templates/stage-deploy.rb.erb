@@ -29,8 +29,13 @@ namespace :sidekiq do
       if host.properties.minion_name == '<%= minion_name %>'
         begin
           execute('<%= minion.quiet_all_workers_cmd %>')
-        rescue SSHKit::Runner::ExecuteError => e
-          puts e.message
+        rescue SSHKit::Command::Failed => e
+          if e.message =~ /No main process to kill/
+            puts 'No workers to quiet, moving on.'
+          else
+            puts e.inspect
+            raise
+          end
         end
       end
       <% end %>

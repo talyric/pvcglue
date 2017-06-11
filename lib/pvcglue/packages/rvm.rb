@@ -10,6 +10,7 @@ module Pvcglue
         connection.write_to_file_from_template(user_name, 'web.bashrc.erb', "/home/#{user_name}/.bashrc")
 
         connection.run_get_stdout!(user_name, '', 'gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3')
+        # connection.run_get_stdout!(user_name, '', 'gpg --keyserver hkp://176.9.51.79 --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3')
         # Do it again, the first time only sets things up, and does not import the keys
         connection.run!(user_name, '', '\curl -sSL https://get.rvm.io | bash -s stable --with-default-gems=bundler')
 
