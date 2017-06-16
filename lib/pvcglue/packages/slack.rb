@@ -29,7 +29,7 @@ module Pvcglue
           connection.run!(:root, '', 'cp /usr/local/bin/slacktee.sh /usr/local/bin/slacktee')
           connection.write_to_file_from_template(user_name, 'slacktee.erb', '.slacktee')
         end
-        connection.run!(user_name, '', %Q(echo 'Test from #{user_name} on #{minion.machine_name} at #{Time.now.utc.to_s}' | slacktee.sh ))
+        connection.run!(user_name, '', %Q(echo 'Build ping from #{user_name} on #{minion.machine_name} at #{Time.now.utc.to_s}' | slacktee.sh ))
 
         set_minion_state
       end

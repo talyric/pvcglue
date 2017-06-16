@@ -9,6 +9,7 @@ module Pvcglue
       Pvcglue.docs.level_1_roles(minion)
 
       Pvcglue::Packages::SshKeyCheck.apply(minion)
+      Pvcglue::Packages::Hostname.apply(minion)
       Pvcglue::Packages::AptRepos.apply(minion)
       Pvcglue::Packages::AptUpdate.apply(minion)
       Pvcglue::Packages::AptUpgrade.apply(minion)

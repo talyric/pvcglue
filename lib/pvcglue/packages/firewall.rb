@@ -4,6 +4,7 @@ module Pvcglue
       # Reference:  http://manpages.ubuntu.com/manpages/xenial/en/man8/ufw-framework.8.html
       # Examples:  https://help.ubuntu.com/community/UFW
       def installed?
+        # TODO:  Smarter check that takes into account a new minion being added, so the firewall rules get updated without having to use '--rebuild'
         get_minion_state
       end
 
